@@ -2484,6 +2484,16 @@ $$('.tab').forEach(b => {
         const pId = b.dataset.p;
         const panel = $('#p-' + pId);
         if (panel) panel.classList.add('on');
+        
+        if (pId === 'tl') drawTimeline(true);
+        if (pId === 'mod') renderModules();
+        if (pId === 'origem') drawOrigem(true);
+        if (pId === 'funil') {
+            drawFunil(true);
+            if ($('.filters')) $('.filters').style.display = 'none';
+        } else {
+            if ($('.filters')) $('.filters').style.display = 'flex';
+        }
     };
 });
 $$('.tab')[0].click();
