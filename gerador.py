@@ -68,6 +68,33 @@ def fetch_logs_from_api(df_insc):
     print(f"Total de {len(df_log)} registros de logs carregados via API de {len(students)} alunos.")
     return df_log
 
+
+def categorize_rd_event(ev_name):
+    low = ev_name.lower().strip()
+    if any(x in low for x in ['ebook', 'e-book']): return 'E-book / Material'
+    if any(x in low for x in ['jornada', 'live', 'infectoxpert', 'congresso', 'webinar', 'evento']): return 'Evento / Live'
+    if any(x in low for x in ['fale-conosco', 'duvida', 'contato', 'form_3', 'fluentform']): return 'Fale Conosco / Contato'
+    if any(x in low for x in ['lista-espera', 'lista de espera', 'pre-inscricao', 'pré-inscrição', 'grade_pos']): return 'Lista de Espera / Grade'
+    if any(x in low for x in ['ex alunos', 'alunos infectoped', 'ex-alunos']): return 'Comunidade / Base Prévia'
+    if any(x in low for x in ['pago', 'pendente', 'recorrencia', 'checkout', 'compra']): return 'Checkout / Matrícula'
+    return 'Outras Ações'
+
+def clean_rd_event_name(ev_name):
+    low = ev_name.lower().strip()
+    if 'fale-conosco' in low: return 'Fale Conosco (Dúvidas/Suporte)'
+    if 'ebook doses' in low: return 'E-book: Doses de Antibióticos'
+    if 'ebook pav' in low: return 'E-book: Prevenção de PAV'
+    if 'jornada multi-r' in low: return 'Jornada Multi-R'
+    if 'alunos infectoped' in low: return 'Comunidade Alunos Infectoped'
+    if 'ex alunos fabrizio' in low: return 'Base Ex-alunos Dr. Fabrizio'
+    if 'fluentform_3' in low: return 'Formulário de Interesse (Site)'
+    if 'pos-graduacao-pediatria-pendente' in low: return 'Checkout Iniciado (Pós Pediatria)'
+    if 'pos-graduacao-pediatria-pago' in low: return 'Pagamento Confirmado (Pós Pediatria)'
+    if 'recorrencia-18-x-pendente' in low or 'recorrencia-18x-pendente' in low: return 'Checkout Recorrência 18x (Pendente)'
+    if 'recorrencia-18-x-pago' in low: return 'Checkout Recorrência 18x (Aprovado)'
+    if 'grade_pos_pediatria' in low: return 'Download da Grade Curricular'
+    return ev_name.replace('---', ' - ').replace('__', ' ')
+
 def main():
     inscricoes_path = r'C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\Inscrições.xlsx'
     cursos_path = r'C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\CURSOS.xlsx'
@@ -985,25 +1012,50 @@ def main():
                 
                 # Formatar e deduplicar eventos consecutivos idênticos
                 fmt_eventos = []
+                eventos_raw_list = []
                 last_ident = None
                 for ev in conv_list:
                     data_f = ev.get('data_formatada', '')
                     ident = ev.get('evento', '')
-                    # Ignorar duplicações idênticas imediatas
+                    cat = categorize_rd_event(ident)
+                    clean_name = clean_rd_event_name(ident)
+                    
                     if (data_f, ident) == last_ident:
                         continue
                     last_ident = (data_f, ident)
-                    fmt_eventos.append(f"<span style='color:var(--muted)'>{data_f}</span> &mdash; <b>{ident}</b>")
+                    
+                    fmt_eventos.append(f"<span style='color:var(--muted)'>{data_f}</span> &mdash; <b>{clean_name}</b>")
+                    eventos_raw_list.append({
+                        'data': data_f,
+                        'evento_raw': ident,
+                        'evento_clean': clean_name,
+                        'categoria': cat
+                    })
+                
+                # Calcular dias de maturação
+                dias_maturacao = ''
+                try:
+                    dt_insc_raw = s.get('data_inscricao') or s.get('inscricao')
+                    dt_pri_raw = ast.get('dt_primeira')
+                    if dt_insc_raw and dt_pri_raw and dt_pri_raw != '—':
+                        d_insc = pd.to_datetime(dt_insc_raw, dayfirst=True)
+                        d_pri = pd.to_datetime(dt_pri_raw, dayfirst=True)
+                        diff = (d_insc - d_pri).days
+                        if diff >= 0:
+                            dias_maturacao = diff
+                except Exception:
+                    pass
                     
                 s['rd_funnel'] = {
                     'origem': ast.get('origem_funil') or 'Desconhecido',
                     'conversoes': ast.get('total_conversoes', 0),
                     'conversoes_antes': len(conv_antes),
                     'scoring': ast.get('score_interesse', 0),
-                    'dias_venda': '',
+                    'dias_venda': dias_maturacao,
                     'dt_primeira': ast.get('dt_primeira', '—'),
                     'dt_ultima': ast.get('dt_ultima', '—'),
                     'eventos': fmt_eventos,
+                    'eventos_detalhados': eventos_raw_list,
                     'fonte': 'API Oficial RD Station'
                 }
             elif em in rd_events_map:
