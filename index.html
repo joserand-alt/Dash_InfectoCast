@@ -2260,16 +2260,25 @@ function renderOrigemTableRows(baseStudents) {
 // ==================== VISÃO GERAL / HOME ====================
 let homeDrawn = false;
 
+function goToStatus(st) {
+    switchTab('prog');
+    ST_FILT = st;
+    statusChips();
+    renderRows();
+}
+
 function drawHome(force) {
     if (!DATA.students) return;
     if (homeDrawn && !force) return;
     homeDrawn = true;
 
-    // 1. Base filtrada
-    let baseStudents = DATA.students.filter(s => {
-        if (FILTER.curso !== 'all' && s.curso !== FILTER.curso) return false;
-        return true;
-    });
+    // 1. Base filtrada (sempre prioriza os alunos processados com status)
+    let baseStudents = (CURRENT_DATA && CURRENT_DATA.students && CURRENT_DATA.students.length > 0)
+        ? CURRENT_DATA.students
+        : DATA.students.filter(s => {
+            if (FILTER.curso !== 'all' && s.curso !== FILTER.curso) return false;
+            return true;
+        });
 
     const filterNameEl = document.getElementById('home-filter-name');
     if (filterNameEl) {
@@ -2281,7 +2290,7 @@ function drawHome(force) {
     const totalUnicos = uniqueEmails.size;
 
     // Ações e Reproduções
-    const ev = CURRENT_DATA.action_counts || {};
+    const ev = (CURRENT_DATA && CURRENT_DATA.action_counts) ? CURRENT_DATA.action_counts : {};
     const totalReproducoes = ev['ASSISTIU AULA'] || 0;
     const totalLogins = ev['LOGIN WEB'] || 0;
 
@@ -2310,22 +2319,69 @@ function drawHome(force) {
     });
     const sortedCursos = Object.entries(cursosCount).sort((a,b) => b[1] - a[1]);
 
-    // Status da Base
+    // Status da Base (calculados sobre os dados processados)
     let stCounts = {
-        'Ativo': 0, 'Concluído': 0, 'Em Risco': 0, 'Atenção': 0, 'Abandonou': 0, 'Nunca acessou': 0
+        'Concluído': 0, 'Ativo': 0, 'Em Risco': 0, 'Apenas Login': 0, 'Abandonou': 0, 'Nunca acessou': 0
     };
     baseStudents.forEach(s => {
-        let st = s.status || (!s.acessou ? 'Nunca acessou' : 'Ativo');
+        let st = s.status;
+        if (!st) {
+            st = (!s.acessou ? 'Nunca acessou' : 'Ativo');
+        }
         if (st === 'Inativo') st = 'Abandonou';
-        if (stCounts[st] !== undefined) stCounts[st]++;
-        else stCounts['Ativo']++;
+        if (st === 'Atenção') st = s.acessou ? 'Em Risco' : 'Nunca acessou';
+        
+        if (stCounts[st] !== undefined) {
+            stCounts[st]++;
+        } else if (st.includes('Conclu')) {
+            stCounts['Concluído']++;
+        } else if (st.includes('Risco')) {
+            stCounts['Em Risco']++;
+        } else if (st.includes('Login')) {
+            stCounts['Apenas Login']++;
+        } else if (st.includes('Nunca')) {
+            stCounts['Nunca acessou']++;
+        } else {
+            stCounts['Ativo']++;
+        }
+    });
+
+    // Consolidado por Aluno Único (conforme regra da Aba de Retenção)
+    let uniqueMap = new Map();
+    baseStudents.forEach(s => {
+        const em = (s.email || '').toLowerCase().trim();
+        if (!em) return;
+        if (!uniqueMap.has(em)) {
+            uniqueMap.set(em, s);
+        } else {
+            let exist = uniqueMap.get(em);
+            if (exist.status === 'Nunca acessou' && s.status !== 'Nunca acessou') {
+                uniqueMap.set(em, s);
+            }
+        }
+    });
+    let uniqueStudents = Array.from(uniqueMap.values());
+    let unicosAtivos = 0, unicosRisco = 0, unicosAbandonaram = 0, unicosNunca = 0;
+    uniqueStudents.forEach(s => {
+        if (!s.acessou || s.status === 'Nunca acessou') {
+            unicosNunca++;
+        } else if (s.status === 'Abandonou' || s.status === 'Inativo') {
+            unicosAbandonaram++;
+        } else if (s.status === 'Em Risco' || s.status === 'Apenas Login') {
+            unicosRisco++;
+        } else {
+            unicosAtivos++;
+        }
     });
 
     const engajados = (stCounts['Ativo'] || 0) + (stCounts['Concluído'] || 0);
     const taxaEngajados = totalMatriculas > 0 ? ((engajados / totalMatriculas) * 100).toFixed(0) : '0';
-    const atencaoRisco = (stCounts['Em Risco'] || 0) + (stCounts['Atenção'] || 0);
+    
+    const atencaoRisco = (stCounts['Em Risco'] || 0) + (stCounts['Apenas Login'] || 0);
     const taxaRisco = totalMatriculas > 0 ? ((atencaoRisco / totalMatriculas) * 100).toFixed(0) : '0';
+    
     const criticos = (stCounts['Abandonou'] || 0) + (stCounts['Nunca acessou'] || 0);
+    const taxaCriticos = totalMatriculas > 0 ? ((criticos / totalMatriculas) * 100).toFixed(0) : '0';
 
     // RD Marketing
     let countComRD = 0;
@@ -2375,7 +2431,7 @@ function drawHome(force) {
           <div class="kpi" style="border-top:3px solid var(--sky)">
             <div class="k-lab"><i class="k-dot" style="background:var(--sky)"></i>Saúde da Base</div>
             <div class="k-val" style="color:var(--sky)">${taxaEngajados}%</div>
-            <div class="k-sub">${fmt(engajados)} engajados / ativos</div>
+            <div class="k-sub">${fmt(engajados)} ativos / concluídos</div>
           </div>
           <div class="kpi" style="border-top:3px solid var(--amber)">
             <div class="k-lab"><i class="k-dot" style="background:var(--amber)"></i>Atenção &amp; Risco</div>
@@ -2458,23 +2514,22 @@ function drawHome(force) {
         `;
     }
 
-    // --- 3. RENDERIZAR CURSOS ---
+    // --- 3. RENDERIZAR CURSOS MAIS PROCURADOS ---
     const coursesListEl = document.getElementById('home-courses-list');
     if (coursesListEl) {
-        const maxCourse = sortedCursos.length > 0 ? sortedCursos[0][1] : 1;
-        coursesListEl.innerHTML = sortedCursos.slice(0, 6).map(([cName, cnt]) => {
-            const pct = (cnt / maxCourse * 100).toFixed(0);
-            const pctBase = (cnt / totalMatriculas * 100).toFixed(1);
-            const isPos = cName.startsWith('POS-GRADUACAO') || cName.includes('POS');
+        coursesListEl.innerHTML = sortedCursos.map(([cName, count], idx) => {
+            const pct = totalMatriculas > 0 ? (count / totalMatriculas * 100).toFixed(1) : 0;
+            const isPos = cName.includes('Pós') || cName.includes('Pos');
             return `
-              <div style="display:flex; flex-direction:column; gap:3px">
-                <div style="display:flex; justify-content:space-between; align-items:center">
-                  <div style="display:flex; align-items:center; gap:6px; overflow:hidden; padding-right:8px">
-                    <span style="font-size:9.5px; font-weight:700; padding:1px 5px; border-radius:3px; background:${isPos?'rgba(18,161,122,0.12)':'rgba(62,124,177,0.12)'}; color:${isPos?'var(--emerald-d)':'var(--sky)'}">${isPos?'Pós':'Curso'}</span>
-                    <span style="font-size:12px; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis" title="${cName}">${cName}</span>
+              <div style="display:flex; flex-direction:column; gap:4px">
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px">
+                  <div style="display:flex; align-items:center; gap:6px; overflow:hidden">
+                    <span style="font-size:10px; font-weight:700; color:var(--muted); min-width:16px">#${idx+1}</span>
+                    <span style="font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis" title="${cName}">${cName}</span>
                   </div>
-                  <div style="font-size:12px; font-weight:700; color:var(--ink); white-space:nowrap">
-                    ${cnt} <span style="font-size:10px; font-weight:400; color:var(--muted)">(${pctBase}%)</span>
+                  <div style="display:flex; align-items:center; gap:8px; white-space:nowrap">
+                    <b style="color:var(--ink)">${count}</b>
+                    <span style="color:var(--muted); font-size:11px">(${pct}%)</span>
                   </div>
                 </div>
                 <div style="background:var(--line); height:6px; border-radius:3px; overflow:hidden">
@@ -2489,26 +2544,57 @@ function drawHome(force) {
     const statusDistEl = document.getElementById('home-status-distribution');
     if (statusDistEl) {
         statusDistEl.innerHTML = `
-          <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:6px">
-            <div style="background:var(--emerald-w); border:1px solid rgba(18,161,122,0.25); border-radius:8px; padding:10px 12px">
+          <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:8px">
+            <div style="background:var(--emerald-w); border:1px solid rgba(18,161,122,0.25); border-radius:8px; padding:10px 12px; cursor:pointer" onclick="goToStatus('Ativo')" title="Ver alunos engajados">
               <div style="font-size:10px; font-weight:700; color:var(--emerald-d); text-transform:uppercase">Engajados</div>
-              <div style="font-size:20px; font-weight:800; color:var(--emerald-d); margin-top:2px">${engajados}</div>
-              <div style="font-size:10px; color:var(--muted)">${taxaEngajados}% da base ativa</div>
+              <div style="font-size:22px; font-weight:800; color:var(--emerald-d); margin-top:2px">${fmt(engajados)}</div>
+              <div style="font-size:10.5px; color:var(--muted); margin-top:2px"><b>${taxaEngajados}%</b> das matrículas</div>
+              <div style="font-size:10px; color:var(--emerald-d); margin-top:3px; font-weight:600">${fmt(unicosAtivos)} alunos únicos</div>
             </div>
-            <div style="background:var(--amber-w); border:1px solid rgba(224,145,47,0.25); border-radius:8px; padding:10px 12px">
+            <div style="background:var(--amber-w); border:1px solid rgba(224,145,47,0.25); border-radius:8px; padding:10px 12px; cursor:pointer" onclick="goToStatus('Em Risco')" title="Ver alunos em alerta">
               <div style="font-size:10px; font-weight:700; color:var(--amber); text-transform:uppercase">Em Alerta</div>
-              <div style="font-size:20px; font-weight:800; color:var(--amber); margin-top:2px">${atencaoRisco}</div>
-              <div style="font-size:10px; color:var(--muted)">${taxaRisco}% em risco/atenção</div>
+              <div style="font-size:22px; font-weight:800; color:var(--amber); margin-top:2px">${fmt(atencaoRisco)}</div>
+              <div style="font-size:10.5px; color:var(--muted); margin-top:2px"><b>${taxaRisco}%</b> em risco/atenção</div>
+              <div style="font-size:10px; color:var(--amber); margin-top:3px; font-weight:600">${fmt(unicosRisco)} alunos únicos</div>
             </div>
-            <div style="background:var(--coral-w); border:1px solid rgba(224,85,85,0.25); border-radius:8px; padding:10px 12px">
-              <div style="font-size:10px; font-weight:700; color:var(--coral); text-transform:uppercase">Críticos</div>
-              <div style="font-size:20px; font-weight:800; color:var(--coral); margin-top:2px">${criticos}</div>
-              <div style="font-size:10px; color:var(--muted)">Abandonaram / sem login</div>
+            <div style="background:var(--coral-w); border:1px solid rgba(224,85,85,0.25); border-radius:8px; padding:10px 12px; cursor:pointer" onclick="switchTab('ret')" title="Ver alunos que abandonaram">
+              <div style="font-size:10px; font-weight:700; color:var(--coral); text-transform:uppercase">Críticos / Evasão</div>
+              <div style="font-size:22px; font-weight:800; color:var(--coral); margin-top:2px">${fmt(criticos)}</div>
+              <div style="font-size:10.5px; color:var(--muted); margin-top:2px"><b>${taxaCriticos}%</b> inatividade severa</div>
+              <div style="font-size:10px; color:var(--coral); margin-top:3px; font-weight:600">${fmt(unicosAbandonaram + unicosNunca)} alunos únicos</div>
             </div>
           </div>
 
-          <div style="font-size:11px; color:var(--muted); line-height:1.5">
-            Acompanhamento preditivo baseado na cadência média de logins de cada aluno e dias de inatividade acumulados.
+          <!-- STATUS DETALHADO -->
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-bottom:8px">
+            <div style="background:rgba(18,161,122,0.08); border:1px solid rgba(18,161,122,0.2); border-radius:6px; padding:5px 8px; display:flex; justify-content:space-between; align-items:center; cursor:pointer" onclick="goToStatus('Concluído')">
+              <span style="font-size:10.5px; font-weight:600; color:var(--emerald-d)">● Concluído</span>
+              <span style="font-size:11.5px; font-weight:800; color:var(--emerald-d)">${fmt(stCounts['Concluído'])}</span>
+            </div>
+            <div style="background:rgba(2,132,199,0.08); border:1px solid rgba(2,132,199,0.2); border-radius:6px; padding:5px 8px; display:flex; justify-content:space-between; align-items:center; cursor:pointer" onclick="goToStatus('Ativo')">
+              <span style="font-size:10.5px; font-weight:600; color:var(--sky-d)">● Ativo</span>
+              <span style="font-size:11.5px; font-weight:800; color:var(--sky-d)">${fmt(stCounts['Ativo'])}</span>
+            </div>
+            <div style="background:rgba(224,145,47,0.08); border:1px solid rgba(224,145,47,0.2); border-radius:6px; padding:5px 8px; display:flex; justify-content:space-between; align-items:center; cursor:pointer" onclick="goToStatus('Em Risco')">
+              <span style="font-size:10.5px; font-weight:600; color:var(--amber)">● Em Risco</span>
+              <span style="font-size:11.5px; font-weight:800; color:var(--amber)">${fmt(stCounts['Em Risco'])}</span>
+            </div>
+            <div style="background:rgba(100,116,139,0.08); border:1px solid rgba(100,116,139,0.2); border-radius:6px; padding:5px 8px; display:flex; justify-content:space-between; align-items:center; cursor:pointer" onclick="goToStatus('Apenas Login')">
+              <span style="font-size:10.5px; font-weight:600; color:#475569">● Apenas Login</span>
+              <span style="font-size:11.5px; font-weight:800; color:#475569">${fmt(stCounts['Apenas Login'])}</span>
+            </div>
+            <div style="background:rgba(224,85,85,0.08); border:1px solid rgba(224,85,85,0.2); border-radius:6px; padding:5px 8px; display:flex; justify-content:space-between; align-items:center; cursor:pointer" onclick="goToStatus('Abandonou')">
+              <span style="font-size:10.5px; font-weight:600; color:var(--coral)">● Abandonou</span>
+              <span style="font-size:11.5px; font-weight:800; color:var(--coral)">${fmt(stCounts['Abandonou'])}</span>
+            </div>
+            <div style="background:rgba(0,0,0,0.04); border:1px solid rgba(0,0,0,0.1); border-radius:6px; padding:5px 8px; display:flex; justify-content:space-between; align-items:center; cursor:pointer" onclick="goToStatus('Nunca acessou')">
+              <span style="font-size:10.5px; font-weight:600; color:var(--muted)">● Nunca acessou</span>
+              <span style="font-size:11.5px; font-weight:800; color:var(--muted)">${fmt(stCounts['Nunca acessou'])}</span>
+            </div>
+          </div>
+
+          <div style="font-size:11px; color:var(--muted); line-height:1.4">
+            Acompanhamento preditivo baseado na cadência média de logins e dias sem acesso (<b style="color:var(--ink)">clique</b> em qualquer badge para filtrar a lista).
           </div>
         `;
     }
