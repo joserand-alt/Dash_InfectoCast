@@ -1145,9 +1145,14 @@ $('#search').oninput = e=>{filterText=e.target.value;renderRows();};
 
 // MODAL
 const STMAP={};
+window.openModal = function(param){ openStudent(param); };
 function openStudent(email){
-  const s = CURRENT_DATA.students.find(x => x.email === email);
-  if(!s||!s.acessou) return;
+  if (!email) return;
+  const emLow = email.toLowerCase().trim();
+  const s = (CURRENT_DATA?.students || []).find(x => x.email && x.email.toLowerCase().trim() === emLow) || 
+            (DATA.students || []).find(x => x.email && x.email.toLowerCase().trim() === emLow);
+  if(!s) return;
+  const statusDisplay = s.status || (!s.acessou ? 'Nunca acessou' : (s.dias_inativo > 30 ? 'Abandonou' : 'Ativo'));
   const modal=$('#modal');
   $('#md-nome').textContent=s.nome;
   let btnWpp = '';
@@ -1170,7 +1175,7 @@ function openStudent(email){
       if (p.length === 3) dataInscFmt = `${p[2]}/${p[1]}/${p[0]}`;
   }
   $('#md-stats').innerHTML=[
-    ['Status',s.status],['Módulos',`${s.mods_concluidos||0}/${s.total_mods||0}`],
+    ['Status',statusDisplay],['Módulos',`${s.mods_concluidos||0}/${s.total_mods||0}`],
     ['Último acesso',s.last_fmt||'—'],['Dias inativo',s.dias_inativo != null ? s.dias_inativo : '—'],
     ['Inscrição',dataInscFmt], ['Último WA', s.wa_dt_ultima || '—']
   ].map(([l,v])=>`<div class="st"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
@@ -2040,7 +2045,7 @@ function renderOrigemTableRows(baseStudents) {
             </td>
             <td style="padding:10px 8px; text-align:center; font-weight:700; color:${dias!=='—'?'var(--amber)':'var(--muted)'}">${dias}</td>
             <td style="padding:10px 8px; text-align:center">
-              <button onclick="openModal('${s.id}')" style="background:var(--sky-w); color:var(--sky-d); border:none; border-radius:6px; padding:4px 8px; font-size:11px; font-weight:600; cursor:pointer">Ver Jornada ↗</button>
+              <button onclick="openStudent('${s.email}')" style="background:var(--sky-w); color:var(--sky-d); border:none; border-radius:6px; padding:4px 8px; font-size:11px; font-weight:600; cursor:pointer">Ver Jornada ↗</button>
             </td>
           </tr>
         `;
