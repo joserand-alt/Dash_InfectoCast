@@ -335,46 +335,59 @@ def main():
         course_modules[curso].add(item)
     
     # Step 3: Build final_curriculum with Module mapping
-    # Create a mapping from lesson normalized name -> module name using CURSOS.xlsx
-    lesson_to_module = {}
+    # Scoped mapping (curso, lesson_normalized_name) -> module name to prevent cross-course collisions
+    course_lesson_to_module = {}
     mod_id_to_name = {}
-    mod_name_to_curso = {}
+    mod_id_to_curso = {}
     
+    def clean_module_name(m):
+        if not m: return 'Geral'
+        m_str = str(m).strip()
+        low = m_str.lower()
+        if 'encontros ao vivo' in low: return 'Encontros Ao Vivo'
+        if 'journal club' in low: return 'Journal Club'
+        return m_str
+
     for _, row in df_mods.iterrows():
-        m_curso = str(row.iloc[0]).strip()
+        m_curso = canonicalize_curso(str(row.iloc[0]).strip())
         m_id = row.iloc[1]
-        m_nome = str(row.iloc[3]).strip()
+        m_nome = clean_module_name(row.iloc[3])
         mod_id_to_name[m_id] = m_nome
-        mod_name_to_curso[m_nome] = canonicalize_curso(m_curso)
-        
+        mod_id_to_curso[m_id] = m_curso
+
     for _, row in df_aulas.iterrows():
         m_id = row.iloc[1]
         a_nome = str(row.iloc[4])
         a_norm = norm_title(a_nome)
         if m_id in mod_id_to_name and a_norm:
-            lesson_to_module[a_norm] = mod_id_to_name[m_id]
-            
+            m_nome = mod_id_to_name[m_id]
+            m_curso = mod_id_to_curso.get(m_id, '')
+            course_lesson_to_module[(m_curso, a_norm)] = m_nome
+            if m_curso:
+                if m_curso not in course_modules: course_modules[m_curso] = set()
+                course_modules[m_curso].add(m_nome)
+
     for _, row in df_cativa_logs.iterrows():
         c = row['Curso']
-        m = row['Modulo']
+        m = clean_module_name(row['Modulo'])
         l = row['ID Item']
         n_key = norm_title(l)
-        if n_key:
-            lesson_to_module[n_key] = m
-            mod_name_to_curso[m] = c
-            
+        if n_key and m:
+            course_lesson_to_module[(c, n_key)] = m
+            if c not in course_modules: course_modules[c] = set()
+            course_modules[c].add(m)
+            if c not in course_lessons: course_lessons[c] = {}
+            course_lessons[c][n_key] = l
+
     final_curriculum = {}
-    mod_map = {}  # module_id -> module_name (for backwards compat)
+    mod_map = {}  # module_id -> module_name
     lesson_id_counter = 900000  # synthetic IDs for API-derived lessons
-    
+
     for curso, lessons_dict in course_lessons.items():
         modules_for_course = course_modules.get(curso, set())
         
         # We will create a dict mapping module_name -> list of lesson objects
-        mod_dict = {}
-        for mod_name in modules_for_course:
-            mod_dict[mod_name] = []
-            
+        mod_dict = {m: [] for m in modules_for_course}
         mod_dict["Aulas Adicionais"] = []
         
         for n_key, original_name in sorted(lessons_dict.items(), key=lambda x: x[1]):
@@ -386,39 +399,18 @@ def main():
                 "ordem": 0 # updated later
             }
             
-            mapped_mod = lesson_to_module.get(n_key)
-            
-            # Check if mapped_mod belongs to the current course to avoid module bleeding
-            if mapped_mod:
-                mod_curso = mod_name_to_curso.get(mapped_mod, "")
-                
-                # Compare by Core Subject instead of strict prefix to allow Journal/Lives merging
-                base_curso = get_core_subject(curso)
-                base_mod_curso = get_core_subject(mod_curso) if mod_curso else ""
-                
-                if base_mod_curso and base_curso != base_mod_curso:
-                    continue # Pertence a outra disciplina base (ex: Pele vs Pediatria), descarta.
-                
-                # Se for da mesma disciplina base, verificar se é Journal ou Lives para sobrescrever o módulo
-                if 'JOURNAL' in mod_curso.upper():
-                    mapped_mod = "Journal"
-                elif 'LIVE' in mod_curso.upper():
-                    mapped_mod = "Lives"
-                
-                # Se chegou aqui, ou é do curso correto, ou é de um módulo sem curso atrelado
-                if mapped_mod not in mod_dict:
-                    mod_dict[mapped_mod] = []
+            # Use scoped lookup for this specific course
+            mapped_mod = course_lesson_to_module.get((curso, n_key))
+            if mapped_mod and mapped_mod in mod_dict:
                 mod_dict[mapped_mod].append(lesson_obj)
             else:
-                # Aula órfã (não mapeada para nenhum módulo), vai para Aulas Adicionais
                 mod_dict["Aulas Adicionais"].append(lesson_obj)
                 
-        # Transform into final list format
+        # Transform into final list format, skipping modules with 0 lessons
         mod_list = []
         for mod_name, aulas in mod_dict.items():
-            if not aulas and mod_name == "Aulas Adicionais":
-                continue # Pula se "Aulas Adicionais" for vazio
-                
+            if len(aulas) == 0:
+                continue
             for idx, a in enumerate(aulas):
                 a["ordem"] = str(idx + 1)
                 

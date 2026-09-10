@@ -1145,9 +1145,10 @@ function renderRows(){
     const na=!s.acessou;
     const da = na?dash:s.dias_ativo;
     const di = na?dash:`<span style="color:${s.dias_inativo>=14?'var(--amber)':'var(--muted)'}">${s.dias_inativo}</span>`;
-    const prog = na?dash:`<div class="pct-cell"><div class="pct-bar"><i style="width:${s.pct_mods||0}%"></i></div><span class="pct-txt">${s.mods_concluidos||0}/${s.total_mods||0}</span></div>`;
+    const pctBar = (s.total_aulas_curric > 0 && s.aulas_feitas_curric > 0) ? (s.aulas_feitas_curric / s.total_aulas_curric * 100) : (s.pct_mods || 0);
+    const prog = na?dash:`<div class="pct-cell" title="${s.aulas_feitas_curric||0}/${s.total_aulas_curric||0} aulas feitas (${Math.round(pctBar)}%) | ${s.mods_concluidos||0}/${s.total_mods||0} módulos concluídos"><div class="pct-bar"><i style="width:${pctBar}%"></i></div><span class="pct-txt">${s.mods_concluidos||0}/${s.total_mods||0}</span></div>`;
     const ultimo = na?dash:`<span title="log mais recente">${s.last_fmt}</span>`;
-    return `<tr class="${na?'':'clickable'}" data-email="${s.email}"${na?' style="opacity:.72"':''}>
+    return `<tr class="${na?'':'clickable'}" data-email="${s.email}" data-curso="${s.curso}"${na?' style="opacity:.72"':''}>
       <td><div class="al-nome">${s.nome}${getPlatBadge(s.plataforma)}${na?'':' <span class="row-open">ver histórico ›</span>'}</div><div class="al-mail">${s.email}</div></td>
       <td style="font-size:11.5px;color:var(--muted);white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis" title="${s.curso}">${s.curso}</td>
       <td class="st-td"><span class="badge ${st.cls}" title="${s.status_motivo}"><span class="b-dot"></span>${s.status}</span></td>
@@ -1168,10 +1169,12 @@ $('#search').oninput = e=>{filterText=e.target.value;renderRows();};
 // MODAL
 const STMAP={};
 window.openModal = function(param){ openStudent(param); };
-function openStudent(email){
+function openStudent(email, curso){
   if (!email) return;
   const emLow = email.toLowerCase().trim();
-  const s = (CURRENT_DATA?.students || []).find(x => x.email && x.email.toLowerCase().trim() === emLow) || 
+  const s = (CURRENT_DATA?.students || []).find(x => x.email && x.email.toLowerCase().trim() === emLow && (!curso || x.curso === curso)) || 
+            (CURRENT_DATA?.students || []).find(x => x.email && x.email.toLowerCase().trim() === emLow) || 
+            (DATA.students || []).find(x => x.email && x.email.toLowerCase().trim() === emLow && (!curso || x.curso === curso)) ||
             (DATA.students || []).find(x => x.email && x.email.toLowerCase().trim() === emLow);
   if(!s) return;
   const statusDisplay = s.status || (!s.acessou ? 'Nunca acessou' : (s.dias_inativo > 30 ? 'Abandonou' : 'Ativo'));
@@ -1242,14 +1245,55 @@ function openStudent(email){
   if(!evs.length) platHtml=`<div class="md-empty">Sem eventos registrados.</div>`;
   else platHtml=evs.map(e=>`<div class="ev"><span class="ev-d">${e.d}</span><span class="ev-a ea-${e.cat}">${e.acao}</span><span class="ev-i">${e.item}${e.mod?`<span class="tag">${e.mod}</span>`:''}</span></div>`).join('');
   
-  $('#md-body').innerHTML= rdHtml + platHtml;
+  let modProgressHtml = '';
+  if (s.curso && DATA.curriculum && DATA.curriculum[s.curso]) {
+      const s_done = new Set();
+      (s.events || []).forEach(e => {
+          if (e.acao === 'ASSISTIU AULA') {
+              if (e.item_id) s_done.add(String(e.item_id));
+              if (e.item) s_done.add(e.item.toString().trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+          }
+      });
+      const mRows = DATA.curriculum[s.curso].map(m => {
+          let mDone = 0;
+          m.aulas.forEach(a => {
+              const aNorm = a.nome ? a.nome.toString().trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : '';
+              if (s_done.has(String(a.id)) || s_done.has(aNorm)) mDone++;
+          });
+          const mPct = m.n_curric > 0 ? Math.min(100, Math.round(mDone / m.n_curric * 100)) : 0;
+          const isDone = m.n_curric > 0 && mDone >= m.n_curric;
+          const color = isDone ? 'var(--emerald)' : (mPct > 0 ? 'var(--sky)' : 'var(--muted)');
+          return `
+            <div style="display:flex; flex-direction:column; gap:4px; font-size:11.5px; padding:7px 0; border-bottom:1px solid var(--line2)">
+              <div style="display:flex; justify-content:space-between; align-items:center">
+                <span style="font-weight:600; color:var(--ink)">${m.modulo}</span>
+                <span style="font-weight:700; color:${color}">${mDone}/${m.n_curric} aulas (${mPct}%) ${isDone ? '✓ Concluído' : ''}</span>
+              </div>
+              <div style="background:var(--line); height:6px; border-radius:3px; overflow:hidden">
+                <div style="width:${mPct}%; background:${color}; height:100%; border-radius:3px; transition:width 0.3s"></div>
+              </div>
+            </div>
+          `;
+      }).join('');
+      
+      modProgressHtml = `
+        <div style="margin:20px 20px 0; padding:14px 16px; border:1px solid var(--line2); border-radius:10px; background:rgba(255,255,255,0.03); box-shadow:0 2px 8px rgba(0,0,0,0.04)">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+            <b style="font-size:12px; color:var(--ink)">Evolução e Conclusão por Módulos (${s.curso})</b>
+            <span style="font-size:11px; font-weight:700; color:var(--emerald-d)">${s.mods_concluidos || 0}/${s.total_mods || 0} módulos concluídos</span>
+          </div>
+          <div>${mRows}</div>
+        </div>
+      `;
+  }
+  $('#md-body').innerHTML= modProgressHtml + rdHtml + platHtml;
   modal.classList.add('on'); $('#md-body').scrollTop=0; document.body.style.overflow='hidden';
 }
 function closeModal(){ $('#modal').classList.remove('on'); document.body.style.overflow=''; }
 function closeListModal(){ $('#modal-list').classList.remove('on'); if(!$('#modal').classList.contains('on')) document.body.style.overflow=''; }
 
 $('#tbody').addEventListener('click',e=>{
-  const tr=e.target.closest('tr.clickable'); if(tr) openStudent(tr.dataset.email);
+  const tr=e.target.closest('tr.clickable'); if(tr) openStudent(tr.dataset.email, tr.dataset.curso);
 });
 $('#md-close').onclick=closeModal;
 $('#modal').addEventListener('click',e=>{ if(e.target===$('#modal')) closeModal(); });
@@ -1688,7 +1732,8 @@ function renderModules() {
     let maxIni = 1;
     mods.forEach(m => {
         m.aulas.forEach(a => {
-            let count = CURRENT_DATA.lesson_views[a.id] ? CURRENT_DATA.lesson_views[a.id].size : 0;
+            const aNorm = a.nome ? a.nome.toString().trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : '';
+            let count = CURRENT_DATA.lesson_views[a.id] ? CURRENT_DATA.lesson_views[a.id].size : (CURRENT_DATA.lesson_views[aNorm] ? CURRENT_DATA.lesson_views[aNorm].size : 0);
             if (count > maxIni) maxIni = count;
         });
     });
