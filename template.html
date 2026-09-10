@@ -660,7 +660,14 @@ function initFilters() {
     });
     
     const selCurso = $('#filter-curso');
-    selCurso.innerHTML = '<option value="all">Todos os Cursos</option>' + Array.from(Object.keys(DATA.curriculum)).map(c => `<option value="${c}">${c}</option>`).join('');
+    const sortedCourses = Object.keys(DATA.curriculum).sort((a, b) => {
+        const aPos = a.startsWith('POS') || a.startsWith('PÓS');
+        const bPos = b.startsWith('POS') || b.startsWith('PÓS');
+        if (aPos && !bPos) return -1;
+        if (!aPos && bPos) return 1;
+        return a.localeCompare(b);
+    });
+    selCurso.innerHTML = '<option value="all">Todos os Cursos</option>' + sortedCourses.map(c => `<option value="${c}">${c}</option>`).join('');
     
     const selAluno = $('#filter-aluno');
     selAluno.innerHTML = '<option value="all">Todos os Alunos</option>' + Array.from(alunos).map(a => `<option value="${a}">${a}</option>`).join('');
@@ -1056,6 +1063,15 @@ function sortRows(colId) {
     renderRows();
 }
 
+function getPlatBadge(plat) {
+    if (plat === 'Cativa') {
+        return `<span style="font-size:9.5px; padding:1.5px 6px; border-radius:4px; background:rgba(236,72,153,0.12); color:#db2777; border:1px solid rgba(236,72,153,0.3); font-weight:600; margin-left:6px; vertical-align:middle;" title="Plataforma Cativa Digital">Cativa</span>`;
+    } else if (plat === 'Ambas') {
+        return `<span style="font-size:9.5px; padding:1.5px 6px; border-radius:4px; background:rgba(168,85,247,0.12); color:#7c3aed; border:1px solid rgba(168,85,247,0.3); font-weight:600; margin-left:6px; vertical-align:middle;" title="Presente em ambas as plataformas">Ambas</span>`;
+    }
+    return `<span style="font-size:9.5px; padding:1.5px 6px; border-radius:4px; background:rgba(2,132,199,0.12); color:#0284c7; border:1px solid rgba(2,132,199,0.3); font-weight:600; margin-left:6px; vertical-align:middle;" title="Plataforma InfectoCast Academy">Academy</span>`;
+}
+
 function renderRows(){
   const tbody = $('#tbody');
   const dash='<span style="color:var(--muted2)">—</span>';
@@ -1177,7 +1193,7 @@ function openStudent(email){
   $('#md-stats').innerHTML=[
     ['Status',statusDisplay],['Módulos',`${s.mods_concluidos||0}/${s.total_mods||0}`],
     ['Último acesso',s.last_fmt||'—'],['Dias inativo',s.dias_inativo != null ? s.dias_inativo : '—'],
-    ['Inscrição',dataInscFmt], ['Último WA', s.wa_dt_ultima || '—']
+    ['Inscrição',dataInscFmt], ['Plataforma', s.plataforma || 'Academy'], ['Último WA', s.wa_dt_ultima || '—']
   ].map(([l,v])=>`<div class="st"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
   
   let rdHtml = '';
@@ -1268,7 +1284,7 @@ function openModalList(status) {
             return `<div style="padding:12px 22px; border-bottom:1px solid var(--line2); ${na?'opacity:.72':''}">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div>
-                        <div style="font-family:var(--disp); font-weight:600; color:var(--ink); font-size:13.5px">${s.nome}</div>
+                        <div style="font-family:var(--disp); font-weight:600; color:var(--ink); font-size:13.5px">${s.nome}${getPlatBadge(s.plataforma)}</div>
                         <div style="font-size:11.5px; color:var(--muted); margin-top:2px">${s.email}</div>
                     </div>
                     <div style="text-align:right">
@@ -2033,7 +2049,7 @@ function renderOrigemTableRows(baseStudents) {
         return `
           <tr style="border-bottom:1px solid var(--line); transition:background 0.2s" onmouseover="this.style.background='rgba(0,0,0,0.02)'" onmouseout="this.style.background='transparent'">
             <td style="padding:10px 8px">
-              <div style="font-weight:600; color:var(--ink)">${s.nome}</div>
+              <div style="font-weight:600; color:var(--ink)">${s.nome}${getPlatBadge(s.plataforma)}</div>
               <div style="font-size:10.5px; color:var(--muted)">${s.email}</div>
             </td>
             <td style="padding:10px 8px; font-weight:500; color:var(--ink)">${s.curso}</td>

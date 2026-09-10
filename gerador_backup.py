@@ -153,7 +153,7 @@ def main():
         if 'INFECTOPEDI' in t_norm:
             return normalize_curso('PÓS-GRADUAÇÃO EM INFECTOPEDIATRIA')
         if 'ORTO' in t_norm or 'PELE' in t_norm or 'PARTES MOLES' in t_norm:
-            return normalize_curso('PÓS-GRADUAÇÃO EM INFECÇÕES ORTOPÉDICAS E DE PELE E PARTES MOLES')
+            return normalize_curso('PÓS-GRADUAÇÃO EM INFECÇÕES ORTOPÉDICAS E DE PARTES MOLES')
         if 'CCIH' in t_norm or 'HOSPITALAR' in t_norm:
             if 'FARM' in t_norm:
                 return normalize_curso('PÓS-GRADUAÇÃO EM PREVENÇÃO E CONTROLE DE INFECÇÃO HOSPITALAR (CCIH) - FARMÁCIA')
@@ -161,12 +161,6 @@ def main():
                 return normalize_curso('PÓS-GRADUAÇÃO EM PREVENÇÃO E CONTROLE DE INFECÇÃO HOSPITALAR (CCIH) - ENFERMAGEM')
             else:
                 return normalize_curso('PÓS-GRADUAÇÃO EM PREVENÇÃO E CONTROLE DE INFECÇÃO HOSPITALAR (CCIH)')
-        if 'IMUNO' in t_norm:
-            return normalize_curso('PÓS-GRADUAÇÃO EM INFECTOLOGIA DO PACIENTE IMUNODEPRIMIDO')
-        if 'FUNGO' in t_norm or 'ANTIFUNGICO' in t_norm:
-            return normalize_curso('DO FUNGO AO ANTIFÚNGICO')
-        if 'MULTI-R' in t_norm or 'MULTIR' in t_norm or 'MULTI R' in t_norm:
-            return normalize_curso('JORNADA MULTI-R')
         if 'S.O.S' in t_norm or 'SOS' in t_norm or 'ANTIBIOTICO' in t_norm:
             return normalize_curso('S.O.S ANTIBIÓTICO')
         if 'FERRAMENTAS' in t_norm or 'QUALIDADE' in t_norm:
@@ -174,54 +168,16 @@ def main():
         if 'INFECTOXPERT' in t_norm or 'EXPERT' in t_norm:
             return normalize_curso('INFECTOXPERT')
         return normalize_curso(turma)
-
+    
     def get_core_subject(name):
         name = str(name).upper()
         if 'INFECTOPEDI' in name: return 'INFECTOPEDIATRIA'
-        if 'ORTO' in name or 'PARTES MOLES' in name or 'PELE' in name: return 'ORTOPEDIA'
+        if 'ORTO' in name or 'PARTES MOLES' in name: return 'ORTOPEDIA'
         if 'CCIH' in name or 'HOSPITALAR' in name: return 'CCIH'
         if 'IMUNO' in name: return 'IMUNODEPRIMIDOS'
-        if 'FUNGO' in name or 'ANTIFUNGICO' in name: return 'FUNGO'
-        if 'MULTI-R' in name or 'MULTIR' in name or 'MULTI R' in name: return 'MULTIR'
         if 'S.O.S' in name or 'ANTIBIOTICO' in name: return 'SOS'
         return name
     
-    # Integração com logs e alunos da Cativa Digital
-    df_log['Plataforma'] = 'Academy'
-    import cativa_api
-    cativa_data = cativa_api.fetch_all_cativa_data(force_refresh=False)
-    cativa_users_meta = cativa_data.get('users_metadata', {})
-    cativa_students = cativa_data.get('students', [])
-    cativa_logs = []
-
-    for s in cativa_students:
-        em = str(s.get('email', '')).lower().strip()
-        nome = str(s.get('fullName', '')).strip()
-        for c in s.get('courses', []):
-            c_canon = canonicalize_curso(c.get('courseName', ''))
-            for l in c.get('lessons', []):
-                dt_s = l.get('watchedAt', '')[:19]
-                dt_val = pd.to_datetime(dt_s, errors='coerce')
-                lesson_name = str(l.get('lessonName', '')).strip()
-                mod_name = str(l.get('moduleName', '')).strip() or 'Geral'
-                cativa_logs.append({
-                    'Data log': dt_val,
-                    'Nome aluno': nome,
-                    'E-mail': em,
-                    'Ação / Local': 'CONCLUIU AULA',
-                    'ID Item': lesson_name,
-                    'Desc. Item': lesson_name,
-                    'Modulo': mod_name,
-                    'Curso': c_canon,
-                    'Plataforma': 'Cativa'
-                })
-
-    df_cativa_logs = pd.DataFrame(cativa_logs)
-    print(f"Total de {len(df_cativa_logs)} registros de logs carregados via API Cativa Digital.")
-    df_log = pd.concat([df_log, df_cativa_logs], ignore_index=True)
-    if not df_log['Data log'].dropna().empty:
-        hoje = df_log['Data log'].max().date() + datetime.timedelta(days=1)
-
     print("Montando grade curricular a partir dos logs da API...")
     
     student_course_map = {}
@@ -295,21 +251,12 @@ def main():
         item = str(row['ID Item'] or '').strip()
         if not item or item == 'nan':
             continue
-        if pd.notna(row.get('Curso')) and row.get('Curso'):
-            curso = row['Curso']
-        else:
-            curso = student_course_map.get(email, normalize_curso('PLATAFORMA GERAL'))
+        curso = student_course_map.get(email, normalize_curso('PLATAFORMA GERAL'))
         if curso not in course_lessons:
             course_lessons[curso] = {}
         n_key = norm_title(item)
         if n_key and n_key not in course_lessons[curso]:
             course_lessons[curso][n_key] = item
-        mod_val = row.get('Modulo')
-        if pd.notna(mod_val) and str(mod_val).strip() and str(mod_val).strip() != 'nan':
-            m_name = str(mod_val).strip()
-            if curso not in course_modules:
-                course_modules[curso] = set()
-            course_modules[curso].add(m_name)
     
     for _, row in teste_events.iterrows():
         email = str(row['E-mail']).strip()
@@ -340,15 +287,6 @@ def main():
         a_norm = norm_title(a_nome)
         if m_id in mod_id_to_name and a_norm:
             lesson_to_module[a_norm] = mod_id_to_name[m_id]
-            
-    for _, row in df_cativa_logs.iterrows():
-        c = row['Curso']
-        m = row['Modulo']
-        l = row['ID Item']
-        n_key = norm_title(l)
-        if n_key:
-            lesson_to_module[n_key] = m
-            mod_name_to_curso[m] = c
             
     final_curriculum = {}
     mod_map = {}  # module_id -> module_name (for backwards compat)
@@ -549,11 +487,6 @@ def main():
         if telefone.endswith('.0'): telefone = telefone[:-2]
         if telefone == 'nan': telefone = ""
         
-        has_acad = any(logs['Plataforma'] == 'Academy')
-        has_cat = any(logs['Plataforma'] == 'Cativa')
-        plat_str = 'Ambas' if (has_acad and has_cat) else ('Cativa' if has_cat else 'Academy')
-        if not telefone and email_str in cativa_users_meta:
-            telefone = normalize_phone(cativa_users_meta[email_str].get('phone', ''))
         student_data = {
             "email": str(email),
             "nome": str(insc['Aluno']),
@@ -563,8 +496,7 @@ def main():
             "data_insc": data_insc_fmt,
             "data_inscricao": data_insc_fmt,
             "inscricao": data_insc_fmt,
-            "dias_desde_insc": dias_desde_insc,
-            "plataforma": plat_str
+            "dias_desde_insc": dias_desde_insc
         }
         
         if acessou:
@@ -700,126 +632,6 @@ def main():
             
         students.append(student_data)
         
-    # Inserir alunos exclusivos da Cativa Digital
-    processed_student_keys = set()
-    for s_obj in students:
-        processed_student_keys.add((s_obj['email'].lower().strip(), s_obj['curso']))
-
-    for s in cativa_students:
-        email = str(s.get('email', '')).lower().strip()
-        if not email or any(x in email for x in ['teste', '@infectocast', '@vectorcomunica', 'rand', 'gcotta29']):
-            continue
-        
-        nome = str(s.get('fullName', '')).strip()
-        u_meta = cativa_users_meta.get(email, {})
-        phone = u_meta.get('phone', '')
-        created_at = u_meta.get('created_at', '')
-        
-        dt_insc = pd.to_datetime(created_at[:19], errors='coerce') if created_at else None
-        
-        courses = s.get('courses', [])
-        if not courses:
-            continue
-            
-        for c in courses:
-            c_canon = canonicalize_curso(c.get('courseName', ''))
-            key = (email, c_canon)
-            if key in processed_student_keys:
-                continue
-            processed_student_keys.add(key)
-            
-            logs = df_log[(df_log['E-mail'] == email) & (df_log['Curso'] == c_canon)]
-            if logs.empty:
-                logs = df_log[df_log['E-mail'] == email]
-                
-            acessou = len(logs) > 0
-            
-            dt_insc_fmt = dt_insc.strftime("%d/%m/%Y") if pd.notna(dt_insc) else None
-            dias_desde_insc = (hoje - dt_insc.date()).days if pd.notna(dt_insc) else 0
-            
-            has_acad = any(logs['Plataforma'] == 'Academy')
-            has_cat = any(logs['Plataforma'] == 'Cativa')
-            plat_str = 'Ambas' if (has_acad and has_cat) else ('Cativa' if has_cat else 'Academy')
-            
-            tel = normalize_phone(phone)
-            student_data = {
-                "email": email,
-                "nome": nome,
-                "curso": c_canon,
-                "telefone": tel,
-                "acessou": acessou,
-                "data_insc": dt_insc_fmt,
-                "data_inscricao": dt_insc_fmt,
-                "inscricao": dt_insc_fmt,
-                "dias_desde_insc": dias_desde_insc,
-                "plataforma": plat_str
-            }
-            
-            if acessou:
-                first_log = logs['Data log'].min()
-                last_log = logs['Data log'].max()
-                dias_ativo = (last_log - first_log).days
-                logins_count = max(1, len(logs['Data log'].dt.date.unique()))
-                cadencia = dias_ativo / max(1, logins_count - 1)
-                
-                student_data.update({
-                    "first": first_log.strftime("%d/%m/%Y") if pd.notna(first_log) else "",
-                    "last": last_log.strftime("%d/%m/%Y") if pd.notna(last_log) else "",
-                    "dias_ativo": dias_ativo,
-                    "dias_inativo": (hoje - last_log.date()).days if pd.notna(last_log) else 0,
-                    "logins": logins_count,
-                    "cadencia": cadencia,
-                    "aulas_iniciadas": len(logs),
-                    "aulas_concluidas": len(logs),
-                    "materiais": 0,
-                    "testes": 0,
-                    "lag": (first_log.date() - dt_insc.date()).days if (pd.notna(dt_insc) and pd.notna(first_log)) else 0,
-                    "last_fmt": last_log.strftime("%d/%m/%Y") if pd.notna(last_log) else "",
-                    "events": [],
-                    "wa_dt_primeira": None,
-                    "wa_dt_ultima": None,
-                    "wa_total": 0
-                })
-                
-                if tel and tel in wa_history:
-                    student_data['wa_dt_primeira'] = wa_history[tel]['primeira'].strftime('%d/%m/%Y')
-                    student_data['wa_dt_ultima'] = wa_history[tel]['ultima'].strftime('%d/%m/%Y')
-                    student_data['wa_total'] = wa_history[tel]['total']
-                    
-                last_event_key = None
-                for _, r in logs.sort_values('Data log', ascending=False).iterrows():
-                    acao = "ASSISTIU AULA"
-                    cat = "concluiu"
-                    item_name = str(r['ID Item']).strip()
-                    mod_name = str(r.get('Modulo', '')).strip()
-                    d_str = r['Data log'].strftime("%d/%m/%Y %H:%M") if pd.notna(r['Data log']) else ""
-                    event_key = (d_str, acao, item_name)
-                    if event_key == last_event_key:
-                        continue
-                    last_event_key = event_key
-                    student_data["events"].append({
-                        "d": d_str,
-                        "acao": acao,
-                        "cat": cat,
-                        "item_id": item_name,
-                        "item": item_name,
-                        "mod": mod_name
-                    })
-            else:
-                student_data.update({
-                    "dias_inativo": 999,
-                    "logins": 0,
-                    "aulas_iniciadas": 0,
-                    "aulas_concluidas": 0,
-                    "materiais": 0,
-                    "testes": 0,
-                    "events": []
-                })
-                
-            students.append(student_data)
-        
-    print(f"Total consolidado de estudantes gerados: {len(students)} ({len(set(s['email'] for s in students))} únicos).")
-        
     # ============================================
     # FUNIL DE LEADS — Processamento LogRD.csv
     # ============================================
@@ -830,10 +642,6 @@ def main():
         df_rd = pd.read_csv(logrd_path, encoding='utf-8', low_memory=False)
         
         emails_inscritos_set = set(str(e).lower().strip() for e in df_insc['E-mail'].dropna().unique())
-        for s in cativa_students:
-            em_c = str(s.get('email', '')).lower().strip()
-            if em_c:
-                emails_inscritos_set.add(em_c)
         df_rd['email_lower'] = df_rd['Email'].str.lower().str.strip()
         
         def check_aluno(row):
