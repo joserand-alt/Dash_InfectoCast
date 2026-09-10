@@ -961,9 +961,52 @@ def main():
                 'eventos': ev_list
             }
             
+        # Carregar cache da API Oficial do RD Station
+        rd_api_cache_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'rd_students_cache.json')
+        rd_api_data = {}
+        if os.path.exists(rd_api_cache_path):
+            try:
+                with open(rd_api_cache_path, 'r', encoding='utf-8') as f_rd:
+                    rd_api_data = json.load(f_rd)
+                print(f"[RD API] {len(rd_api_data)} alunos carregados do cache oficial da API do RD Station.")
+            except Exception as e_rd:
+                print(f"[RD API] Erro ao ler cache da API: {e_rd}")
+
         for s in students:
             em = s['email'].lower().strip()
-            if em in rd_events_map:
+            
+            # Prioridade: Dados diretos da API Oficial do RD Station
+            if em in rd_api_data and rd_api_data[em].get('encontrado_rd'):
+                ast = rd_api_data[em]
+                conv_antes = ast.get('conversoes_antes_matricula', [])
+                
+                # Se não houver conversões estritamente antes, usar todas
+                conv_list = conv_antes if conv_antes else ast.get('conversoes_todas', [])
+                
+                # Formatar e deduplicar eventos consecutivos idênticos
+                fmt_eventos = []
+                last_ident = None
+                for ev in conv_list:
+                    data_f = ev.get('data_formatada', '')
+                    ident = ev.get('evento', '')
+                    # Ignorar duplicações idênticas imediatas
+                    if (data_f, ident) == last_ident:
+                        continue
+                    last_ident = (data_f, ident)
+                    fmt_eventos.append(f"<span style='color:var(--muted)'>{data_f}</span> &mdash; <b>{ident}</b>")
+                    
+                s['rd_funnel'] = {
+                    'origem': ast.get('origem_funil') or 'Desconhecido',
+                    'conversoes': ast.get('total_conversoes', 0),
+                    'conversoes_antes': len(conv_antes),
+                    'scoring': ast.get('score_interesse', 0),
+                    'dias_venda': '',
+                    'dt_primeira': ast.get('dt_primeira', '—'),
+                    'dt_ultima': ast.get('dt_ultima', '—'),
+                    'eventos': fmt_eventos,
+                    'fonte': 'API Oficial RD Station'
+                }
+            elif em in rd_events_map:
                 s['rd_funnel'] = rd_events_map[em]
         
         funil_data = {
