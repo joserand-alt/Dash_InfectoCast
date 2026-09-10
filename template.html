@@ -311,7 +311,7 @@ footer{padding:30px 0 40px;color:var(--muted2);font-size:11.5px;text-align:cente
     <div class="controls">
       <div class="search">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
-        <input id="search" placeholder="Buscar aluno por nome ou e-mail…">
+        <input id="search" placeholder="Buscar aluno por nome, e-mail ou plataforma…">
       </div>
       <div class="chips" id="statuschips"></div>
     </div>
@@ -1078,7 +1078,13 @@ function renderRows(){
   
   let rows = CURRENT_DATA.students.filter(s=>{
     if(ST_FILT!=='all' && s.status!==ST_FILT) return false;
-    if(filterText && !s.nome.toLowerCase().includes(filterText.toLowerCase()) && !s.email.toLowerCase().includes(filterText.toLowerCase())) return false;
+    if(filterText) {
+        const ft = filterText.toLowerCase();
+        const nome = (s.nome || '').toLowerCase();
+        const email = (s.email || '').toLowerCase();
+        const plat = (s.plataforma || 'Academy').toLowerCase();
+        if(!nome.includes(ft) && !email.includes(ft) && !plat.includes(ft)) return false;
+    }
     return true;
   });
 
@@ -1142,7 +1148,7 @@ function renderRows(){
     const prog = na?dash:`<div class="pct-cell"><div class="pct-bar"><i style="width:${s.pct_mods||0}%"></i></div><span class="pct-txt">${s.mods_concluidos||0}/${s.total_mods||0}</span></div>`;
     const ultimo = na?dash:`<span title="log mais recente">${s.last_fmt}</span>`;
     return `<tr class="${na?'':'clickable'}" data-email="${s.email}"${na?' style="opacity:.72"':''}>
-      <td><div class="al-nome">${s.nome}${na?'':' <span class="row-open">ver histórico ›</span>'}</div><div class="al-mail">${s.email}</div></td>
+      <td><div class="al-nome">${s.nome}${getPlatBadge(s.plataforma)}${na?'':' <span class="row-open">ver histórico ›</span>'}</div><div class="al-mail">${s.email}</div></td>
       <td style="font-size:11.5px;color:var(--muted);white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis" title="${s.curso}">${s.curso}</td>
       <td class="st-td"><span class="badge ${st.cls}" title="${s.status_motivo}"><span class="b-dot"></span>${s.status}</span></td>
       <td>${prog}</td>
@@ -1170,7 +1176,7 @@ function openStudent(email){
   if(!s) return;
   const statusDisplay = s.status || (!s.acessou ? 'Nunca acessou' : (s.dias_inativo > 30 ? 'Abandonou' : 'Ativo'));
   const modal=$('#modal');
-  $('#md-nome').textContent=s.nome;
+  $('#md-nome').innerHTML=`${s.nome}${getPlatBadge(s.plataforma)}`;
   let btnWpp = '';
   if (['Em Risco', 'Atenção', 'Inativo'].includes(s.status)) {
       let avisoMsg = '';
