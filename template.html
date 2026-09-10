@@ -292,8 +292,9 @@ footer{padding:30px 0 40px;color:var(--muted2);font-size:11.5px;text-align:cente
 <div class="wrap">
   <div class="kpis" id="kpis"></div>
 
-  <nav class="tabs" id="tabs">
-    <button class="tab on" data-p="prog"><span class="num">1</span>Progresso por aluno</button>
+    <nav class="tabs" id="tabs">
+    <button class="tab on" data-p="home"><span class="num">★</span>Visão Geral</button>
+    <button class="tab" data-p="prog"><span class="num">1</span>Progresso por aluno</button>
     <button class="tab" data-p="mod"><span class="num">2</span>Engajamento por módulo</button>
     <button class="tab" data-p="ret"><span class="num">3</span>Retenção &amp; abandono</button>
     <button class="tab" data-p="tl"><span class="num">4</span>Linha temporal</button>
@@ -302,8 +303,137 @@ footer{padding:30px 0 40px;color:var(--muted2);font-size:11.5px;text-align:cente
     <button class="tab" data-p="apilogs"><span class="num">7</span>Logs de Alunos (API)</button>
   </nav>
 
+    <!-- PANEL 0: HOME / VISÃO GERAL -->
+  <section class="panel on" id="p-home">
+    <div class="sec-head" style="margin-bottom:22px">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px">
+        <div>
+          <h2 style="font-size:22px; font-weight:800; color:var(--ink); margin:0 0 6px">Panorama Executivo InfectoCast</h2>
+          <p style="margin:0; font-size:13px; color:var(--muted)">Visão unificada das plataformas (Cativa Digital &amp; Academy), saúde dos alunos, cursos e inteligência de marketing.</p>
+        </div>
+        <div id="home-filter-badge" style="font-size:11.5px; font-weight:600; padding:6px 14px; border-radius:20px; background:var(--card); border:1px solid var(--line2); color:var(--muted); box-shadow:0 1px 4px rgba(0,0,0,0.03)">
+          Filtro ativo: <b style="color:var(--ink)" id="home-filter-name">Todos os Cursos</b>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARDS KPIS HOME -->
+    <div class="kpis" id="home-kpis-grid" style="margin-top:0; margin-bottom:24px; grid-template-columns: repeat(6, 1fr);"></div>
+
+    <!-- GRID PRINCIPAL 2 COLUNAS -->
+    <div style="display:grid; grid-template-columns: 1.12fr 0.88fr; gap:22px; margin-bottom:26px">
+      
+      <!-- COLUNA 1 -->
+      <div style="display:flex; flex-direction:column; gap:22px">
+        
+        <!-- CARD 1: PLATAFORMAS DE ACESSO -->
+        <div class="card" style="padding:20px">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
+            <div>
+              <h3 style="font-size:14.5px; font-weight:700; color:var(--ink); margin:0">Plataformas de Ensino &amp; Distribuição</h3>
+              <p style="font-size:11.5px; color:var(--muted); margin:4px 0 0">Presença de alunos matriculados e atividade por plataforma.</p>
+            </div>
+            <span style="font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px; background:var(--ink-soft); color:var(--ink)" id="home-plat-total"></span>
+          </div>
+          <div id="home-platforms-bars" style="display:flex; flex-direction:column; gap:14px"></div>
+        </div>
+
+        <!-- CARD 2: CURSOS MAIS BUSCADOS -->
+        <div class="card" style="padding:20px">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
+            <div>
+              <h3 style="font-size:14.5px; font-weight:700; color:var(--ink); margin:0">Matrículas por Curso</h3>
+              <p style="font-size:11.5px; color:var(--muted); margin:4px 0 0">Ranking de cursos por número de alunos e participação na base.</p>
+            </div>
+            <button onclick="switchTab('prog')" style="background:transparent; border:none; color:var(--sky); font-size:11.5px; font-weight:700; cursor:pointer">Ver Tabela Completa →</button>
+          </div>
+          <div id="home-courses-list" style="display:flex; flex-direction:column; gap:10px"></div>
+        </div>
+
+      </div>
+
+      <!-- COLUNA 2 -->
+      <div style="display:flex; flex-direction:column; gap:22px">
+
+        <!-- CARD 3: SAÚDE DA BASE DE ALUNOS -->
+        <div class="card" style="padding:20px">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
+            <div>
+              <h3 style="font-size:14.5px; font-weight:700; color:var(--ink); margin:0">Saúde da Base &amp; Alertas de Retenção</h3>
+              <p style="font-size:11.5px; color:var(--muted); margin:4px 0 0">Engajamento contínuo e identificação precoce de risco de evasão.</p>
+            </div>
+            <button onclick="switchTab('ret')" style="background:transparent; border:none; color:var(--emerald-d); font-size:11.5px; font-weight:700; cursor:pointer">Gerenciar Retenção →</button>
+          </div>
+          <div id="home-status-distribution" style="display:flex; flex-direction:column; gap:12px"></div>
+        </div>
+
+        <!-- CARD 4: INTELIGÊNCIA DE MARKETING & CONVERSÃO -->
+        <div class="card" style="padding:20px">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
+            <div>
+              <h3 style="font-size:14.5px; font-weight:700; color:var(--ink); margin:0">Pontos de Contato &amp; Atribuição RD</h3>
+              <p style="font-size:11.5px; color:var(--muted); margin:4px 0 0">Eventos e materiais que mais antecederam matrículas no CRM.</p>
+            </div>
+            <button onclick="switchTab('origem')" style="background:transparent; border:none; color:var(--sky); font-size:11.5px; font-weight:700; cursor:pointer">Ver Atribuição →</button>
+          </div>
+          <div id="home-marketing-summary"></div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- SEÇÃO 3: CENTRAL DE ACESSO RÁPIDO (QUICK LINKS) -->
+    <div style="margin-bottom:28px">
+      <h3 style="font-size:14.5px; font-weight:700; color:var(--ink); margin:0 0 12px">Central de Acesso Rápido às Análises Detalhadas</h3>
+      <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:14px" id="home-quick-links">
+        
+        <div class="card" onclick="switchTab('prog')" style="padding:16px; cursor:pointer; border-radius:12px; transition:transform 0.2s, box-shadow 0.2s" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 18px rgba(0,0,0,0.06)'" onmouseout="this.style.transform='none'; this.style.boxShadow='none'">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px">
+            <span style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:8px; background:var(--sky-w); color:var(--sky); font-weight:800; font-size:13px">1</span>
+            <b style="font-size:13px; color:var(--ink)">Progresso Individual</b>
+          </div>
+          <p style="font-size:11.5px; color:var(--muted); margin:0; line-height:1.4">Tabela nominal completa, busca por e-mail, status e evolução individual.</p>
+        </div>
+
+        <div class="card" onclick="switchTab('mod')" style="padding:16px; cursor:pointer; border-radius:12px; transition:transform 0.2s, box-shadow 0.2s" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 18px rgba(0,0,0,0.06)'" onmouseout="this.style.transform='none'; this.style.boxShadow='none'">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px">
+            <span style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:8px; background:var(--emerald-w); color:var(--emerald); font-weight:800; font-size:13px">2</span>
+            <b style="font-size:13px; color:var(--ink)">Engajamento Módulos</b>
+          </div>
+          <p style="font-size:11.5px; color:var(--muted); margin:0; line-height:1.4">Descubra em quais aulas os alunos mais avançam e onde ocorrem gargalos.</p>
+        </div>
+
+        <div class="card" onclick="switchTab('ret')" style="padding:16px; cursor:pointer; border-radius:12px; transition:transform 0.2s, box-shadow 0.2s" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 18px rgba(0,0,0,0.06)'" onmouseout="this.style.transform='none'; this.style.boxShadow='none'">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px">
+            <span style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:8px; background:var(--amber-w); color:var(--amber); font-weight:800; font-size:13px">3</span>
+            <b style="font-size:13px; color:var(--ink)">Retenção &amp; Abandono</b>
+          </div>
+          <p style="font-size:11.5px; color:var(--muted); margin:0; line-height:1.4">Indicadores preditivos de churn, quebra de cadência e contato WhatsApp.</p>
+        </div>
+
+        <div class="card" onclick="switchTab('funil')" style="padding:16px; cursor:pointer; border-radius:12px; transition:transform 0.2s, box-shadow 0.2s" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 18px rgba(0,0,0,0.06)'" onmouseout="this.style.transform='none'; this.style.boxShadow='none'">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px">
+            <span style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:8px; background:rgba(123,111,176,0.15); color:var(--violet); font-weight:800; font-size:13px">5</span>
+            <b style="font-size:13px; color:var(--ink)">Funil de Leads RD</b>
+          </div>
+          <p style="font-size:11.5px; color:var(--muted); margin:0; line-height:1.4">Pipeline de marketing, Lead Scoring, maturidade e timeline de captação.</p>
+        </div>
+
+        <div class="card" onclick="switchTab('origem')" style="padding:16px; cursor:pointer; border-radius:12px; transition:transform 0.2s, box-shadow 0.2s" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 18px rgba(0,0,0,0.06)'" onmouseout="this.style.transform='none'; this.style.boxShadow='none'">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px">
+            <span style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:8px; background:var(--sky-w); color:#0077b6; font-weight:800; font-size:13px">6</span>
+            <b style="font-size:13px; color:var(--ink)">Origem &amp; Atribuição</b>
+          </div>
+          <p style="font-size:11.5px; color:var(--muted); margin:0; line-height:1.4">Jornada de aquisição, tempo de maturação e formulários que geraram vendas.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
   <!-- PANEL 1 -->
-  <section class="panel on" id="p-prog">
+  <section class="panel" id="p-prog">
     <div class="sec-head">
       <h2>Progresso individual</h2>
       <p>Acompanhe o engajamento e a jornada de cada contato. <b>Clique em qualquer perfil</b> para ver o histórico detalhado de eventos no CRM, acessos à plataforma e interações no WhatsApp.</p>
@@ -874,6 +1004,7 @@ const STATUS = {
 
 function renderAll() {
     buildHead();
+    drawHome(true);
     statusChips();
     renderRows();
     renderRetention();
@@ -1498,11 +1629,17 @@ Caso precise de qualquer ajuda estou por aqui`;
     window.open(url, '_blank');
 };
 
+function switchTab(pId) {
+    const btn = document.querySelector(`.tab[data-p="${pId}"]`);
+    if (btn) btn.click();
+}
+
 // TABS
 $$('.tab').forEach(t=>t.onclick=e=>{
   $$('.tab').forEach(x=>x.classList.remove('on')); t.classList.add('on');
   $$('.panel').forEach(p=>p.classList.remove('on'));
   $('#p-'+t.dataset.p).classList.add('on');
+  if(t.dataset.p==='home') drawHome(true);
   if(t.dataset.p==='tl') drawTimeline(true);
   if(t.dataset.p==='mod') renderModules();
   if(t.dataset.p==='origem') drawOrigem(true);
@@ -2117,6 +2254,287 @@ function renderOrigemTableRows(baseStudents) {
           </tr>
         `;
     }).join('');
+}
+
+
+// ==================== VISÃO GERAL / HOME ====================
+let homeDrawn = false;
+
+function drawHome(force) {
+    if (!DATA.students) return;
+    if (homeDrawn && !force) return;
+    homeDrawn = true;
+
+    // 1. Base filtrada
+    let baseStudents = DATA.students.filter(s => {
+        if (FILTER.curso !== 'all' && s.curso !== FILTER.curso) return false;
+        return true;
+    });
+
+    const filterNameEl = document.getElementById('home-filter-name');
+    if (filterNameEl) {
+        filterNameEl.textContent = FILTER.curso === 'all' ? 'Todos os Cursos (Consolidado)' : FILTER.curso;
+    }
+
+    const uniqueEmails = new Set(baseStudents.map(s => (s.email || '').toLowerCase().trim()).filter(Boolean));
+    const totalMatriculas = baseStudents.length;
+    const totalUnicos = uniqueEmails.size;
+
+    // Ações e Reproduções
+    const ev = CURRENT_DATA.action_counts || {};
+    const totalReproducoes = ev['ASSISTIU AULA'] || 0;
+    const totalLogins = ev['LOGIN WEB'] || 0;
+
+    // Plataformas
+    let cativaCount = 0, academyCount = 0, ambasCount = 0;
+    let cativaAcessaram = 0, academyAcessaram = 0, ambasAcessaram = 0;
+
+    baseStudents.forEach(s => {
+        const plat = s.plataforma || 'Academy';
+        if (plat === 'Cativa') {
+            cativaCount++;
+            if (s.acessou) cativaAcessaram++;
+        } else if (plat === 'Ambas') {
+            ambasCount++;
+            if (s.acessou) ambasAcessaram++;
+        } else {
+            academyCount++;
+            if (s.acessou) academyAcessaram++;
+        }
+    });
+
+    // Cursos
+    let cursosCount = {};
+    baseStudents.forEach(s => {
+        if (s.curso) cursosCount[s.curso] = (cursosCount[s.curso] || 0) + 1;
+    });
+    const sortedCursos = Object.entries(cursosCount).sort((a,b) => b[1] - a[1]);
+
+    // Status da Base
+    let stCounts = {
+        'Ativo': 0, 'Concluído': 0, 'Em Risco': 0, 'Atenção': 0, 'Abandonou': 0, 'Nunca acessou': 0
+    };
+    baseStudents.forEach(s => {
+        let st = s.status || (!s.acessou ? 'Nunca acessou' : 'Ativo');
+        if (st === 'Inativo') st = 'Abandonou';
+        if (stCounts[st] !== undefined) stCounts[st]++;
+        else stCounts['Ativo']++;
+    });
+
+    const engajados = (stCounts['Ativo'] || 0) + (stCounts['Concluído'] || 0);
+    const taxaEngajados = totalMatriculas > 0 ? ((engajados / totalMatriculas) * 100).toFixed(0) : '0';
+    const atencaoRisco = (stCounts['Em Risco'] || 0) + (stCounts['Atenção'] || 0);
+    const taxaRisco = totalMatriculas > 0 ? ((atencaoRisco / totalMatriculas) * 100).toFixed(0) : '0';
+    const criticos = (stCounts['Abandonou'] || 0) + (stCounts['Nunca acessou'] || 0);
+
+    // RD Marketing
+    let countComRD = 0;
+    let eventsCount = {};
+    let maturacaoList = [];
+    baseStudents.forEach(s => {
+        const rd = s.rd_funnel;
+        if (rd) {
+            countComRD++;
+            if (rd.dias_venda !== '' && rd.dias_venda !== null && !isNaN(rd.dias_venda)) {
+                maturacaoList.push(Number(rd.dias_venda));
+            }
+            const evs = rd.eventos_detalhados || [];
+            const seen = new Set();
+            evs.forEach(e => {
+                const name = e.evento_clean || e.evento_raw;
+                if (name && !seen.has(name)) {
+                    seen.add(name);
+                    eventsCount[name] = (eventsCount[name] || 0) + 1;
+                }
+            });
+        }
+    });
+
+    maturacaoList.sort((a,b)=>a-b);
+    const medianaMat = maturacaoList.length > 0 ? maturacaoList[Math.floor(maturacaoList.length / 2)] : 0;
+    const sortedEvents = Object.entries(eventsCount).sort((a,b) => b[1] - a[1]).slice(0, 5);
+    const pctRastreadosRD = totalMatriculas > 0 ? ((countComRD / totalMatriculas) * 100).toFixed(0) : '0';
+
+    // WhatsApp
+    const countWA = baseStudents.filter(s => s.wa_total > 0).length;
+
+    // --- 1. RENDERIZAR KPIS TOPO HOME ---
+    const homeKpisEl = document.getElementById('home-kpis-grid');
+    if (homeKpisEl) {
+        homeKpisEl.innerHTML = `
+          <div class="kpi" style="border-top:3px solid var(--ink)">
+            <div class="k-lab"><i class="k-dot" style="background:var(--ink)"></i>Alunos Únicos</div>
+            <div class="k-val" style="color:var(--ink)">${fmt(totalUnicos)}</div>
+            <div class="k-sub">${fmt(totalMatriculas)} matrículas ativas</div>
+          </div>
+          <div class="kpi" style="border-top:3px solid var(--emerald)">
+            <div class="k-lab"><i class="k-dot" style="background:var(--emerald)"></i>Reproduções</div>
+            <div class="k-val" style="color:var(--emerald)">${fmt(totalReproducoes)}</div>
+            <div class="k-sub">Visualizações em aulas</div>
+          </div>
+          <div class="kpi" style="border-top:3px solid var(--sky)">
+            <div class="k-lab"><i class="k-dot" style="background:var(--sky)"></i>Saúde da Base</div>
+            <div class="k-val" style="color:var(--sky)">${taxaEngajados}%</div>
+            <div class="k-sub">${fmt(engajados)} engajados / ativos</div>
+          </div>
+          <div class="kpi" style="border-top:3px solid var(--amber)">
+            <div class="k-lab"><i class="k-dot" style="background:var(--amber)"></i>Atenção &amp; Risco</div>
+            <div class="k-val" style="color:var(--amber)">${fmt(atencaoRisco)}</div>
+            <div class="k-sub">${taxaRisco}% precisam de contato</div>
+          </div>
+          <div class="kpi" style="border-top:3px solid #0077b6">
+            <div class="k-lab"><i class="k-dot" style="background:#0077b6"></i>Rastreados RD</div>
+            <div class="k-val" style="color:#0077b6">${fmt(countComRD)}</div>
+            <div class="k-sub">${pctRastreadosRD}% da base no CRM</div>
+          </div>
+          <div class="kpi" style="border-top:3px solid #25D366">
+            <div class="k-lab"><i class="k-dot" style="background:#25D366"></i>Contatos WhatsApp</div>
+            <div class="k-val" style="color:#25D366">${fmt(countWA)}</div>
+            <div class="k-sub">Com histórico no chat</div>
+          </div>
+        `;
+    }
+
+    // --- 2. RENDERIZAR PLATAFORMAS ---
+    const platTotalEl = document.getElementById('home-plat-total');
+    if (platTotalEl) platTotalEl.textContent = `${totalMatriculas} Matrículas Totais`;
+
+    const platBarsEl = document.getElementById('home-platforms-bars');
+    if (platBarsEl) {
+        const pctCativa = totalMatriculas > 0 ? (cativaCount / totalMatriculas * 100).toFixed(1) : 0;
+        const pctAcademy = totalMatriculas > 0 ? (academyCount / totalMatriculas * 100).toFixed(1) : 0;
+        const pctAmbas = totalMatriculas > 0 ? (ambasCount / totalMatriculas * 100).toFixed(1) : 0;
+
+        platBarsEl.innerHTML = `
+          <!-- CATIVA DIGITAL -->
+          <div style="display:flex; flex-direction:column; gap:6px">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+              <div style="display:flex; align-items:center; gap:8px">
+                <span style="font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; background:rgba(236,72,153,0.12); color:#db2777; border:1px solid rgba(236,72,153,0.3)">Cativa Digital</span>
+                <span style="font-size:12px; font-weight:600; color:var(--ink)">Nova Plataforma de Pós-Graduações</span>
+              </div>
+              <div style="font-size:12px; font-weight:700; color:var(--ink)">${cativaCount} alunos <span style="font-size:11px; font-weight:500; color:var(--muted)">(${pctCativa}%)</span></div>
+            </div>
+            <div style="background:var(--line); height:8px; border-radius:4px; overflow:hidden">
+              <div style="width:${pctCativa}%; background:#db2777; height:100%; border-radius:4px"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:10.5px; color:var(--muted)">
+              <span>Ativação: <b>${cativaAcessaram}</b> já acessaram (${(cativaAcessaram/Math.max(1,cativaCount)*100).toFixed(0)}%)</span>
+              <span>12.246 logs integrados via API</span>
+            </div>
+          </div>
+
+          <!-- INFECTOCAST ACADEMY -->
+          <div style="display:flex; flex-direction:column; gap:6px">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+              <div style="display:flex; align-items:center; gap:8px">
+                <span style="font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; background:rgba(2,132,199,0.12); color:#0284c7; border:1px solid rgba(2,132,199,0.3)">InfectoCast Academy</span>
+                <span style="font-size:12px; font-weight:600; color:var(--ink)">Plataforma Hotmart / Club</span>
+              </div>
+              <div style="font-size:12px; font-weight:700; color:var(--ink)">${academyCount} alunos <span style="font-size:11px; font-weight:500; color:var(--muted)">(${pctAcademy}%)</span></div>
+            </div>
+            <div style="background:var(--line); height:8px; border-radius:4px; overflow:hidden">
+              <div style="width:${pctAcademy}%; background:#0284c7; height:100%; border-radius:4px"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:10.5px; color:var(--muted)">
+              <span>Ativação: <b>${academyAcessaram}</b> já acessaram (${(academyAcessaram/Math.max(1,academyCount)*100).toFixed(0)}%)</span>
+              <span>7.157 logs integrados via API</span>
+            </div>
+          </div>
+
+          <!-- AMBAS AS PLATAFORMAS -->
+          <div style="display:flex; flex-direction:column; gap:6px">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+              <div style="display:flex; align-items:center; gap:8px">
+                <span style="font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; background:rgba(124,58,237,0.12); color:#7c3aed; border:1px solid rgba(124,58,237,0.3)">Presente em Ambas</span>
+                <span style="font-size:12px; font-weight:600; color:var(--ink)">Migração / Cursos Simultâneos</span>
+              </div>
+              <div style="font-size:12px; font-weight:700; color:var(--ink)">${ambasCount} alunos <span style="font-size:11px; font-weight:500; color:var(--muted)">(${pctAmbas}%)</span></div>
+            </div>
+            <div style="background:var(--line); height:8px; border-radius:4px; overflow:hidden">
+              <div style="width:${Math.max(2, pctAmbas)}%; background:#7c3aed; height:100%; border-radius:4px"></div>
+            </div>
+          </div>
+        `;
+    }
+
+    // --- 3. RENDERIZAR CURSOS ---
+    const coursesListEl = document.getElementById('home-courses-list');
+    if (coursesListEl) {
+        const maxCourse = sortedCursos.length > 0 ? sortedCursos[0][1] : 1;
+        coursesListEl.innerHTML = sortedCursos.slice(0, 6).map(([cName, cnt]) => {
+            const pct = (cnt / maxCourse * 100).toFixed(0);
+            const pctBase = (cnt / totalMatriculas * 100).toFixed(1);
+            const isPos = cName.startsWith('POS-GRADUACAO') || cName.includes('POS');
+            return `
+              <div style="display:flex; flex-direction:column; gap:3px">
+                <div style="display:flex; justify-content:space-between; align-items:center">
+                  <div style="display:flex; align-items:center; gap:6px; overflow:hidden; padding-right:8px">
+                    <span style="font-size:9.5px; font-weight:700; padding:1px 5px; border-radius:3px; background:${isPos?'rgba(18,161,122,0.12)':'rgba(62,124,177,0.12)'}; color:${isPos?'var(--emerald-d)':'var(--sky)'}">${isPos?'Pós':'Curso'}</span>
+                    <span style="font-size:12px; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis" title="${cName}">${cName}</span>
+                  </div>
+                  <div style="font-size:12px; font-weight:700; color:var(--ink); white-space:nowrap">
+                    ${cnt} <span style="font-size:10px; font-weight:400; color:var(--muted)">(${pctBase}%)</span>
+                  </div>
+                </div>
+                <div style="background:var(--line); height:6px; border-radius:3px; overflow:hidden">
+                  <div style="width:${pct}%; background:${isPos?'var(--emerald)':'var(--sky)'}; height:100%; border-radius:3px"></div>
+                </div>
+              </div>
+            `;
+        }).join('');
+    }
+
+    // --- 4. RENDERIZAR SAÚDE DA BASE ---
+    const statusDistEl = document.getElementById('home-status-distribution');
+    if (statusDistEl) {
+        statusDistEl.innerHTML = `
+          <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:6px">
+            <div style="background:var(--emerald-w); border:1px solid rgba(18,161,122,0.25); border-radius:8px; padding:10px 12px">
+              <div style="font-size:10px; font-weight:700; color:var(--emerald-d); text-transform:uppercase">Engajados</div>
+              <div style="font-size:20px; font-weight:800; color:var(--emerald-d); margin-top:2px">${engajados}</div>
+              <div style="font-size:10px; color:var(--muted)">${taxaEngajados}% da base ativa</div>
+            </div>
+            <div style="background:var(--amber-w); border:1px solid rgba(224,145,47,0.25); border-radius:8px; padding:10px 12px">
+              <div style="font-size:10px; font-weight:700; color:var(--amber); text-transform:uppercase">Em Alerta</div>
+              <div style="font-size:20px; font-weight:800; color:var(--amber); margin-top:2px">${atencaoRisco}</div>
+              <div style="font-size:10px; color:var(--muted)">${taxaRisco}% em risco/atenção</div>
+            </div>
+            <div style="background:var(--coral-w); border:1px solid rgba(224,85,85,0.25); border-radius:8px; padding:10px 12px">
+              <div style="font-size:10px; font-weight:700; color:var(--coral); text-transform:uppercase">Críticos</div>
+              <div style="font-size:20px; font-weight:800; color:var(--coral); margin-top:2px">${criticos}</div>
+              <div style="font-size:10px; color:var(--muted)">Abandonaram / sem login</div>
+            </div>
+          </div>
+
+          <div style="font-size:11px; color:var(--muted); line-height:1.5">
+            Acompanhamento preditivo baseado na cadência média de logins de cada aluno e dias de inatividade acumulados.
+          </div>
+        `;
+    }
+
+    // --- 5. RENDERIZAR MARKETING & ORIGEM ---
+    const mktSummaryEl = document.getElementById('home-marketing-summary');
+    if (mktSummaryEl) {
+        mktSummaryEl.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,180,216,0.06); border:1px solid rgba(0,180,216,0.2); border-radius:8px; padding:8px 12px; margin-bottom:12px">
+            <span style="font-size:11.5px; color:var(--ink)">Tempo Mediano de Decisão (Maturação):</span>
+            <b style="font-size:13px; color:#0077b6">${medianaMat} dias até matricular</b>
+          </div>
+          <div style="font-size:11.5px; font-weight:700; color:var(--ink); margin-bottom:8px">Top Ações Pré-Matrícula que Mais Geraram Alunos:</div>
+          <div style="display:flex; flex-direction:column; gap:6px">
+            ${sortedEvents.map(([evName, cnt], idx) => `
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px; padding:4px 0; border-bottom:1px solid rgba(0,0,0,0.04)">
+                <div style="display:flex; align-items:center; gap:6px; overflow:hidden">
+                  <span style="font-size:10px; font-weight:700; color:var(--muted)">#${idx+1}</span>
+                  <span style="font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis" title="${evName}">${evName}</span>
+                </div>
+                <b style="color:var(--emerald-d); white-space:nowrap">${cnt} alunos</b>
+              </div>
+            `).join('')}
+          </div>
+        `;
+    }
 }
 
 // FUNIL DE LEADS
