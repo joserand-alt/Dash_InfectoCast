@@ -71,10 +71,10 @@ def fetch_logs_from_api(df_insc):
 
 def categorize_rd_event(ev_name):
     low = ev_name.lower().strip()
-    if any(x in low for x in ['ebook', 'e-book']): return 'E-book / Material'
-    if any(x in low for x in ['jornada', 'live', 'infectoxpert', 'congresso', 'webinar', 'evento']): return 'Evento / Live'
-    if any(x in low for x in ['fale-conosco', 'duvida', 'contato', 'form_3', 'fluentform']): return 'Fale Conosco / Contato'
-    if any(x in low for x in ['lista-espera', 'lista de espera', 'pre-inscricao', 'pré-inscrição', 'grade_pos']): return 'Lista de Espera / Grade'
+    if any(x in low for x in ['ebook', 'e-book', 'biofilme', 'candidiase', 'imuno', 'orto', 'ist']): return 'E-book / Material'
+    if any(x in low for x in ['jornada', 'live', 'infectoxpert', 'congresso', 'webinar', 'webnar', 'evento', 'aula']): return 'Evento / Live'
+    if any(x in low for x in ['fale-conosco', 'duvida', 'contato', 'form_3', 'fluentform', 'atendimento']): return 'Fale Conosco / Contato'
+    if any(x in low for x in ['lista-espera', 'lista de espera', 'pre-inscricao', 'pré-inscrição', 'pre_antifungico', 'sos', 'grade_pos']): return 'Lista de Espera / Grade'
     if any(x in low for x in ['ex alunos', 'alunos infectoped', 'ex-alunos']): return 'Comunidade / Base Prévia'
     if any(x in low for x in ['pago', 'pendente', 'recorrencia', 'checkout', 'compra']): return 'Checkout / Matrícula'
     return 'Outras Ações'
@@ -84,16 +84,29 @@ def clean_rd_event_name(ev_name):
     if 'fale-conosco' in low: return 'Fale Conosco (Dúvidas/Suporte)'
     if 'ebook doses' in low: return 'E-book: Doses de Antibióticos'
     if 'ebook pav' in low: return 'E-book: Prevenção de PAV'
+    if 'ebook imuno' in low or 'profilaxias' in low: return 'E-book: Imunodeprimidos'
+    if 'ebook orto' in low: return 'E-book: Infecções Ortopédicas'
+    if 'biofilme' in low: return 'E-book: Biofilme'
+    if 'ebook ist' in low or 'e-book ist' in low: return 'E-book: IST'
+    if 'candidiase' in low: return 'Material: Candidíase Intra-abdominal'
     if 'jornada multi-r' in low: return 'Jornada Multi-R'
+    if 'infectoxpert' in low: return 'Inscrição InfectoXpert'
+    if 'pre_antifungico' in low or 'antifungico' in low: return 'Live: Antifúngicos'
+    if 'osteoarticulares' in low: return 'Webinar: Infecções Osteoarticulares'
+    if 'sos' in low and ('pre' in low or 'pr' in low): return 'Pré-Inscrição SOS Antibiótico'
+    if 'congresso' in low: return 'Congresso Brasileiro 2023'
+    if 'lista-de-espera' in low or 'lista de espera' in low: return 'Lista de Espera: Pós Ortopedia'
     if 'alunos infectoped' in low: return 'Comunidade Alunos Infectoped'
     if 'ex alunos fabrizio' in low: return 'Base Ex-alunos Dr. Fabrizio'
-    if 'fluentform_3' in low: return 'Formulário de Interesse (Site)'
+    if 'fluentform_3' in low or 'formulario atendimento' in low: return 'Formulário de Interesse (Site)'
     if 'pos-graduacao-pediatria-pendente' in low: return 'Checkout Iniciado (Pós Pediatria)'
     if 'pos-graduacao-pediatria-pago' in low: return 'Pagamento Confirmado (Pós Pediatria)'
     if 'recorrencia-18-x-pendente' in low or 'recorrencia-18x-pendente' in low: return 'Checkout Recorrência 18x (Pendente)'
     if 'recorrencia-18-x-pago' in low: return 'Checkout Recorrência 18x (Aprovado)'
     if 'grade_pos_pediatria' in low: return 'Download da Grade Curricular'
-    return ev_name.replace('---', ' - ').replace('__', ' ')
+    if 'live-12-nov' in low or 'live-06-11' in low or 'lp-live' in low: return 'Live / Masterclass InfectoCast'
+    if 'aula' in low and 'imuno' in low: return 'Aula Aberta: Imunodeprimidos'
+    return ev_name.replace('---', ' - ').replace('__', ' ').strip()
 
 def main():
     inscricoes_path = r'C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\Inscrições.xlsx'
@@ -927,6 +940,16 @@ def main():
             if pd.notna(dt):
                 if em not in insc_dates or dt < insc_dates[em]:
                     insc_dates[em] = dt
+        for s in cativa_students:
+            em = str(s.get('email', '')).lower().strip()
+            dt_raw = s.get('data_insc') or s.get('data_inscricao') or s.get('inscricao')
+            if em and dt_raw:
+                try:
+                    dt = pd.to_datetime(dt_raw, dayfirst=True)
+                    if em not in insc_dates or dt < insc_dates[em]:
+                        insc_dates[em] = dt
+                except Exception:
+                    pass
         
         tempo_conv = []
         for _, row in alunos_rd.iterrows():
@@ -1161,7 +1184,7 @@ def main():
             ev_list = []
             for e in ev_list_raw:
                 e_low = e.lower().strip()
-                if e_low == '26': continue
+                if e_low in ['26', 'v1', 'compra', '']: continue
                 if not any(x in e_low for x in ['pago', 'pendente', 'recorrencia', 'marco', '[pós]', '[pos]', 'aluno']):
                     ev_list.append(e)
             
@@ -1169,17 +1192,31 @@ def main():
             ev_list = list(dict.fromkeys(ev_list))
             
             dias_venda = ''
-            if pd.notna(row['dt_primeira']) and pd.notna(row['dt_venda']):
-                dias_venda = (row['dt_venda'] - row['dt_primeira']).days
+            if pd.notna(row['dt_primeira']):
+                if pd.notna(row['dt_venda']):
+                    dias_venda = (row['dt_venda'] - row['dt_primeira']).days
+                elif row['email_lower'] in insc_dates:
+                    diff = (insc_dates[row['email_lower']] - row['dt_primeira']).days
+                    if diff >= 0:
+                        dias_venda = diff
+                
+            fmt_eventos_logrd = []
+            for e in ev_list:
+                c_name = clean_rd_event_name(e)
+                cat = categorize_rd_event(e)
+                fmt_eventos_logrd.append(f"<b>{c_name}</b> <span style='font-size:10px; color:var(--muted)'>({cat})</span>")
                 
             rd_events_map[row['email_lower']] = {
                 'origem': str(row['Origem da primeira conversão']) if pd.notna(row['Origem da primeira conversão']) else '-',
                 'conversoes': int(row['Total de conversões']) if pd.notna(row['Total de conversões']) else 0,
+                'conversoes_antes': len(ev_list),
                 'scoring': int(row['Lead Scoring - Interesse']) if pd.notna(row['Lead Scoring - Interesse']) else 0,
                 'dias_venda': dias_venda,
                 'dt_primeira': row['dt_primeira'].strftime('%d/%m/%Y') if pd.notna(row['dt_primeira']) else '—',
                 'dt_ultima': row['dt_ultima'].strftime('%d/%m/%Y') if pd.notna(row['dt_ultima']) else '—',
-                'eventos': ev_list
+                'eventos': fmt_eventos_logrd,
+                'eventos_detalhados': [{'data': '', 'evento_raw': e, 'evento_clean': clean_rd_event_name(e), 'categoria': categorize_rd_event(e)} for e in ev_list],
+                'fonte': 'LogRD.csv'
             }
             
         # Carregar cache da API Oficial do RD Station
@@ -1253,7 +1290,20 @@ def main():
                     'fonte': 'API Oficial RD Station'
                 }
             elif em in rd_events_map:
-                s['rd_funnel'] = rd_events_map[em]
+                rd_copy = dict(rd_events_map[em])
+                if not rd_copy.get('dias_venda'):
+                    try:
+                        dt_insc_raw = s.get('data_insc') or s.get('data_inscricao') or s.get('inscricao')
+                        dt_pri_raw = rd_copy.get('dt_primeira')
+                        if dt_insc_raw and dt_pri_raw and dt_pri_raw not in ('—', '?', '-'):
+                            d_insc = pd.to_datetime(dt_insc_raw, dayfirst=True)
+                            d_pri = pd.to_datetime(dt_pri_raw[:10], dayfirst=True)
+                            diff = (d_insc.date() - d_pri.date()).days
+                            if diff >= 0:
+                                rd_copy['dias_venda'] = int(diff)
+                    except Exception:
+                        pass
+                s['rd_funnel'] = rd_copy
         
         funil_data = {
             'kpis': funil_kpis,
