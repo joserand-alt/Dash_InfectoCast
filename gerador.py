@@ -494,6 +494,8 @@ def main():
             "telefone": telefone,
             "acessou": acessou,
             "data_insc": data_insc_fmt,
+            "data_inscricao": data_insc_fmt,
+            "inscricao": data_insc_fmt,
             "dias_desde_insc": dias_desde_insc
         }
         
@@ -1032,18 +1034,18 @@ def main():
                         'categoria': cat
                     })
                 
-                # Calcular dias de maturação
+                # Calcular dias de maturação com precisão (Data Matrícula - 1ª Conversão RD)
                 dias_maturacao = ''
                 try:
-                    dt_insc_raw = s.get('data_inscricao') or s.get('inscricao')
+                    dt_insc_raw = s.get('data_insc') or s.get('data_inscricao') or s.get('inscricao')
                     dt_pri_raw = ast.get('dt_primeira')
                     if dt_insc_raw and dt_pri_raw and dt_pri_raw != '—':
                         d_insc = pd.to_datetime(dt_insc_raw, dayfirst=True)
-                        d_pri = pd.to_datetime(dt_pri_raw, dayfirst=True)
-                        diff = (d_insc - d_pri).days
+                        d_pri = pd.to_datetime(dt_pri_raw[:10], dayfirst=True)
+                        diff = (d_insc.date() - d_pri.date()).days
                         if diff >= 0:
-                            dias_maturacao = diff
-                except Exception:
+                            dias_maturacao = int(diff)
+                except Exception as e_mat:
                     pass
                     
                 s['rd_funnel'] = {

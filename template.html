@@ -1792,8 +1792,12 @@ function drawOrigem(force) {
         }
     });
     
+    const sortedMaturacao = [...maturacaoDiasList].sort((a,b)=>a-b);
     const mediaMaturacao = maturacaoDiasList.length > 0 
         ? Math.round(maturacaoDiasList.reduce((a,b)=>a+b, 0) / maturacaoDiasList.length) 
+        : 0;
+    const medianaMaturacao = sortedMaturacao.length > 0
+        ? sortedMaturacao[Math.floor(sortedMaturacao.length / 2)]
         : 0;
     const mediaPontos = countComConvAntes > 0 
         ? (totalPontosContato / countComConvAntes).toFixed(1) 
@@ -1831,8 +1835,8 @@ function drawOrigem(force) {
       </div>
       <div style="background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; box-shadow:0 2px 6px rgba(0,0,0,0.03)">
         <div style="font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px">Tempo de Maturação</div>
-        <div style="font-size:26px; font-weight:800; color:var(--amber); margin-top:4px">${mediaMaturacao} <span style="font-size:14px; font-weight:600; color:var(--muted)">dias</span></div>
-        <div style="font-size:11px; color:var(--muted); margin-top:2px">Da 1ª conversão à matrícula</div>
+        <div style="font-size:26px; font-weight:800; color:var(--amber); margin-top:4px">${medianaMaturacao} <span style="font-size:14px; font-weight:600; color:var(--muted)">dias (mediana)</span></div>
+        <div style="font-size:11px; color:var(--muted); margin-top:2px">Média: <b>${mediaMaturacao} dias</b> até matricular</div>
       </div>
     </div>
 
@@ -2004,7 +2008,7 @@ function renderOrigemTableRows(baseStudents) {
         const org = rd ? (rd.origem && rd.origem !== '-' ? rd.origem : 'Desconhecido') : 'Não Rastreado';
         const pri = rd ? (rd.dt_primeira || '—') : '—';
         const dias = (rd && rd.dias_venda !== '' && rd.dias_venda !== null && rd.dias_venda !== undefined) ? `${rd.dias_venda} dias` : '—';
-        const insc = s.data_inscricao || s.inscricao || '—';
+        const insc = s.data_insc || s.data_inscricao || s.inscricao || '—';
         
         // Renderizar badges dos primeiros 3 eventos
         const evs = rd?.eventos_detalhados || [];
