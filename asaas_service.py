@@ -7,7 +7,7 @@ def _load_key():
     """Carrega a chave do arquivo local (nao commitado)."""
     cfg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "asaas_config.json")
     if os.path.exists(cfg_path):
-        with open(cfg_path, "r", encoding="utf-8") as f:
+        with open(cfg_path, "r", encoding="utf-8-sig") as f:
             return json.load(f).get("api_key", "")
     return ""
 
