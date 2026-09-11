@@ -1541,17 +1541,24 @@ function applyFilters() {
             }
         }
         
-        // REGRA DE STATUS FINANCEIRO:
-        // Se o aluno tem assinatura CANCELADA na Vindi, o status dele eh sempre 'Cancelado',
-        // independente do status calculado pela plataforma (Abandonou, Nunca acessou, etc.)
+        // REGRA INTELIGENTE DE STATUS FINANCEIRO:
+        // Só marca como 'Cancelado' se NÃO existir assinatura ATIVA em nenhum gateway.
+        // Se o aluno tem Vindi cancelada mas Asaas ativa (ou vice-versa), a ativa prevalece.
         const vindiStatus = scopy.vindi ? (scopy.vindi.status_financeiro || scopy.vindi.status_assinatura) : null;
         const asaasStatus = scopy.asaas ? (scopy.asaas.status_financeiro || scopy.asaas.status_assinatura) : null;
-        if (vindiStatus === 'cancelado' || vindiStatus === 'canceled') {
-            scopy.status = 'Cancelado';
-            scopy.status_motivo = 'Assinatura cancelada no sistema financeiro (Vindi).';
-        } else if (asaasStatus === 'cancelado' || asaasStatus === 'canceled') {
-            scopy.status = 'Cancelado';
-            scopy.status_motivo = 'Cobrança cancelada no sistema financeiro (Asaas).';
+        const vindiCanceled = vindiStatus === 'cancelado' || vindiStatus === 'canceled';
+        const asaasCanceled = asaasStatus === 'cancelado' || asaasStatus === 'canceled';
+        const vindiActive = vindiStatus && !vindiCanceled;
+        const asaasActive = asaasStatus && !asaasCanceled;
+        // Só cancela se existe pelo menos um cancelamento E nenhum gateway ativo
+        if ((vindiCanceled || asaasCanceled) && !vindiActive && !asaasActive) {
+            if (vindiCanceled) {
+                scopy.status = 'Cancelado';
+                scopy.status_motivo = 'Assinatura cancelada no sistema financeiro (Vindi).';
+            } else {
+                scopy.status = 'Cancelado';
+                scopy.status_motivo = 'Cobrança cancelada no sistema financeiro (Asaas).';
+            }
         }
 
         return scopy;
@@ -3596,8 +3603,12 @@ function drawExecView(force) {
 
             const vSt = scopy.vindi ? (scopy.vindi.status_financeiro || scopy.vindi.status_assinatura) : null;
             const aSt = scopy.asaas ? (scopy.asaas.status_financeiro || scopy.asaas.status_assinatura) : null;
+            const _vCan = vSt === 'cancelado' || vSt === 'canceled';
+            const _aCan = aSt === 'cancelado' || aSt === 'canceled';
+            const _vAct = vSt && !_vCan;
+            const _aAct = aSt && !_aCan;
 
-            if (vSt === 'cancelado' || vSt === 'canceled' || aSt === 'cancelado' || aSt === 'canceled') {
+            if ((_vCan || _aCan) && !_vAct && !_aAct) {
                 scopy.status = 'Cancelado';
             } else if (!acessou) {
                 scopy.status = 'Nunca acessou';
@@ -4264,7 +4275,13 @@ function drawHome(force) {
     const isMatriculaCancelada = s => {
         const vSt = s.vindi ? (s.vindi.status_assinatura || s.vindi.status_financeiro) : null;
         const aSt = s.asaas ? (s.asaas.status_assinatura || s.asaas.status_financeiro) : null;
-        return s.status === 'Cancelado' || vSt === 'canceled' || vSt === 'cancelado' || aSt === 'canceled' || aSt === 'cancelado';
+        const _vCan = vSt === 'canceled' || vSt === 'cancelado';
+        const _aCan = aSt === 'canceled' || aSt === 'cancelado';
+        const _vAct = vSt && !_vCan;
+        const _aAct = aSt && !_aCan;
+        // Só considera cancelada se existe cancelamento E nenhum gateway ativo
+        if (s.status === 'Cancelado') return true;
+        return (_vCan || _aCan) && !_vAct && !_aAct;
     };
 
     const isMatriculaEncerrada = s => {
