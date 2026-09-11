@@ -1391,22 +1391,15 @@ def main():
         added_from_api = 0
 
         def _infer_curso_from_asaas(asaas_st, email):
-            """Tenta resolver o curso do aluno Asaas usando student_course_map, RD Station ou descrição da fatura."""
-            # 1. Verifica student_course_map (logs + planilhas)
+            """Tenta resolver o curso do aluno Asaas usando student_course_map, RD Station ou descrição da fatura.
+            Retorna: (curso_nome, is_inferred, origem_str)"""
+            # 1. Verifica student_course_map (logs + planilhas) -> OFICIAL (não inferido)
             if email in student_course_map:
-                return student_course_map[email]
+                return student_course_map[email], False, "Oficial"
             
-            # 2. Verifica dicas do RD Station (Tags e Eventos)
+            # 2. Verifica dicas do RD Station (Tags e Eventos de Leads) -> INFERIDO
             if 'rd_course_hints' in locals() and email in rd_course_hints:
-                return rd_course_hints[email]
-            
-            # 2. Infere pelo valor total do plano (padrão de preços dos cursos)
-            total = asaas_st.get('total_bruto') or 0
-            if total <= 0:
-                # Calcula total bruto a partir das faturas
-                faturas = asaas_st.get('faturas', [])
-                if faturas:
-                    total = sum(f.get('valor', 0) for f in faturas)
+                return rd_course_hints[email], True, "RD Station"
             
             # 3. Tenta pela descrição do pagamento
             faturas = asaas_st.get('faturas', [])
@@ -1416,28 +1409,22 @@ def main():
                 if d and d != 'N/A':
                     desc_text += ' ' + str(d).upper()
             
-            desc_norm = desc_text.replace('Ã', 'A').replace('Ç', 'C').replace('Ó', 'O').replace('É', 'E').replace('Í', 'I')
+            desc_norm = desc_text.replace('Ã', 'A').replace('Ç', 'C').replace('Õ', 'O').replace('É', 'E').replace('Í', 'I')
             
             if any(w in desc_norm for w in ['CCIH', 'INFECCAO HOSPITALAR', 'PREVENCAO']):
-                return normalize_curso('PÓS-GRADUAÇÃO EM PREVENÇÃO E CONTROLE DE INFECÇÃO HOSPITALAR (CCIH)')
+                return normalize_curso('PÓS-GRADUAÇÃO EM PREVENÇÃO E CONTROLE DE INFECÇÃO HOSPITALAR (CCIH)'), True, "Fatura Asaas"
             if any(w in desc_norm for w in ['INFECTOPED', 'PEDIATRIA']):
-                return normalize_curso('PÓS-GRADUAÇÃO EM INFECTOPEDIATRIA')
+                return normalize_curso('PÓS-GRADUAÇÃO EM INFECTOPEDIATRIA'), True, "Fatura Asaas"
             if any(w in desc_norm for w in ['ORTOPED', 'PARTES MOLES']):
-                return normalize_curso('PÓS-GRADUAÇÃO EM INFECÇÕES ORTOPÉDICAS E DE PARTES MOLES')
+                return normalize_curso('PÓS-GRADUAÇÃO EM INFECÇÕES ORTOPÉDICAS E DE PARTES MOLES'), True, "Fatura Asaas"
             if any(w in desc_norm for w in ['SOS', 'ANTIBIOTICO', 'ATB']):
-                return normalize_curso('S.O.S ANTIBIÓTICO')
+                return normalize_curso('S.O.S ANTIBIÓTICO'), True, "Fatura Asaas"
             if any(w in desc_norm for w in ['FERRAMENTA', 'QUALIDADE']):
-                return normalize_curso('FERRAMENTAS DE QUALIDADE')
+                return normalize_curso('FERRAMENTAS DE QUALIDADE'), True, "Fatura Asaas"
             if any(w in desc_norm for w in ['IMUNODEPRIMIDO']):
-                return normalize_curso('PÓS-GRADUAÇÃO EM INFECÇÕES EM IMUNODEPRIMIDOS')
+                return normalize_curso('PÓS-GRADUAÇÃO EM INFECÇÕES EM IMUNODEPRIMIDOS'), True, "Fatura Asaas"
             
-            # 4. Infere pelo valor total (preços conhecidos dos cursos)
-            # Cursos de pós-graduação: ~R$2.187 (total)
-            # SOS ATB: ~R$487 (total)
-            # Ferramentas: valores menores
-            # Não é possível distinguir apenas pelo valor qual pós-graduação
-            
-            return "PLATAFORMA GERAL"
+            return "PLATAFORMA GERAL", False, "Geral"
 
         for key, asaas_st in asaas_map.items():
             if not isinstance(asaas_st, dict): continue
@@ -1447,11 +1434,13 @@ def main():
             st_email = (asaas_st.get('customer_email') or '').lower().strip()
             if st_email and st_email not in existing_emails:
                 existing_emails.add(st_email)
-                curso_resolved = _infer_curso_from_asaas(asaas_st, st_email)
+                curso_resolved, curso_inferido, curso_origem = _infer_curso_from_asaas(asaas_st, st_email)
                 new_st = {
                     "email": st_email,
                     "nome": asaas_st.get('customer_name') or 'Aluno Academy',
                     "curso": curso_resolved,
+                    "curso_inferido": curso_inferido,
+                    "curso_origem": curso_origem,
                     "telefone": "",
                     "acessou": False,
                     "data_insc": None,
@@ -1468,7 +1457,8 @@ def main():
                     new_st['rd_funnel'] = dict(rd_events_map[st_email])
                 students.append(new_st)
                 if curso_resolved != "PLATAFORMA GERAL":
-                    print(f"  [ASAAS] Curso resolvido para {st_email}: {curso_resolved}")
+                    tag_info = f" (INFERIDO via {curso_origem})" if curso_inferido else ""
+                    print(f"  [ASAAS] Curso resolvido para {st_email}: {curso_resolved}{tag_info}")
                 added_from_api += 1
                 asaas_matched += 1
 
@@ -1477,6 +1467,10 @@ def main():
         print(f"[ASAAS] Erro ao integrar Asaas no gerador: {e_asaas}")
         for s in students:
             s['asaas'] = None
+
+    for s in students:
+        s.setdefault('curso_inferido', False)
+        s.setdefault('curso_origem', 'Oficial')
 
     data = {
         "meta": {
