@@ -5338,12 +5338,64 @@ function _finToggleStudentDetails(email) {
     renderFinTable();
 }
 
+
+function _resolveFinCourse(f) {
+    if (!f) return 'PLATAFORMA GERAL';
+    if (f.curso && f.curso !== 'PLATAFORMA GERAL' && f.curso !== 'None') return f.curso;
+
+    const email = (f.email || f._email || '').toString().toLowerCase().trim();
+    const aluno = (f.aluno || f._aluno || '').toString().toLowerCase().trim();
+    const plano = (f.plano || f._plano || f.description || '').toString();
+
+    // 1. Tentar encontrar aluno no cadastro da plataforma (Academy / Cativa)
+    const stList = (CURRENT_DATA && CURRENT_DATA.students) ? CURRENT_DATA.students : (DATA && DATA.students ? DATA.students : []);
+    let stMatch = null;
+    if (email) {
+        stMatch = stList.find(s => s.email && s.email.toLowerCase().trim() === email);
+    }
+    if (!stMatch && aluno) {
+        stMatch = stList.find(s => s.nome && s.nome.toLowerCase().trim() === aluno);
+    }
+    if (stMatch && stMatch.curso && stMatch.curso !== 'PLATAFORMA GERAL' && stMatch.curso !== 'None') {
+        return stMatch.curso;
+    }
+
+    // 2. Inferir a partir do nome do plano ou descrição da cobrança na Vindi / Asaas
+    const textFull = (plano + ' ' + (f.description || '')).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (textFull.includes('ccih') || textFull.includes('prevencao') || textFull.includes('hospitalar')) {
+        return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)';
+    }
+    if (textFull.includes('ortop') || textFull.includes('partes moles')) {
+        return 'POS-GRADUACAO EM INFECCOES ORTOPEDICAS E DE PELE E PARTES MOLES';
+    }
+    if (textFull.includes('imuno') || textFull.includes('inuno')) {
+        return 'POS-GRADUACAO EM INFECTOLOGIA DO PACIENTE IMUNODEPRIMIDO';
+    }
+    if (textFull.includes('pediatria') || textFull.includes('infectoped')) {
+        return 'POS-GRADUACAO EM INFECTOPEDIATRIA';
+    }
+    if (textFull.includes('multi-r') || textFull.includes('multi r')) {
+        return 'JORNADA MULTI-R';
+    }
+    if (textFull.includes('fungo') || textFull.includes('antifung')) {
+        return 'DO FUNGO AO ANTIFUNGICO';
+    }
+    if (textFull.includes('s.o.s') || textFull.includes('antibiotico')) {
+        return 'S.O.S ANTIBIOTICO';
+    }
+    if (textFull.includes('qualidade')) {
+        return 'FERRAMENTAS DE QUALIDADE';
+    }
+
+    return 'PLATAFORMA GERAL';
+}
+
 function _getFinData(src) {
     const vindi = DATA.financeiro;
     const asaas = DATA.financeiro_asaas;
 
-    const vfaturas = (vindi && vindi.faturas_tabela) ? vindi.faturas_tabela.map(f => ({ ...f, gateway: 'Vindi', _aluno: f.aluno, _email: f.email, _plano: f.plano })) : [];
-    const afaturas = (asaas && asaas.faturas_tabela) ? asaas.faturas_tabela.map(f => ({ ...f, gateway: 'Asaas', _aluno: f.aluno, _email: f.email, _plano: f.plano })) : [];
+    const vfaturas = (vindi && vindi.faturas_tabela) ? vindi.faturas_tabela.map(f => { const c = _resolveFinCourse(f); return { ...f, gateway: 'Vindi', curso: c, _curso: c, _aluno: f.aluno, _email: f.email, _plano: f.plano }; }) : [];
+    const afaturas = (asaas && asaas.faturas_tabela) ? asaas.faturas_tabela.map(f => { const c = _resolveFinCourse(f); return { ...f, gateway: 'Asaas', curso: c, _curso: c, _aluno: f.aluno, _email: f.email, _plano: f.plano }; }) : [];
 
     const activeCurso = (FILTER && FILTER.curso && FILTER.curso !== 'all') ? FILTER.curso : null;
 
@@ -5888,7 +5940,7 @@ function renderFinTable() {
         faturas.forEach(f => {
             const email = (f._email || f.email || '').toLowerCase().trim();
             const aluno = f._aluno || f.aluno || 'Aluno';
-            const curso = f.curso || 'PLATAFORMA GERAL';
+            const curso = f.curso || _resolveFinCourse(f) || 'PLATAFORMA GERAL';
             const key = email || aluno;
             if (!byStudent[key]) {
                 byStudent[key] = {
