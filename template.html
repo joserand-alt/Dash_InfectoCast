@@ -336,7 +336,7 @@ footer{padding:30px 0 40px;color:var(--muted2);font-size:11.5px;text-align:cente
               <span id="live-base-tag" style="font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:12px; background:var(--sky-w); color:var(--sky-d); border:1px solid rgba(2,132,199,0.2)">Base Sincronizada</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px; margin-top:3px; font-size:11.5px; color:var(--muted)">
-              <span id="live-tick-status"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--emerald); margin-right:4px"></span>Auto-refresh a cada 30s</span>
+              <span id="live-tick-status"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--emerald); margin-right:4px"></span>Auto-refresh a cada hora cheia</span>
               <span>·</span>
               <span id="live-ref-time">Último evento registrado na base: --:--</span>
             </div>
@@ -2530,22 +2530,56 @@ window.triggerLiveSync = async function() {
     setTimeout(() => { window.location.reload(); }, 600);
 };
 
-function startLiveAutoTimer() {
-    if (liveTimerInterval) clearInterval(liveTimerInterval);
-    let seconds = 0;
-    liveTimerInterval = setInterval(() => {
-        seconds += 5;
+function startHourlyAutoRefresh() {
+    if (window._hourlyTimer) clearTimeout(window._hourlyTimer);
+    if (window._minuteTickInterval) clearInterval(window._minuteTickInterval);
+    
+    function updateClockAndSchedule() {
+        const now = new Date();
+        const msIntoHour = (now.getMinutes() * 60 + now.getSeconds()) * 1000 + now.getMilliseconds();
+        const msUntilNextHour = Math.max(1000, 3600000 - msIntoHour);
+        
+        const nextHour = new Date(now.getTime() + msUntilNextHour);
+        const pad = n => n < 10 ? '0' + n : n;
+        const nextHourFmt = `${pad(nextHour.getHours())}:00`;
+        const minsRemaining = Math.max(1, Math.round(msUntilNextHour / 60000));
+        
         const tickEl = document.getElementById('live-tick-status');
         if (tickEl) {
-            const nextIn = Math.max(0, 30 - (seconds % 30));
-            tickEl.innerHTML = `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--emerald); margin-right:4px"></span>Auto-refresh ativo (próxima checagem em ${nextIn}s)`;
+            tickEl.innerHTML = `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--emerald); margin-right:4px"></span>Auto-refresh na hora cheia (${nextHourFmt} · em ${minsRemaining} min)`;
         }
-        if (seconds % 30 === 0) {
-            if (window._lastLiveBaseStudents) {
-                drawLiveMonitor(window._lastLiveBaseStudents, true);
-            }
+
+        window._hourlyTimer = setTimeout(async () => {
+            console.log("[AO VIVO] Hora cheia atingida. Sincronizando dados...");
+            try {
+                const res = await fetch('/api/atualizar', { method: 'POST' });
+                if (res.ok) {
+                    window.location.reload();
+                    return;
+                }
+            } catch(e) {}
+            window.location.reload();
+        }, msUntilNextHour + 1000);
+    }
+
+    updateClockAndSchedule();
+    
+    window._minuteTickInterval = setInterval(() => {
+        const now = new Date();
+        const msIntoHour = (now.getMinutes() * 60 + now.getSeconds()) * 1000 + now.getMilliseconds();
+        const msUntilNextHour = Math.max(1000, 3600000 - msIntoHour);
+        const nextHour = new Date(now.getTime() + msUntilNextHour);
+        const pad = n => n < 10 ? '0' + n : n;
+        const nextHourFmt = `${pad(nextHour.getHours())}:00`;
+        const minsRemaining = Math.max(1, Math.round(msUntilNextHour / 60000));
+        const tickEl = document.getElementById('live-tick-status');
+        if (tickEl) {
+            tickEl.innerHTML = `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--emerald); margin-right:4px"></span>Auto-refresh na hora cheia (${nextHourFmt} · em ${minsRemaining} min)`;
         }
-    }, 5000);
+        if (window._lastLiveBaseStudents) {
+            drawLiveMonitor(window._lastLiveBaseStudents, true);
+        }
+    }, 60000);
 }
 
 function drawLiveMonitor(baseStudents, isAutoTick) {
@@ -2554,7 +2588,7 @@ function drawLiveMonitor(baseStudents, isAutoTick) {
     if (!liveSectionEl) return;
 
     if (!isAutoTick) {
-        startLiveAutoTimer();
+        startHourlyAutoRefresh();
     }
 
     let allEvts = [];
@@ -2588,25 +2622,33 @@ function drawLiveMonitor(baseStudents, isAutoTick) {
     allEvts.sort((a,b) => a.dt.getTime() - b.dt.getTime());
     const maxDt = allEvts[allEvts.length - 1].dt;
     
-    // Janelas de tempo: últimos 60 minutos e últimas 24 horas
-    const t60m = new Date(maxDt.getTime() - 60 * 60 * 1000);
-    const t24h = new Date(maxDt.getTime() - 24 * 60 * 60 * 1000);
+    // TEMPO REAL: Janela de 60 minutos calculada a partir do momento ATUAL (real)
+    const now = new Date();
+    const t60m = new Date(now.getTime() - 60 * 60 * 1000);
+    const t24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-    const evts60m = allEvts.filter(e => e.dt >= t60m).sort((a,b) => b.dt.getTime() - a.dt.getTime());
-    const evts24h = allEvts.filter(e => e.dt >= t24h);
+    const evts60m = allEvts.filter(e => e.dt >= t60m && e.dt <= now).sort((a,b) => b.dt.getTime() - a.dt.getTime());
+    const evts24h = allEvts.filter(e => e.dt >= t24h && e.dt <= now);
 
     const uniqueStudents60m = new Set(evts60m.map(e => (e.email || '').toLowerCase().trim()).filter(Boolean));
     const uniqueStudents24h = new Set(evts24h.map(e => (e.email || '').toLowerCase().trim()).filter(Boolean));
 
     const pad = n => n < 10 ? '0' + n : n;
     const startTime60mFmt = `${pad(t60m.getHours())}:${pad(t60m.getMinutes())}`;
+    const nowTimeFmt = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
     const maxTimeHourFmt = `${pad(maxDt.getHours())}:${pad(maxDt.getMinutes())}`;
     const maxDateFmt = `${pad(maxDt.getDate())}/${pad(maxDt.getMonth()+1)}/${maxDt.getFullYear()}`;
+
+    // Calcular tempo desde o último registro na base
+    const diffMs = Math.max(0, now.getTime() - maxDt.getTime());
+    const diffHours = Math.floor(diffMs / (3600 * 1000));
+    const diffMins = Math.floor((diffMs % (3600 * 1000)) / 60000);
+    const tempoAtras = diffHours > 0 ? `há ${diffHours}h ${diffMins}min` : `há ${diffMins} min`;
 
     // Atualizar labels de referência no cabeçalho
     const refTimeEl = document.getElementById('live-ref-time');
     if (refTimeEl) {
-        refTimeEl.innerHTML = `Último log recebido: <b style="color:var(--ink)">${maxDateFmt} às ${maxTimeHourFmt}</b>`;
+        refTimeEl.innerHTML = `Último registro na base: <b style="color:var(--ink)">${maxDateFmt} às ${maxTimeHourFmt}</b> (${tempoAtras})`;
     }
 
     // Mini KPIs
@@ -2615,11 +2657,11 @@ function drawLiveMonitor(baseStudents, isAutoTick) {
         miniKpisEl.innerHTML = `
           <div style="background:var(--card); border:1px solid var(--line); border-radius:8px; padding:6px 12px; text-align:right">
             <div style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase">Últimos 60 min</div>
-            <div style="font-size:16px; font-weight:800; color:var(--emerald-d)">${evts60m.length} <span style="font-size:11px; font-weight:600; color:var(--muted)">ações</span></div>
+            <div style="font-size:16px; font-weight:800; color:${evts60m.length > 0 ? 'var(--emerald-d)' : 'var(--muted)'}">${evts60m.length} <span style="font-size:11px; font-weight:600; color:var(--muted)">ações</span></div>
           </div>
           <div style="background:var(--card); border:1px solid var(--line); border-radius:8px; padding:6px 12px; text-align:right">
             <div style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase">Alunos Ativos (60m)</div>
-            <div style="font-size:16px; font-weight:800; color:var(--sky-d)">${uniqueStudents60m.size} <span style="font-size:11px; font-weight:600; color:var(--muted)">online</span></div>
+            <div style="font-size:16px; font-weight:800; color:${uniqueStudents60m.size > 0 ? 'var(--sky-d)' : 'var(--muted)'}">${uniqueStudents60m.size} <span style="font-size:11px; font-weight:600; color:var(--muted)">online</span></div>
           </div>
           <div style="background:var(--card); border:1px solid var(--line); border-radius:8px; padding:6px 12px; text-align:right">
             <div style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase">Total 24h</div>
@@ -2637,22 +2679,23 @@ function drawLiveMonitor(baseStudents, isAutoTick) {
     const liveCountBadge = document.getElementById('live-count-badge');
     const liveWindowLabel = document.getElementById('live-window-label');
     
-    if (liveCountBadge) liveCountBadge.textContent = `${evts60m.length} eventos`;
-    if (liveWindowLabel) liveWindowLabel.innerHTML = `Janela: <b>${startTime60mFmt} às ${maxTimeHourFmt}</b> (${pad(maxDt.getDate())}/${pad(maxDt.getMonth()+1)})`;
+    if (liveCountBadge) liveCountBadge.textContent = `${evts60m.length} evento${evts60m.length !== 1 ? 's' : ''}`;
+    if (liveWindowLabel) liveWindowLabel.innerHTML = `Janela: <b>${startTime60mFmt} às ${nowTimeFmt}</b> (Hoje)`;
 
     if (feedListEl) {
         if (evts60m.length === 0) {
             feedListEl.innerHTML = `
-              <div style="text-align:center; padding:30px 15px; color:var(--muted)">
-                <div style="font-size:24px; margin-bottom:6px">☕</div>
-                <div style="font-size:12.5px; font-weight:600; color:var(--ink)">Sem interações na última hora</div>
-                <div style="font-size:11px; margin-top:2px">Nenhum evento registrado entre ${startTime60mFmt} e ${maxTimeHourFmt} (${pad(maxDt.getDate())}/${pad(maxDt.getMonth()+1)}).</div>
+              <div style="text-align:center; padding:45px 15px; color:var(--muted)">
+                <div style="font-size:26px; margin-bottom:8px">☕</div>
+                <div style="font-size:13px; font-weight:700; color:var(--ink)">Nenhuma atividade nos últimos 60 minutos</div>
+                <div style="font-size:11px; margin-top:4px; color:var(--muted)">Sem logs recebidos nas APIs entre ${startTime60mFmt} e ${nowTimeFmt}.</div>
+                <div style="margin-top:10px; font-size:10.5px; color:var(--muted2)">O feed será atualizado automaticamente caso surjam novas ações.</div>
               </div>
             `;
         } else {
             feedListEl.innerHTML = evts60m.map(e => {
-                const diffMins = Math.max(0, Math.round((maxDt.getTime() - e.dt.getTime()) / 60000));
-                const timeAgo = diffMins === 0 ? 'no fechamento da hora' : `há ${diffMins} min`;
+                const diffMinsAgo = Math.max(0, Math.round((now.getTime() - e.dt.getTime()) / 60000));
+                const timeAgo = diffMinsAgo === 0 ? 'agora mesmo' : `há ${diffMinsAgo} min`;
                 const timeHour = `${pad(e.dt.getHours())}:${pad(e.dt.getMinutes())}`;
                 const eventDate = `${pad(e.dt.getDate())}/${pad(e.dt.getMonth()+1)}`;
 
@@ -2683,7 +2726,6 @@ function drawLiveMonitor(baseStudents, isAutoTick) {
                           <span style="font-size:9.5px; font-weight:700; padding:1px 5px; border-radius:3px; background:${platBg}; color:${platColor}">${e.plataforma}</span>
                         </div>
                         
-                        <!-- HORÁRIO EXATO VISÍVEL -->
                         <div style="text-align:right; flex-shrink:0">
                           <div style="font-size:12px; font-weight:800; color:var(--ink)">${timeHour}</div>
                           <div style="font-size:9.5px; color:var(--muted); margin-top:-2px">${eventDate} · ${timeAgo}</div>
@@ -2731,8 +2773,11 @@ function drawLiveHourlyChart(baseStudents, actionFilter) {
                         d: e.d,
                         aluno: s.nome || 'Aluno',
                         email: s.email || '',
-                        acao: e.acao || '',
-                        item: e.item || ''
+                        curso: s.curso || '',
+                        plataforma: s.plataforma || 'Academy',
+                        acao: e.acao || 'AÇÃO',
+                        item: e.item || '',
+                        mod: e.mod || ''
                     });
                 }
             }
@@ -2744,10 +2789,13 @@ function drawLiveHourlyChart(baseStudents, actionFilter) {
         return;
     }
 
-    allEvts.sort((a,b) => a.dt.getTime() - b.dt.getTime());
-    const maxDt = allEvts[allEvts.length - 1].dt;
-    const t24h = new Date(maxDt.getTime() - 24 * 60 * 60 * 1000);
-    const evts24h = allEvts.filter(e => e.dt >= t24h);
+    // Janela real de 24 horas terminando na hora atual
+    const now = new Date();
+    const currentHourStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0, 0);
+    const t24hStart = new Date(currentHourStart.getTime() - 23 * 3600 * 1000);
+    const t24hEnd = new Date(currentHourStart.getTime() + 3600 * 1000);
+
+    const evts24h = allEvts.filter(e => e.dt >= t24hStart && e.dt < t24hEnd);
 
     let countAulas = 0, countLogins = 0, countPDFs = 0, countOutros = 0;
     evts24h.forEach(e => {
@@ -2783,8 +2831,8 @@ function drawLiveHourlyChart(baseStudents, actionFilter) {
     let filteredTotal = 0;
 
     for (let i = 0; i < 24; i++) {
-        const bStart = new Date(t24h.getTime() + i * 60 * 60 * 1000);
-        const bEnd = new Date(t24h.getTime() + (i + 1) * 60 * 60 * 1000);
+        const bStart = new Date(t24hStart.getTime() + i * 3600 * 1000);
+        const bEnd = new Date(bStart.getTime() + 3600 * 1000);
         
         const inBucket = evts24h.filter(e => e.dt >= bStart && e.dt < bEnd);
         
@@ -2812,7 +2860,7 @@ function drawLiveHourlyChart(baseStudents, actionFilter) {
     }
 
     if (rangeLabel) {
-        rangeLabel.textContent = `Janela das 24h: ${pad(t24h.getDate())}/${pad(t24h.getMonth()+1)} ${pad(t24h.getHours())}:00 às ${pad(maxDt.getDate())}/${pad(maxDt.getMonth()+1)} ${pad(maxDt.getHours())}:${pad(maxDt.getMinutes())}`;
+        rangeLabel.textContent = `Janela das 24h: ${pad(t24hStart.getDate())}/${pad(t24hStart.getMonth()+1)} ${pad(t24hStart.getHours())}:00 às ${pad(now.getDate())}/${pad(now.getMonth()+1)} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
     }
     if (totalLabel) {
         totalLabel.innerHTML = `Volume no filtro: <b style="color:var(--ink)">${filteredTotal} ações</b>`;
@@ -2842,7 +2890,6 @@ function drawLiveHourlyChart(baseStudents, actionFilter) {
       </div>
     `;
 }
-
 
 function drawHome(force) {
     if (!DATA.students) return;
