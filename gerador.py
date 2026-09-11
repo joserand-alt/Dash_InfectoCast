@@ -26,10 +26,12 @@ def prepare_template(template_path):
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
-def fetch_logs_from_api(df_insc):
-    print("Buscando logs de uso via API InfectoCast Academy (substituindo planilha)...")
+def fetch_logs_from_api(students_df=None):
+    print("Buscando logs de uso via API InfectoCast Academy...")
     token = 'idIsYOe8egEasc4xwhxmwu2uSZyWy3oEhWzE3kEHakhcPJzQpp7kGLmYrk7lcrMQ'
-    students = df_insc[['ID Aluno', 'Aluno', 'E-mail']].dropna(subset=['ID Aluno']).drop_duplicates(subset=['ID Aluno'])
+    if students_df is None or students_df.empty:
+        return pd.DataFrame(columns=['Data log', 'Nome aluno', 'E-mail', 'Ação / Local', 'ID Item', 'Desc. Item'])
+    students = students_df[['ID Aluno', 'Aluno', 'E-mail']].dropna(subset=['ID Aluno']).drop_duplicates(subset=['ID Aluno'])
 
     def fetch_student_logs(row):
         id_aluno = int(row['ID Aluno'])
@@ -109,22 +111,24 @@ def clean_rd_event_name(ev_name):
     return ev_name.replace('---', ' - ').replace('__', ' ').strip()
 
 def main():
-    inscricoes_path = r'C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\Inscrições.xlsx'
     cursos_path = r'C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\CURSOS.xlsx'
+    log_uso_path = r'C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\Log de uso.xlsx'
     template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'template.html')
     
-    print("Carregando planilhas...")
-    df_insc = pd.read_excel(inscricoes_path)
-    df_log = fetch_logs_from_api(df_insc)
+    print("Carregando logs de uso da plataforma Academy...")
+    if os.path.exists(log_uso_path):
+        df_log = pd.read_excel(log_uso_path)
+        df_log['Data log'] = pd.to_datetime(df_log['Data log'], errors='coerce')
+        df_log['Plataforma'] = 'Academy'
+    else:
+        df_log = pd.DataFrame(columns=['Data log', 'Nome aluno', 'E-mail', 'Ação / Local', 'ID Item', 'Desc. Item', 'Plataforma'])
+        
     xls_cursos = pd.ExcelFile(cursos_path)
-    
     df_mods = xls_cursos.parse(1)
     df_aulas = xls_cursos.parse(2)
     
-    df_insc['Data Inscrição'] = pd.to_datetime(df_insc['Data Inscrição'], format='%d/%m/%Y %H:%M', errors='coerce')
-    
-    hoje = df_log['Data log'].max().date() + datetime.timedelta(days=1)
-    inscritos = df_insc['E-mail'].dropna().unique()
+    hoje = df_log['Data log'].max().date() + datetime.timedelta(days=1) if not df_log['Data log'].dropna().empty else datetime.date.today()
+    inscritos = df_log['E-mail'].dropna().unique()
     
     mensagens_path = r'C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\Registro de mensagens.xlsx'
     mensagens_recentes = {}
@@ -186,6 +190,8 @@ def main():
             return normalize_curso('FERRAMENTAS DE QUALIDADE')
         if 'INFECTOXPERT' in t_norm or 'EXPERT' in t_norm:
             return normalize_curso('INFECTOXPERT')
+        if not t_norm or t_norm.replace('.', '').replace(' ', '').isdigit():
+            return None
         return normalize_curso(turma)
 
     def get_core_subject(name):
@@ -244,34 +250,14 @@ def main():
         email = str(row['E-mail']).strip()
         turma = str(row['ID Item'] or row['Desc. Item'] or '').strip()
         if turma and turma != 'nan' and email not in student_course_map:
-            student_course_map[email] = canonicalize_curso(turma)
+            c_norm = canonicalize_curso(turma)
+            if c_norm:
+                student_course_map[email] = c_norm
     
-    # Second pass: infer from content for students without PG event
-    for _, insc in df_insc.dropna(subset=['E-mail']).drop_duplicates(subset=['E-mail']).iterrows():
-        email = str(insc['E-mail']).strip()
+    # Second pass: infer from watched lessons content for students without explicit PG event
+    for email in df_log['E-mail'].dropna().unique():
+        email = str(email).strip()
         if email in student_course_map:
-            continue
-        
-        excel_curso = str(insc.get('CURSO', '')).strip()
-        core_excel = get_core_subject(excel_curso)
-        
-        if core_excel == 'INFECTOPEDIATRIA':
-            student_course_map[email] = normalize_curso('PÓS-GRADUAÇÃO EM INFECTOPEDIATRIA')
-            continue
-        elif core_excel == 'ORTOPEDIA':
-            student_course_map[email] = normalize_curso('PÓS-GRADUAÇÃO EM INFECÇÕES ORTOPÉDICAS E DE PARTES MOLES')
-            continue
-        elif core_excel == 'CCIH':
-            if 'FARM' in norm_title(excel_curso) or 'ENF' in norm_title(excel_curso):
-                student_course_map[email] = canonicalize_curso(excel_curso)
-            else:
-                student_course_map[email] = normalize_curso('PÓS-GRADUAÇÃO EM PREVENÇÃO E CONTROLE DE INFECÇÃO HOSPITALAR (CCIH)')
-            continue
-        elif core_excel == 'IMUNODEPRIMIDOS':
-            student_course_map[email] = normalize_curso('PÓS-GRADUAÇÃO EM INFECÇÕES EM IMUNODEPRIMIDOS')
-            continue
-        elif core_excel == 'SOS':
-            student_course_map[email] = normalize_curso('S.O.S ANTIBIÓTICO')
             continue
 
         student_logs = df_log[df_log['E-mail'] == email]
@@ -285,16 +271,14 @@ def main():
             student_course_map[email] = normalize_curso('PÓS-GRADUAÇÃO EM INFECÇÕES ORTOPÉDICAS E DE PARTES MOLES')
         elif any(w in all_text for w in ['CCIH', 'INFECCAO HOSPITALAR', 'PREVENCAO', 'VIGILANCIA', 'PAV', 'ISC', 'IPCSL']):
             student_course_map[email] = normalize_curso('PÓS-GRADUAÇÃO EM PREVENÇÃO E CONTROLE DE INFECÇÃO HOSPITALAR (CCIH)')
+        elif any(w in all_text for w in ['IMUNO', 'IMUNODEPRIMIDO', 'TRANSPLANTE']):
+            student_course_map[email] = normalize_curso('PÓS-GRADUAÇÃO EM INFECÇÕES EM IMUNODEPRIMIDOS')
         elif any(w in all_text for w in ['ANTIBIOTICO', 'S.O.S', 'ESBL', 'KPC', 'NDM', 'CRAB', 'PARC', 'MDR']):
             student_course_map[email] = normalize_curso('S.O.S ANTIBIÓTICO')
         elif any(w in all_text for w in ['FERRAMENTAS', 'ISHIKAWA', 'PARETO', 'PDCA', 'SIPOC', 'BRAINSTORMING', 'GEMBA']):
             student_course_map[email] = normalize_curso('FERRAMENTAS DE QUALIDADE')
         else:
-            excel_curso = str(insc.get('CURSO', '')).strip()
-            if excel_curso and excel_curso != 'nan':
-                student_course_map[email] = canonicalize_curso(excel_curso)
-            else:
-                student_course_map[email] = normalize_curso('CURSO DESCONHECIDO')
+            student_course_map[email] = normalize_curso('PLATAFORMA GERAL')
     
     # Step 2: Collect all lessons per course
     course_lessons = {}  # normalized_course -> {norm_title: original_title}
@@ -518,21 +502,63 @@ def main():
 
         return det_curso, det_date
 
+    # ============================================
+    # LEITURA LOGRD.CSV & DICAS DE CURSO
+    # ============================================
+    logrd_path = r'C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\LogRD.csv'
+    rd_events_map = {}
+    rd_course_hints = {}
+    
+    if os.path.exists(logrd_path):
+        df_rd = pd.read_csv(logrd_path, encoding='utf-8', low_memory=False)
+        df_rd['email_lower'] = df_rd['Email'].astype(str).str.lower().str.strip()
+        
+        # Build hints and events for all rows
+        ev_col_name = 'Eventos (Últimos 100)' if 'Eventos (Últimos 100)' in df_rd.columns else None
+        for _, row in df_rd.iterrows():
+            email_k = str(row['email_lower']).strip()
+            if not email_k or email_k == 'nan': continue
+            
+            tags_r = str(row.get('Tags', '')).lower()
+            events_r = str(row.get(ev_col_name, '')).lower() if ev_col_name else ''
+            curso_r = str(row.get('Curso', '')).lower()
+            pos_r = str(row.get('Curso da Pós-graduação InfectoCast', '')).lower()
+            comb_r = f"{tags_r} {events_r} {curso_r} {pos_r}"
+            
+            if '[ccih]' in tags_r or 'pos-ccih' in comb_r or 'ebook ccih' in comb_r or 'pga enfermagem' in comb_r or 'prevenção e controle' in comb_r:
+                rd_course_hints[email_k] = normalize_curso('PÓS-GRADUAÇÃO EM PREVENÇÃO E CONTROLE DE INFECÇÃO HOSPITALAR (CCIH)')
+            elif '[ped]' in tags_r or 'pos-ped' in comb_r or 'infectoped' in comb_r or 'pediatria' in comb_r:
+                rd_course_hints[email_k] = normalize_curso('PÓS-GRADUAÇÃO EM INFECTOPEDIATRIA')
+            elif '[ortoped]' in tags_r or 'ortoped' in comb_r or 'partes moles' in comb_r:
+                rd_course_hints[email_k] = normalize_curso('PÓS-GRADUAÇÃO EM INFECÇÕES ORTOPÉDICAS E DE PARTES MOLES')
+            elif '[imuno]' in tags_r or 'imuno' in comb_r or 'imunodeprimidos' in comb_r:
+                rd_course_hints[email_k] = normalize_curso('PÓS-GRADUAÇÃO EM INFECÇÕES EM IMUNODEPRIMIDOS')
+            elif 'sos-antibiotico' in comb_r or 'sos atb' in comb_r or 'ebook-novos-antibioticos' in comb_r or 'jornada multi-r' in comb_r:
+                rd_course_hints[email_k] = normalize_curso('S.O.S ANTIBIÓTICO')
+
     students = []
     
-    unique_insc = df_insc.dropna(subset=['E-mail']).drop_duplicates(subset=['E-mail', 'CURSO'])
+    df_acad = df_log[df_log.get('Plataforma', 'Academy') == 'Academy'] if 'Plataforma' in df_log.columns else df_log
+    unique_academy_students = df_acad.dropna(subset=['E-mail']).drop_duplicates(subset=['E-mail'])
     
-    for _, insc in unique_insc.iterrows():
-        email = insc['E-mail']
-        email_str = str(email).lower()
-        if 'teste' in email_str or '@infectocast' in email_str or '@vectorcomunica' in email_str or 'gcotta29@gmail.com' in email_str or 'rand' in email_str:
+    for _, log_row in unique_academy_students.iterrows():
+        email = str(log_row['E-mail']).strip()
+        email_str = email.lower()
+        if not email_str or email_str == 'nan' or 'teste' in email_str or '@infectocast' in email_str or '@vectorcomunica' in email_str or 'rand' in email_str:
             continue
             
         logs = df_log[df_log['E-mail'] == email]
         acessou = len(logs) > 0
+        nome_aluno = str(logs['Nome aluno'].dropna().iloc[0]).strip() if not logs['Nome aluno'].dropna().empty else email_str
 
-        excel_d = insc['Data Inscrição'] if pd.notna(insc['Data Inscrição']) else None
-        curso_aluno, dt_insc_aluno = get_student_course_and_date(email, logs, excel_d)
+        curso_aluno, dt_insc_aluno = get_student_course_and_date(email, logs, None)
+        
+        c_inferido = False
+        c_origem = "Log de Acesso"
+        if curso_aluno in ["PLATAFORMA GERAL", "SEM CURSO", "CURSO DESCONHECIDO"] and 'rd_course_hints' in locals() and email_str in rd_course_hints:
+            curso_aluno = rd_course_hints[email_str]
+            c_inferido = True
+            c_origem = "RD Station"
         
         # Safely compute dias_desde_insc and data_insc
         try:
@@ -550,27 +576,24 @@ def main():
             dias_desde_insc = 0
             data_insc_fmt = None
         
-        telefone = str(insc['Telefone']).strip() if 'Telefone' in insc and pd.notna(insc['Telefone']) else ""
-        if telefone.endswith('.0'): telefone = telefone[:-2]
-        if telefone == 'nan': telefone = ""
-        
-        has_acad = any(logs['Plataforma'] == 'Academy')
-        has_cat = any(logs['Plataforma'] == 'Cativa')
-        plat_str = 'Ambas' if (has_acad and has_cat) else ('Cativa' if has_cat else 'Academy')
-        if not telefone and email_str in cativa_users_meta:
+        telefone = ""
+        if email_str in cativa_users_meta:
             telefone = normalize_phone(cativa_users_meta[email_str].get('phone', ''))
+            
         student_data = {
             "email": str(email),
-            "nome": str(insc['Aluno']),
+            "nome": nome_aluno,
             "curso": curso_aluno,
+            "curso_inferido": c_inferido,
+            "curso_origem": c_origem,
             "telefone": telefone,
             "acessou": acessou,
             "data_insc": data_insc_fmt,
             "data_inscricao": data_insc_fmt,
             "inscricao": data_insc_fmt,
             "dias_desde_insc": dias_desde_insc,
-            "plataforma": plat_str,
-            "id_aluno": str(int(insc['ID Aluno'])) if pd.notna(insc.get('ID Aluno')) else ""
+            "plataforma": "Academy",
+            "id_aluno": ""
         }
         
         if acessou:
@@ -592,7 +615,7 @@ def main():
                 "aulas_concluidas": len(logs[logs.iloc[:, 3] == 'CONCLUIU AULA']),
                 "materiais": len(logs[logs.iloc[:, 3] == 'BAIXOU MATERIAL PDF']),
                 "testes": len(logs[logs.iloc[:, 3] == 'CONCLUIU TESTE/MÓDULO']),
-                "lag": (first_log.date() - insc['Data Inscrição'].date()).days if pd.notna(insc['Data Inscrição']) else 0,
+                "lag": 0,
                 "last_fmt": last_log.strftime("%d/%m/%Y"),
                 "events": [],
                 "wa_dt_primeira": None,
@@ -602,8 +625,8 @@ def main():
             
             # WA Mapping for Student
             # Try to find their phone from insc dataframe
-            phone1 = normalize_phone(insc.get('Telefone'))
-            phone2 = normalize_phone(insc.get('Celular'))
+            phone1 = telefone
+            phone2 = ''
             if phone1 and phone1 in wa_history:
                 student_data['wa_dt_primeira'] = wa_history[phone1]['primeira'].strftime('%d/%m/%Y')
                 student_data['wa_dt_ultima'] = wa_history[phone1]['ultima'].strftime('%d/%m/%Y')
@@ -835,7 +858,7 @@ def main():
     if os.path.exists(logrd_path):
         df_rd = pd.read_csv(logrd_path, encoding='utf-8', low_memory=False)
         
-        emails_inscritos_set = set(str(e).lower().strip() for e in df_insc['E-mail'].dropna().unique())
+        emails_inscritos_set = set(str(s['email']).lower().strip() for s in students if s.get('email'))
         for s in cativa_students:
             em_c = str(s.get('email', '')).lower().strip()
             if em_c:
@@ -927,13 +950,7 @@ def main():
         
         # Cruzar com data de inscrição
         insc_dates = {}
-        for _, row in df_insc.dropna(subset=['E-mail']).iterrows():
-            em = str(row['E-mail']).lower().strip()
-            dt = row['Data Inscrição']
-            if pd.notna(dt):
-                if em not in insc_dates or dt < insc_dates[em]:
-                    insc_dates[em] = dt
-        for s in cativa_students:
+        for s in students:
             em = str(s.get('email', '')).lower().strip()
             dt_raw = s.get('data_insc') or s.get('data_inscricao') or s.get('inscricao')
             if em and dt_raw:
@@ -1337,7 +1354,7 @@ def main():
         }
     
     # ============================================
-    # VINDI FINANCEIRO — Mapeamento por e-mail
+    # VINDI FINANCEIRO
     # ============================================
     vindi_matched = 0
     financeiro_data = {}
@@ -1346,13 +1363,60 @@ def main():
         vindi_res = get_vindi_data(force_reload=False)
         vindi_map = vindi_res.get('data', {}) if isinstance(vindi_res, dict) and 'data' in vindi_res else vindi_res
         financeiro_data = vindi_res.get('financeiro', {}) if isinstance(vindi_res, dict) else {}
+        
+        # Link Vindi to existing students (matching by email + course first)
         for s in students:
             em = str(s.get('email', '')).lower().strip()
-            if em in vindi_map:
+            c_s = str(s.get('curso', '')).strip()
+            key_ec = f"{em}___{c_s}"
+            if key_ec in vindi_map:
+                s['vindi'] = vindi_map[key_ec]
+                vindi_matched += 1
+            elif em in vindi_map:
                 s['vindi'] = vindi_map[em]
                 vindi_matched += 1
             else:
                 s['vindi'] = None
+                
+        # Add Vindi subscribers who don't have access logs yet (as inferred students)
+        existing_vindi_keys = set((str(s.get('email', '')).lower().strip(), str(s.get('curso', '')).strip()) for s in students if s.get('email'))
+        for em, v_obj in vindi_map.items():
+            if '___' in em: continue # Skip composite dictionary keys
+            em_clean = str(em).lower().strip()
+            if not em_clean or not isinstance(v_obj, dict): continue
+            
+            c_inferido = v_obj.get('curso') or "PLATAFORMA GERAL"
+            c_orig = "Plano Vindi"
+            if c_inferido == "PLATAFORMA GERAL" and 'rd_course_hints' in locals() and em_clean in rd_course_hints:
+                c_inferido = rd_course_hints[em_clean]
+                c_orig = "RD Station"
+                
+            pair_key = (em_clean, c_inferido)
+            if pair_key not in existing_vindi_keys:
+                existing_vindi_keys.add(pair_key)
+                new_v_st = {
+                    "email": em_clean,
+                    "nome": v_obj.get('customer_name') or 'Aluno Vindi',
+                    "curso": c_inferido,
+                    "curso_inferido": True,
+                    "curso_origem": c_orig,
+                    "telefone": "",
+                    "acessou": False,
+                    "data_insc": None,
+                    "data_inscricao": None,
+                    "inscricao": None,
+                    "dias_desde_insc": 0,
+                    "plataforma": "Academy",
+                    "id_aluno": str(v_obj.get('customer_id', '')),
+                    "events": [],
+                    "vindi": v_obj,
+                    "asaas": None
+                }
+                if 'rd_events_map' in locals() and em_clean in rd_events_map:
+                    new_v_st['rd_funnel'] = dict(rd_events_map[em_clean])
+                students.append(new_v_st)
+                vindi_matched += 1
+                
         print(f"[VINDI] {vindi_matched} estudantes vinculados com dados financeiros da Vindi.")
     except Exception as e_vindi:
         print(f"[VINDI] Erro ao integrar Vindi no gerador: {e_vindi}")
