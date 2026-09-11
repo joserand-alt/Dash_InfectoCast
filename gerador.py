@@ -1169,9 +1169,30 @@ def main():
         for item in captacao_timeline:
             item['alunos'] = int(item['alunos'])
             
-        # Extract RD history for enrolled students to embed in their object
+        # Extract RD history and course hints from LogRD
         rd_events_map = {}
-        for _, row in df_rd[df_rd['e_aluno']].iterrows():
+        rd_course_hints = {}
+        for _, row in df_rd.iterrows():
+            email_k = str(row['email_lower']).strip()
+            if not email_k or email_k == 'nan': continue
+            
+            # Infer course hint from RD lead tags and events
+            tags_r = str(row.get('Tags', '')).lower()
+            events_r = str(row.get(ev_col_name, '')).lower() if ev_col_name else ''
+            curso_r = str(row.get('Curso', '')).lower()
+            pos_r = str(row.get('Curso da Pós-graduação InfectoCast', '')).lower()
+            comb_r = f"{tags_r} {events_r} {curso_r} {pos_r}"
+            
+            if '[ccih]' in tags_r or 'pos-ccih' in comb_r or 'ebook ccih' in comb_r or 'pga enfermagem' in comb_r or 'prevenção e controle' in comb_r:
+                rd_course_hints[email_k] = normalize_curso('PÓS-GRADUAÇÃO EM PREVENÇÃO E CONTROLE DE INFECÇÃO HOSPITALAR (CCIH)')
+            elif '[ped]' in tags_r or 'pos-ped' in comb_r or 'infectoped' in comb_r or 'pediatria' in comb_r:
+                rd_course_hints[email_k] = normalize_curso('PÓS-GRADUAÇÃO EM INFECTOPEDIATRIA')
+            elif '[ortoped]' in tags_r or 'ortoped' in comb_r or 'partes moles' in comb_r:
+                rd_course_hints[email_k] = normalize_curso('PÓS-GRADUAÇÃO EM INFECÇÕES ORTOPÉDICAS E DE PARTES MOLES')
+            elif '[imuno]' in tags_r or 'imuno' in comb_r or 'imunodeprimidos' in comb_r:
+                rd_course_hints[email_k] = normalize_curso('PÓS-GRADUAÇÃO EM INFECÇÕES EM IMUNODEPRIMIDOS')
+            elif 'sos-antibiotico' in comb_r or 'sos atb' in comb_r or 'ebook-novos-antibioticos' in comb_r or 'jornada multi-r' in comb_r:
+                rd_course_hints[email_k] = normalize_curso('S.O.S ANTIBIÓTICO')
             evs_str = str(row[ev_col_name]) if ev_col_name else ''
             ev_list_raw = [e.strip() for e in evs_str.split('/') if e.strip()] if evs_str != 'nan' else []
             ev_list = []
@@ -1368,6 +1389,56 @@ def main():
         # 2. Adicionar alunos do Asaas/Academy API que ainda não estavam na lista de estudantes
         existing_emails = set(str(s.get('email', '')).lower().strip() for s in students if s.get('email'))
         added_from_api = 0
+
+        def _infer_curso_from_asaas(asaas_st, email):
+            """Tenta resolver o curso do aluno Asaas usando student_course_map, RD Station ou descrição da fatura."""
+            # 1. Verifica student_course_map (logs + planilhas)
+            if email in student_course_map:
+                return student_course_map[email]
+            
+            # 2. Verifica dicas do RD Station (Tags e Eventos)
+            if 'rd_course_hints' in locals() and email in rd_course_hints:
+                return rd_course_hints[email]
+            
+            # 2. Infere pelo valor total do plano (padrão de preços dos cursos)
+            total = asaas_st.get('total_bruto') or 0
+            if total <= 0:
+                # Calcula total bruto a partir das faturas
+                faturas = asaas_st.get('faturas', [])
+                if faturas:
+                    total = sum(f.get('valor', 0) for f in faturas)
+            
+            # 3. Tenta pela descrição do pagamento
+            faturas = asaas_st.get('faturas', [])
+            desc_text = ''
+            for ft in faturas:
+                d = ft.get('description', ft.get('descricao', ''))
+                if d and d != 'N/A':
+                    desc_text += ' ' + str(d).upper()
+            
+            desc_norm = desc_text.replace('Ã', 'A').replace('Ç', 'C').replace('Ó', 'O').replace('É', 'E').replace('Í', 'I')
+            
+            if any(w in desc_norm for w in ['CCIH', 'INFECCAO HOSPITALAR', 'PREVENCAO']):
+                return normalize_curso('PÓS-GRADUAÇÃO EM PREVENÇÃO E CONTROLE DE INFECÇÃO HOSPITALAR (CCIH)')
+            if any(w in desc_norm for w in ['INFECTOPED', 'PEDIATRIA']):
+                return normalize_curso('PÓS-GRADUAÇÃO EM INFECTOPEDIATRIA')
+            if any(w in desc_norm for w in ['ORTOPED', 'PARTES MOLES']):
+                return normalize_curso('PÓS-GRADUAÇÃO EM INFECÇÕES ORTOPÉDICAS E DE PARTES MOLES')
+            if any(w in desc_norm for w in ['SOS', 'ANTIBIOTICO', 'ATB']):
+                return normalize_curso('S.O.S ANTIBIÓTICO')
+            if any(w in desc_norm for w in ['FERRAMENTA', 'QUALIDADE']):
+                return normalize_curso('FERRAMENTAS DE QUALIDADE')
+            if any(w in desc_norm for w in ['IMUNODEPRIMIDO']):
+                return normalize_curso('PÓS-GRADUAÇÃO EM INFECÇÕES EM IMUNODEPRIMIDOS')
+            
+            # 4. Infere pelo valor total (preços conhecidos dos cursos)
+            # Cursos de pós-graduação: ~R$2.187 (total)
+            # SOS ATB: ~R$487 (total)
+            # Ferramentas: valores menores
+            # Não é possível distinguir apenas pelo valor qual pós-graduação
+            
+            return "PLATAFORMA GERAL"
+
         for key, asaas_st in asaas_map.items():
             if not isinstance(asaas_st, dict): continue
             # Só considera como matriculado vindo da API se tiver ao menos um pagamento
@@ -1376,10 +1447,11 @@ def main():
             st_email = (asaas_st.get('customer_email') or '').lower().strip()
             if st_email and st_email not in existing_emails:
                 existing_emails.add(st_email)
-                students.append({
+                curso_resolved = _infer_curso_from_asaas(asaas_st, st_email)
+                new_st = {
                     "email": st_email,
                     "nome": asaas_st.get('customer_name') or 'Aluno Academy',
-                    "curso": "PLATAFORMA GERAL",
+                    "curso": curso_resolved,
                     "telefone": "",
                     "acessou": False,
                     "data_insc": None,
@@ -1391,7 +1463,12 @@ def main():
                     "events": [],
                     "vindi": None,
                     "asaas": asaas_st
-                })
+                }
+                if 'rd_events_map' in locals() and st_email in rd_events_map:
+                    new_st['rd_funnel'] = dict(rd_events_map[st_email])
+                students.append(new_st)
+                if curso_resolved != "PLATAFORMA GERAL":
+                    print(f"  [ASAAS] Curso resolvido para {st_email}: {curso_resolved}")
                 added_from_api += 1
                 asaas_matched += 1
 
