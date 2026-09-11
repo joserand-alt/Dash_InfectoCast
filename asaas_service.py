@@ -2,6 +2,7 @@
 import json
 import urllib.request
 from datetime import datetime, timedelta
+from concurrent.futures import ThreadPoolExecutor
 
 def _load_key():
     """Carrega a chave do arquivo local (nao commitado)."""
@@ -73,8 +74,36 @@ def fetch_all_payments():
         print(f"[ASAAS]   {status}: {len(batch)}")
     print(f"[ASAAS] Total: {len(all_p)} payments."); return all_p
 
+def _enrich_customers_with_academy_api(customers):
+    print("[ASAAS] Enriquecendo customers via API da Academy (/api/alunos/{id})...")
+    ACADEMY_TOKEN = "idIsYOe8egEasc4xwhxmwu2uSZyWy3oEhWzE3kEHakhcPJzQpp7kGLmYrk7lcrMQ"
+    enriched = 0
+    def fetch_acad(c):
+        nonlocal enriched
+        ext = (c.get("externalReference") or "").strip()
+        if not ext: return
+        url = f"https://academy.infectocast.com.br/api/alunos/{ext}"
+        req = urllib.request.Request(url, headers={"Authorization": f"Bearer {ACADEMY_TOKEN}", "Accept": "application/json", "User-Agent": "Mozilla/5.0"})
+        try:
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                d = json.loads(resp.read().decode("utf-8"))
+                if d.get("success") and d.get("data"):
+                    st = d["data"]
+                    if st.get("email"):
+                        c["email"] = st["email"].strip()
+                    if st.get("nome"):
+                        c["name"] = st["nome"].strip()
+                    enriched += 1
+        except Exception:
+            pass
+
+    with ThreadPoolExecutor(max_workers=10) as ex:
+        list(ex.map(fetch_acad, customers))
+    print(f"[ASAAS] {enriched} customers enriquecidos com email/nome direto da API Academy!")
+
 def _process(customers, payments):
     now = datetime.now(); current_ym = now.strftime("%Y-%m")
+    _enrich_customers_with_academy_api(customers)
     cust_by_id = {c["id"]: c for c in customers}
 
     payments_by_cid = {}
@@ -138,7 +167,7 @@ def _process(customers, payments):
             st_fin="cancelado"; st_lbl="Cancelado"; st_clr="#94a3b8"; st_bg="rgba(0,0,0,0.05)"
         else:
             st_fin="adimplente"; st_lbl="Em Dia"; st_clr="#059669"; st_bg="rgba(5,150,105,0.1)"
-        students_asaas[ext] = {
+        st_obj = {
             "has_asaas": True, "customer_id": cid, "customer_name": cust.get("name",""),
             "customer_email": cust.get("email",""), "cpfcnpj": cust.get("cpfCnpj",""),
             "aluno_id_extref": ext, "status_financeiro": st_fin, "status_assinatura": st_fin,
@@ -147,6 +176,10 @@ def _process(customers, payments):
             "total_pago": round(sum(f["valor"] for f in faturas if f["status"]=="pago"),2),
             "faturas": sorted(faturas, key=lambda x: x.get("vencimento_iso") or "", reverse=True),
         }
+        students_asaas[ext] = st_obj
+        c_mail = (cust.get("email") or "").lower().strip()
+        if c_mail:
+            students_asaas[c_mail] = st_obj
 
     meses_pt = {"01":"Jan","02":"Fev","03":"Mar","04":"Abr","05":"Mai","06":"Jun","07":"Jul","08":"Ago","09":"Set","10":"Out","11":"Nov","12":"Dez"}
     historico_mensal = []
