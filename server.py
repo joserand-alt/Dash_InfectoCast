@@ -93,13 +93,15 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
                 self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
         elif self.path == '/api/atualizar':
             try:
-                # Dispara a atualização executando atualizar_dashboard_nutrify.py
-                print("Iniciando atualização manual da API Nutrify...")
-                subprocess.run(['python', 'atualizar_dashboard_nutrify.py'], check=True)
+                print("Iniciando atualização manual da API InfectoCast...")
+                subprocess.run(['python', 'gerador.py'], check=True)
+                if os.path.exists('dashboard_gerado.html'):
+                    with open('dashboard_gerado.html', 'rb') as src, open('index.html', 'wb') as dst:
+                        dst.write(src.read())
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps({"status": "ok"}).encode('utf-8'))
+                self.wfile.write(json.dumps({"status": "ok", "message": "Atualizado com sucesso"}).encode('utf-8'))
             except Exception as e:
                 print(f"Erro na atualização: {e}")
                 self.send_response(500)
