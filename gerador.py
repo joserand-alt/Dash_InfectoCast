@@ -1318,9 +1318,12 @@ def main():
     # VINDI FINANCEIRO — Mapeamento por e-mail
     # ============================================
     vindi_matched = 0
+    financeiro_data = {}
     try:
         from vindi_service import get_vindi_data
-        vindi_map = get_vindi_data(force_reload=False)
+        vindi_res = get_vindi_data(force_reload=False)
+        vindi_map = vindi_res.get('data', {}) if isinstance(vindi_res, dict) and 'data' in vindi_res else vindi_res
+        financeiro_data = vindi_res.get('financeiro', {}) if isinstance(vindi_res, dict) else {}
         for s in students:
             em = str(s.get('email', '')).lower().strip()
             if em in vindi_map:
@@ -1346,7 +1349,8 @@ def main():
         "mensagens_recentes": mensagens_recentes,
         "funil": funil_data,
         "survival": [{"t": i, "frac": 100 - i} for i in range(50)],
-        "wa_chats": wa_chats
+        "wa_chats": wa_chats,
+        "financeiro": financeiro_data
     }
 
     pre, post = prepare_template(template_path)
