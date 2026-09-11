@@ -1,4 +1,4 @@
-import pandas as pd
+﻿import pandas as pd
 import json
 import datetime
 import math
@@ -569,7 +569,8 @@ def main():
             "data_inscricao": data_insc_fmt,
             "inscricao": data_insc_fmt,
             "dias_desde_insc": dias_desde_insc,
-            "plataforma": plat_str
+            "plataforma": plat_str,
+            "id_aluno": str(int(insc['ID Aluno'])) if pd.notna(insc.get('ID Aluno')) else ""
         }
         
         if acessou:
@@ -1337,6 +1338,33 @@ def main():
         for s in students:
             s['vindi'] = None
 
+    # ============================================
+    # ASAAS FINANCEIRO — Mapeamento por ID do aluno (externalReference)
+    # ============================================
+    asaas_matched = 0
+    asaas_financeiro = {}
+    try:
+        from asaas_service import get_asaas_data
+        asaas_res = get_asaas_data(force_reload=False)
+        asaas_map = asaas_res.get('data', {}) if isinstance(asaas_res, dict) else {}
+        asaas_financeiro = asaas_res.get('financeiro', {}) if isinstance(asaas_res, dict) else {}
+
+        for s in students:
+            # Tentar pelo ID do aluno (externalReference na Asaas)
+            aluno_id = str(s.get('id_aluno', '')).strip()
+            matched = False
+            if aluno_id and aluno_id in asaas_map:
+                s['asaas'] = asaas_map[aluno_id]
+                asaas_matched += 1
+                matched = True
+            if not matched:
+                s['asaas'] = None
+        print(f"[ASAAS] {asaas_matched} estudantes vinculados com dados financeiros do Asaas.")
+    except Exception as e_asaas:
+        print(f"[ASAAS] Erro ao integrar Asaas no gerador: {e_asaas}")
+        for s in students:
+            s['asaas'] = None
+
     data = {
         "meta": {
             "generated": datetime.date.today().strftime("%d/%m/%Y"),
@@ -1350,7 +1378,8 @@ def main():
         "funil": funil_data,
         "survival": [{"t": i, "frac": 100 - i} for i in range(50)],
         "wa_chats": wa_chats,
-        "financeiro": financeiro_data
+        "financeiro": financeiro_data,
+        "financeiro_asaas": asaas_financeiro
     }
 
     pre, post = prepare_template(template_path)

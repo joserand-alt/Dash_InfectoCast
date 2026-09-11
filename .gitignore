@@ -5,3 +5,6 @@ __pycache__/
 Thumbs.db
 
 rd_tokens.json
+
+asaas_config.json
+asaas_cache.json
