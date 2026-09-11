@@ -414,12 +414,15 @@ footer{padding:30px 0 40px;color:var(--muted2);font-size:11.5px;text-align:cente
           <div id="home-platforms-bars" style="display:flex; flex-direction:column; gap:14px"></div>
         </div>
 
-        <!-- CARD 2: CURSOS MAIS BUSCADOS -->
+        <!-- CARD 2: CURSOS MAIS BUSCADOS (APENAS MATRÍCULAS ATIVAS) -->
         <div class="card" style="padding:20px">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
             <div>
-              <h3 style="font-size:14.5px; font-weight:700; color:var(--ink); margin:0">Matrículas por Curso</h3>
-              <p style="font-size:11.5px; color:var(--muted); margin:4px 0 0">Ranking de cursos por número de alunos e participação na base.</p>
+              <div style="display:flex; align-items:center; gap:8px">
+                <h3 style="font-size:14.5px; font-weight:700; color:var(--ink); margin:0">Matrículas por Curso</h3>
+                <span style="font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px; background:rgba(18,161,122,0.1); color:var(--emerald-d); border:1px solid rgba(18,161,122,0.25)">Apenas Ativas</span>
+              </div>
+              <p id="home-cursos-sub" style="font-size:11.5px; color:var(--muted); margin:4px 0 0">Ranking considerando apenas matrículas ativas vigentes.</p>
             </div>
             <button onclick="switchTab('prog')" style="background:transparent; border:none; color:var(--sky); font-size:11.5px; font-weight:700; cursor:pointer">Ver Tabela Completa →</button>
           </div>
@@ -3209,20 +3212,50 @@ function drawHome(force) {
         filterNameEl.textContent = FILTER.curso === 'all' ? 'Todos os Cursos (Consolidado)' : FILTER.curso;
     }
 
-    const uniqueEmails = new Set(baseStudents.map(s => (s.email || '').toLowerCase().trim()).filter(Boolean));
+    // =========================================================================
+    // CLASSIFICAÇÃO DE MATRÍCULAS (Ativas, Canceladas, Encerradas)
+    // Regra acordada:
+    // - Cancelada: assinatura cancelada na Vindi/Asaas ou status 'Cancelado'
+    // - Encerrada: data oficial de formatura/término da turma no sistema (atualmente 0)
+    // - Ativa: não cancelada e não encerrada
+    // =========================================================================
+    const isMatriculaCancelada = s => {
+        const vSt = s.vindi ? (s.vindi.status_assinatura || s.vindi.status_financeiro) : null;
+        const aSt = s.asaas ? (s.asaas.status_assinatura || s.asaas.status_financeiro) : null;
+        return s.status === 'Cancelado' || vSt === 'canceled' || vSt === 'cancelado' || aSt === 'canceled' || aSt === 'cancelado';
+    };
+
+    const isMatriculaEncerrada = s => {
+        if (s.status === 'Encerrado' || s.turma_encerrada === true) return true;
+        if (s.data_formatura) {
+            const dtForm = parseDate(s.data_formatura);
+            if (dtForm && dtForm <= new Date()) return true;
+        }
+        return false;
+    };
+
+    const matriculasCanceladas = baseStudents.filter(isMatriculaCancelada);
+    const matriculasEncerradas = baseStudents.filter(isMatriculaEncerrada);
+    const matriculasAtivas = baseStudents.filter(s => !isMatriculaCancelada(s) && !isMatriculaEncerrada(s));
+
     const totalMatriculas = baseStudents.length;
-    const totalUnicos = uniqueEmails.size;
+    const totalMatriculasAtivas = matriculasAtivas.length;
+    const totalMatriculasCanceladas = matriculasCanceladas.length;
+    const totalMatriculasEncerradas = matriculasEncerradas.length;
+
+    const uniqueEmailsAtivos = new Set(matriculasAtivas.map(s => (s.email || '').toLowerCase().trim()).filter(Boolean));
+    const totalUnicosAtivos = uniqueEmailsAtivos.size;
 
     // Ações e Reproduções
     const ev = (CURRENT_DATA && CURRENT_DATA.action_counts) ? CURRENT_DATA.action_counts : {};
     const totalReproducoes = ev['ASSISTIU AULA'] || 0;
     const totalLogins = ev['LOGIN WEB'] || 0;
 
-    // Plataformas
+    // Plataformas (calculadas sobre matrículas ativas)
     let cativaCount = 0, academyCount = 0, ambasCount = 0;
     let cativaAcessaram = 0, academyAcessaram = 0, ambasAcessaram = 0;
 
-    baseStudents.forEach(s => {
+    matriculasAtivas.forEach(s => {
         const plat = s.plataforma || 'Academy';
         if (plat === 'Cativa') {
             cativaCount++;
@@ -3236,18 +3269,18 @@ function drawHome(force) {
         }
     });
 
-    // Cursos
+    // Cursos (EXCLUSIVO PARA MATRÍCULAS ATIVAS, conforme regra de negócio)
     let cursosCount = {};
-    baseStudents.forEach(s => {
+    matriculasAtivas.forEach(s => {
         if (s.curso) cursosCount[s.curso] = (cursosCount[s.curso] || 0) + 1;
     });
     const sortedCursos = Object.entries(cursosCount).sort((a,b) => b[1] - a[1]);
 
-    // Status da Base (calculados sobre os dados processados)
+    // Status de Engajamento da Base Ativa
     let stCounts = {
         'Concluído': 0, 'Ativo': 0, 'Em Risco': 0, 'Apenas Login': 0, 'Abandonou': 0, 'Cancelado': 0, 'Nunca acessou': 0
     };
-    baseStudents.forEach(s => {
+    matriculasAtivas.forEach(s => {
         let st = s.status;
         if (!st) {
             st = (!s.acessou ? 'Nunca acessou' : 'Ativo');
@@ -3270,48 +3303,20 @@ function drawHome(force) {
         }
     });
 
-    // Consolidado por Aluno Único (conforme regra da Aba de Retenção)
-    let uniqueMap = new Map();
-    baseStudents.forEach(s => {
-        const em = (s.email || '').toLowerCase().trim();
-        if (!em) return;
-        if (!uniqueMap.has(em)) {
-            uniqueMap.set(em, s);
-        } else {
-            let exist = uniqueMap.get(em);
-            if (exist.status === 'Nunca acessou' && s.status !== 'Nunca acessou') {
-                uniqueMap.set(em, s);
-            }
-        }
-    });
-    let uniqueStudents = Array.from(uniqueMap.values());
-    let unicosAtivos = 0, unicosRisco = 0, unicosAbandonaram = 0, unicosNunca = 0;
-    uniqueStudents.forEach(s => {
-        if (!s.acessou || s.status === 'Nunca acessou') {
-            unicosNunca++;
-        } else if (s.status === 'Abandonou' || s.status === 'Inativo') {
-            unicosAbandonaram++;
-        } else if (s.status === 'Em Risco' || s.status === 'Apenas Login') {
-            unicosRisco++;
-        } else {
-            unicosAtivos++;
-        }
-    });
-
     const engajados = (stCounts['Ativo'] || 0) + (stCounts['Concluído'] || 0);
-    const taxaEngajados = totalMatriculas > 0 ? ((engajados / totalMatriculas) * 100).toFixed(0) : '0';
+    const taxaEngajados = totalMatriculasAtivas > 0 ? ((engajados / totalMatriculasAtivas) * 100).toFixed(0) : '0';
     
     const atencaoRisco = (stCounts['Em Risco'] || 0) + (stCounts['Apenas Login'] || 0);
-    const taxaRisco = totalMatriculas > 0 ? ((atencaoRisco / totalMatriculas) * 100).toFixed(0) : '0';
+    const taxaRisco = totalMatriculasAtivas > 0 ? ((atencaoRisco / totalMatriculasAtivas) * 100).toFixed(0) : '0';
     
     const criticos = (stCounts['Abandonou'] || 0) + (stCounts['Nunca acessou'] || 0);
-    const taxaCriticos = totalMatriculas > 0 ? ((criticos / totalMatriculas) * 100).toFixed(0) : '0';
+    const taxaCriticos = totalMatriculasAtivas > 0 ? ((criticos / totalMatriculasAtivas) * 100).toFixed(0) : '0';
 
     // RD Marketing
     let countComRD = 0;
     let eventsCount = {};
     let maturacaoList = [];
-    baseStudents.forEach(s => {
+    matriculasAtivas.forEach(s => {
         const rd = s.rd_funnel;
         if (rd) {
             countComRD++;
@@ -3333,58 +3338,71 @@ function drawHome(force) {
     maturacaoList.sort((a,b)=>a-b);
     const medianaMat = maturacaoList.length > 0 ? maturacaoList[Math.floor(maturacaoList.length / 2)] : 0;
     const sortedEvents = Object.entries(eventsCount).sort((a,b) => b[1] - a[1]).slice(0, 5);
-    const pctRastreadosRD = totalMatriculas > 0 ? ((countComRD / totalMatriculas) * 100).toFixed(0) : '0';
+    const pctRastreadosRD = totalMatriculasAtivas > 0 ? ((countComRD / totalMatriculasAtivas) * 100).toFixed(0) : '0';
 
-    drawLiveMonitor(baseStudents);
+    drawLiveMonitor(matriculasAtivas);
 
     // WhatsApp
-    const countWA = baseStudents.filter(s => s.wa_total > 0).length;
+    const countWA = matriculasAtivas.filter(s => s.wa_total > 0).length;
 
-    // Vindi Financeiro
-    const vindiComAssinatura = baseStudents.filter(s => s.vindi && s.vindi.has_vindi);
-    const vindiAtrasados = vindiComAssinatura.filter(s => s.vindi.status_financeiro === 'em_atraso').length;
-    const vindiAdimplentes = vindiComAssinatura.filter(s => s.vindi.status_financeiro === 'adimplente' || s.vindi.status_financeiro === 'a_vencer').length;
-    const vindiTotalAtraso = vindiComAssinatura.filter(s => s.vindi.status_financeiro === 'em_atraso').reduce((acc, s) => acc + (s.vindi.valor_atraso || 0), 0);
-    const vindiTaxaAdimp = (vindiAtrasados + vindiAdimplentes) > 0 ? Math.round((vindiAdimplentes / (vindiAtrasados + vindiAdimplentes)) * 100) : 100;
-
-    // --- 1. RENDERIZAR KPIS TOPO HOME ---
+    // --- 1. RENDERIZAR KPIS TOPO HOME (COM OS 3 CARDS DEDICADOS) ---
     const homeKpisEl = document.getElementById('home-kpis-grid');
     if (homeKpisEl) {
         homeKpisEl.innerHTML = `
-          <div class="kpi" style="border-top:3px solid var(--ink)">
-            <div class="k-lab"><i class="k-dot" style="background:var(--ink)"></i>Alunos Únicos</div>
-            <div class="k-val" style="color:var(--ink)">${fmt(totalUnicos)}</div>
-            <div class="k-sub">${fmt(totalMatriculas)} matrículas ativas</div>
-          </div>
+          <!-- CARD 1: MATRÍCULAS ATIVAS -->
           <div class="kpi" style="border-top:3px solid var(--emerald)">
-            <div class="k-lab"><i class="k-dot" style="background:var(--emerald)"></i>Reproduções</div>
-            <div class="k-val" style="color:var(--emerald)">${fmt(totalReproducoes)}</div>
+            <div class="k-lab"><i class="k-dot" style="background:var(--emerald)"></i>Matrículas Ativas</div>
+            <div class="k-val" style="color:var(--emerald-d)">${fmt(totalMatriculasAtivas)}</div>
+            <div class="k-sub">${fmt(totalUnicosAtivos)} alunos únicos vigentes</div>
+          </div>
+
+          <!-- CARD 2: MATRÍCULAS CANCELADAS -->
+          <div class="kpi" style="border-top:3px solid #e11d48; cursor:pointer" onclick="switchTab('prog'); setTimeout(()=>{ const b=$('#search'); if(b){ b.value='cancelad'; if(typeof renderRows==='function') renderRows(); } }, 150)" title="Clique para filtrar matrículas canceladas na tabela">
+            <div class="k-lab"><i class="k-dot" style="background:#e11d48"></i>Canceladas</div>
+            <div class="k-val" style="color:#e11d48">${fmt(totalMatriculasCanceladas)}</div>
+            <div class="k-sub">${totalMatriculas > 0 ? ((totalMatriculasCanceladas / totalMatriculas) * 100).toFixed(1) : 0}% do total acumulado (${fmt(totalMatriculas)})</div>
+          </div>
+
+          <!-- CARD 3: MATRÍCULAS ENCERRADAS (CONCLUSÃO DE CURSO) -->
+          <div class="kpi" style="border-top:3px solid #7c3aed" title="Regra: Data oficial de término/formatura da turma cadastrada no sistema">
+            <div class="k-lab"><i class="k-dot" style="background:#7c3aed"></i>Encerradas</div>
+            <div class="k-val" style="color:#7c3aed">${fmt(totalMatriculasEncerradas)}</div>
+            <div class="k-sub">Nenhuma turma encerrada</div>
+          </div>
+
+          <!-- CARD 4: REPRODUÇÕES -->
+          <div class="kpi" style="border-top:3px solid var(--sky)">
+            <div class="k-lab"><i class="k-dot" style="background:var(--sky)"></i>Reproduções</div>
+            <div class="k-val" style="color:var(--sky)">${fmt(totalReproducoes)}</div>
             <div class="k-sub">Visualizações em aulas</div>
           </div>
-          <div class="kpi" style="border-top:3px solid var(--sky)">
-            <div class="k-lab"><i class="k-dot" style="background:var(--sky)"></i>Saúde da Base</div>
-            <div class="k-val" style="color:var(--sky)">${taxaEngajados}%</div>
-            <div class="k-sub">${fmt(engajados)} ativos / concluídos</div>
+
+          <!-- CARD 5: SAÚDE DA BASE -->
+          <div class="kpi" style="border-top:3px solid #0d9488">
+            <div class="k-lab"><i class="k-dot" style="background:#0d9488"></i>Saúde da Base</div>
+            <div class="k-val" style="color:#0d9488">${taxaEngajados}%</div>
+            <div class="k-sub">${fmt(engajados)} ativos / engajados</div>
           </div>
+
+          <!-- CARD 6: ATENÇÃO & RISCO -->
           <div class="kpi" style="border-top:3px solid var(--amber)">
             <div class="k-lab"><i class="k-dot" style="background:var(--amber)"></i>Atenção &amp; Risco</div>
             <div class="k-val" style="color:var(--amber)">${fmt(atencaoRisco)}</div>
             <div class="k-sub">${taxaRisco}% precisam de contato</div>
           </div>
+
+          <!-- CARD 7: RASTREADOS CRM -->
           <div class="kpi" style="border-top:3px solid #0077b6">
             <div class="k-lab"><i class="k-dot" style="background:#0077b6"></i>Rastreados RD</div>
             <div class="k-val" style="color:#0077b6">${fmt(countComRD)}</div>
-            <div class="k-sub">${pctRastreadosRD}% da base no CRM</div>
+            <div class="k-sub">${pctRastreadosRD}% da base ativa no CRM</div>
           </div>
+
+          <!-- CARD 8: CONTATOS WHATSAPP -->
           <div class="kpi" style="border-top:3px solid #25D366">
             <div class="k-lab"><i class="k-dot" style="background:#25D366"></i>Contatos WhatsApp</div>
             <div class="k-val" style="color:#25D366">${fmt(countWA)}</div>
             <div class="k-sub">Com histórico no chat</div>
-          </div>
-          <div class="kpi" style="border-top:3px solid #8b5cf6; cursor:pointer" onclick="switchTab('fin')" title="Clique para ver alunos ordenados por situação na Vindi">
-            <div class="k-lab"><i class="k-dot" style="background:#8b5cf6"></i>Financeiro Vindi</div>
-            <div class="k-val" style="color:${vindiAtrasados > 0 ? '#e11d48' : '#059669'}">${vindiTaxaAdimp}%</div>
-            <div class="k-sub">${vindiAtrasados > 0 ? `${vindiAtrasados} em atraso (R$ ${Math.round(vindiTotalAtraso).toLocaleString('pt-BR')})` : `${vindiAdimplentes} alunos em dia`}</div>
           </div>
         `;
     }
@@ -3453,10 +3471,15 @@ function drawHome(force) {
     }
 
     // --- 3. RENDERIZAR CURSOS MAIS PROCURADOS ---
+    const cursosSubEl = document.getElementById('home-cursos-sub');
+    if (cursosSubEl) {
+        cursosSubEl.innerHTML = `Ranking considerando apenas <b>${fmt(totalMatriculasAtivas)} matrículas ativas</b> vigentes.`;
+    }
+
     const coursesListEl = document.getElementById('home-courses-list');
     if (coursesListEl) {
         coursesListEl.innerHTML = sortedCursos.map(([cName, count], idx) => {
-            const pct = totalMatriculas > 0 ? (count / totalMatriculas * 100).toFixed(1) : 0;
+            const pct = totalMatriculasAtivas > 0 ? (count / totalMatriculasAtivas * 100).toFixed(1) : 0;
             const isPos = cName.includes('Pós') || cName.includes('Pos');
             return `
               <div style="display:flex; flex-direction:column; gap:4px">
