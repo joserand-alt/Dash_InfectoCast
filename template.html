@@ -4578,8 +4578,8 @@ function _renderFinCursosTable(fin) {
     const byCourse = {};
     const studentsList = DATA.students || [];
 
-    // Contagem de alunos por curso
-    studentsList.forEach(s => {
+    // Contagem de alunos com financeiro considerado (ao menos 1 pagamento) por curso
+    studentsList.filter(s => s.vindi || s.asaas).forEach(s => {
         const c = s.curso || 'PLATAFORMA GERAL';
         if (!byCourse[c]) {
             byCourse[c] = { curso: c, alunos: 0, pago: 0, previsto: 0, atraso: 0 };

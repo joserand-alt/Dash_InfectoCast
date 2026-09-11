@@ -1370,6 +1370,9 @@ def main():
         added_from_api = 0
         for key, asaas_st in asaas_map.items():
             if not isinstance(asaas_st, dict): continue
+            # Só considera como matriculado vindo da API se tiver ao menos um pagamento
+            if (asaas_st.get('total_pago') or 0) <= 0:
+                continue
             st_email = (asaas_st.get('customer_email') or '').lower().strip()
             if st_email and st_email not in existing_emails:
                 existing_emails.add(st_email)

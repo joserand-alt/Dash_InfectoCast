@@ -106,6 +106,13 @@ def _process(customers, payments):
     _enrich_customers_with_academy_api(customers)
     cust_by_id = {c["id"]: c for c in customers}
 
+    # Regra de negócio: uma cobrança/fatura só deve ser considerada se o aluno tiver ao menos um pagamento.
+    # Se nunca pagou, seu financeiro deve ser desconsiderado até que ele pague uma.
+    paid_customer_ids = set()
+    for p in payments:
+        if p.get("status") in ("RECEIVED", "CONFIRMED"):
+            paid_customer_ids.add(p.get("customer"))
+
     payments_by_cid = {}
     total_recebido = total_em_atraso = recebido_mes = 0.0
     qtd_em_atraso = total_pagas = 0
@@ -114,6 +121,9 @@ def _process(customers, payments):
 
     for p in payments:
         cid = p.get("customer", "")
+        # Regra: se o cliente nunca pagou nenhuma fatura, desconsidera do financeiro
+        if cid not in paid_customer_ids:
+            continue
         cust = cust_by_id.get(cid, {})
         valor = float(p.get("value") or 0)
         status_raw = p.get("status", "PENDING")
@@ -189,6 +199,8 @@ def _process(customers, payments):
 
     projecao_map = {}
     for p in payments:
+        if p.get("customer") not in paid_customer_ids:
+            continue
         if p.get("status") == "PENDING":
             due_dt = _parse_date(p.get("dueDate") or "")
             if due_dt and due_dt.date() >= now.date():

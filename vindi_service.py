@@ -115,6 +115,17 @@ def get_vindi_data(force_reload=False):
     bills = fetch_all_vindi_bills()
     now = datetime.now()
 
+    # Regra de negócio: uma cobrança/fatura só deve ser considerada se o aluno tiver ao menos um pagamento.
+    # Se nunca pagou, seu financeiro deve ser desconsiderado até que ele pague uma.
+    paid_customers_cid = set()
+    paid_customers_email = set()
+    for b in bills:
+        if b.get('status') == 'paid':
+            cid_p = b.get('customer', {}).get('id')
+            cemail_p = (b.get('customer', {}).get('email') or '').strip().lower()
+            if cid_p: paid_customers_cid.add(cid_p)
+            if cemail_p: paid_customers_email.add(cemail_p)
+
     bills_by_cid = {}
     bills_by_email = {}
     
@@ -131,6 +142,9 @@ def get_vindi_data(force_reload=False):
     for b in bills:
         cid = b.get('customer', {}).get('id')
         cemail = (b.get('customer', {}).get('email') or '').strip().lower()
+        # Regra: se o aluno nunca pagou nenhuma fatura, desconsidera totalmente seu financeiro
+        if (cid not in paid_customers_cid) and (cemail not in paid_customers_email):
+            continue
         cname = b.get('customer', {}).get('name') or 'Cliente'
         
         status = b.get('status', 'pending')
@@ -234,6 +248,9 @@ def get_vindi_data(force_reload=False):
         email = (c.get('email') or '').strip().lower()
         cid = c.get('id')
         if not email:
+            continue
+        # Regra: se o assinante nunca pagou nenhuma fatura, desconsidera do MRR, projeções e status
+        if (cid not in paid_customers_cid) and (email not in paid_customers_email):
             continue
 
         price = 0.0
