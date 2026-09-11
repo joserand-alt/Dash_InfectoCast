@@ -946,28 +946,31 @@ const fmt = n => new Intl.NumberFormat('pt-BR').format(n);
 function initFilters() {
     const cursos = new Set();
     const alunos = new Set();
-    DATA.students.forEach(s => {
-        if(s.curso && s.curso !== 'Sem Curso') Object.keys(DATA.curriculum).forEach(c => cursos.add(c));
-        alunos.add(s.nome + " (" + s.email + ")");
+    const stList = (DATA && DATA.students) ? DATA.students : [];
+    const curric = (DATA && DATA.curriculum) ? DATA.curriculum : {};
+
+    stList.forEach(s => {
+        if(s.curso && s.curso !== 'Sem Curso' && curric) Object.keys(curric).forEach(c => cursos.add(c));
+        if(s.nome || s.email) alunos.add((s.nome || 'Aluno') + " (" + (s.email || '') + ")");
     });
     
     const selCurso = $('#filter-curso');
-    const sortedCourses = Object.keys(DATA.curriculum).sort((a, b) => {
+    const sortedCourses = Object.keys(curric).sort((a, b) => {
         const aPos = a.startsWith('POS') || a.startsWith('PÓS');
         const bPos = b.startsWith('POS') || b.startsWith('PÓS');
         if (aPos && !bPos) return -1;
         if (!aPos && bPos) return 1;
         return a.localeCompare(b);
     });
-    selCurso.innerHTML = '<option value="all">Todos os Cursos</option>' + sortedCourses.map(c => `<option value="${c}">${c}</option>`).join('');
+    if (selCurso) selCurso.innerHTML = '<option value="all">Todos os Cursos</option>' + sortedCourses.map(c => `<option value="${c}">${c}</option>`).join('');
     
     const selAluno = $('#filter-aluno');
-    selAluno.innerHTML = '<option value="all">Todos os Alunos</option>' + Array.from(alunos).map(a => `<option value="${a}">${a}</option>`).join('');
+    if (selAluno) selAluno.innerHTML = '<option value="all">Todos os Alunos</option>' + Array.from(alunos).map(a => `<option value="${a}">${a}</option>`).join('');
     
-    selCurso.onchange = e => { FILTER.curso = e.target.value; applyFilters(); };
-    selAluno.onchange = e => { FILTER.aluno = e.target.value; applyFilters(); };
-    $('#filter-date-start').onchange = e => { FILTER.start = e.target.value; applyFilters(); };
-    $('#filter-date-end').onchange = e => { FILTER.end = e.target.value; applyFilters(); };
+    if (selCurso) selCurso.onchange = e => { FILTER.curso = e.target.value; applyFilters(); };
+    if (selAluno) selAluno.onchange = e => { FILTER.aluno = e.target.value; applyFilters(); };
+    if ($('#filter-date-start')) $('#filter-date-start').onchange = e => { FILTER.start = e.target.value; applyFilters(); };
+    if ($('#filter-date-end')) $('#filter-date-end').onchange = e => { FILTER.end = e.target.value; applyFilters(); };
 }
 
 function parseDate(dStr) {
@@ -2101,27 +2104,33 @@ Caso precise de qualquer ajuda estou por aqui`;
     window.open(url, '_blank');
 };
 
-function switchTab(pId) {
-    const btn = document.querySelector(`.tab[data-p="${pId}"]`);
-    if (btn) btn.click();
-}
+function selectTab(pId) {
+    if (!pId) return;
+    $$('.tab').forEach(t => t.classList.toggle('on', t.dataset.p === pId));
+    $$('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + pId));
 
-// TABS
-$$('.tab').forEach(t=>t.onclick=e=>{
-  $$('.tab').forEach(x=>x.classList.remove('on')); t.classList.add('on');
-  $$('.panel').forEach(p=>p.classList.remove('on'));
-  $('#p-'+t.dataset.p).classList.add('on');
-  if(t.dataset.p==='home') drawHome(true);
-  if(t.dataset.p==='tl') drawTimeline(true);
-  if(t.dataset.p==='mod') renderModules();
-  if(t.dataset.p==='origem') drawOrigem(true);
-  if(t.dataset.p==='fin') drawFinanceiro(true);
-  if(t.dataset.p==='funil') {
-      drawFunil(true);
-      if($('.filters')) $('.filters').style.display = 'none';
-  } else {
-      if($('.filters')) $('.filters').style.display = 'flex';
-  }
+    if (pId === 'home') drawHome(true);
+    if (pId === 'prog') renderRows();
+    if (pId === 'tl') drawTimeline(true);
+    if (pId === 'mod') renderModules();
+    if (pId === 'origem') drawOrigem(true);
+    if (pId === 'fin') drawFinanceiro(true);
+    if (pId === 'funil') {
+        drawFunil(true);
+        if ($('.filters')) $('.filters').style.display = 'none';
+    } else {
+        if ($('.filters')) $('.filters').style.display = 'flex';
+    }
+}
+window.selectTab = selectTab;
+window.switchTab = selectTab;
+
+// TABS LISTENERS
+$$('.tab').forEach(t => {
+    t.onclick = e => {
+        e.preventDefault();
+        selectTab(t.dataset.p);
+    };
 });
 
 // TIMELINE
@@ -3940,26 +3949,6 @@ function exportApiLogsToCSV() {
 }
 
 // INIT
-$$('.tab').forEach(b => {
-    b.onclick = () => {
-        $$('.tab').forEach(t => t.classList.remove('on'));
-        $$('.panel').forEach(p => p.classList.remove('on'));
-        b.classList.add('on');
-        const pId = b.dataset.p;
-        const panel = $('#p-' + pId);
-        if (panel) panel.classList.add('on');
-        
-        if (pId === 'tl') drawTimeline(true);
-        if (pId === 'mod') renderModules();
-        if (pId === 'origem') drawOrigem(true);
-        if (pId === 'funil') {
-            drawFunil(true);
-            if ($('.filters')) $('.filters').style.display = 'none';
-        } else {
-            if ($('.filters')) $('.filters').style.display = 'flex';
-        }
-    };
-});
 $$('.tab')[0].click();
 setTimeout(() => {
     initFilters();
@@ -4124,13 +4113,47 @@ function _getFinData(src) {
     const vindi = (DATA.financeiro && DATA.financeiro.kpis) ? DATA.financeiro : null;
     const asaas = (DATA.financeiro_asaas && DATA.financeiro_asaas.kpis) ? DATA.financeiro_asaas : null;
 
-    if (src === 'vindi') return vindi;
-    if (src === 'asaas') return asaas;
+    // Extrair faturas dos alunos caso não estejam na raiz
+    function getFaturasFromStudents(gw) {
+        const list = [];
+        (DATA.students || []).forEach(s => {
+            const gData = gw === 'Vindi' ? s.vindi : s.asaas;
+            if (gData && gData.faturas) {
+                gData.faturas.forEach(f => {
+                    list.push({
+                        ...f,
+                        aluno: f.aluno || s.nome || s.email,
+                        email: f.email || s.email,
+                        plano: f.plano || gData.plano || '',
+                        gateway: gw
+                    });
+                });
+            }
+        });
+        return list;
+    }
 
-    // CONSOLIDADO (Vindi + Asaas)
+    let vfaturas = (vindi && vindi.faturas_tabela && vindi.faturas_tabela.length)
+        ? vindi.faturas_tabela.map(f => ({...f, gateway: 'Vindi'}))
+        : getFaturasFromStudents('Vindi');
+
+    let afaturas = (asaas && asaas.faturas_tabela && asaas.faturas_tabela.length)
+        ? asaas.faturas_tabela.map(f => ({...f, gateway: 'Asaas'}))
+        : getFaturasFromStudents('Asaas');
+
+    if (src === 'vindi') {
+        if (!vindi) return null;
+        return { ...vindi, faturas_tabela: vfaturas };
+    }
+    if (src === 'asaas') {
+        if (!asaas) return null;
+        return { ...asaas, faturas_tabela: afaturas };
+    }
+
+    // CONSOLIDADO (src === 'all')
     if (!vindi && !asaas) return null;
-    if (!vindi) return asaas;
-    if (!asaas) return vindi;
+    if (!vindi) return { ...asaas, faturas_tabela: afaturas };
+    if (!asaas) return { ...vindi, faturas_tabela: vfaturas };
 
     const vk = vindi.kpis || {};
     const ak = asaas.kpis || {};
@@ -4169,9 +4192,7 @@ function _getFinData(src) {
     });
     const projecao_mensal = Object.values(projMap).sort((a,b) => a.mes.localeCompare(b.mes));
 
-    // Mesclar faturas da tabela geral
-    const vfaturas = (vindi.faturas_tabela || []).map(f => ({...f, gateway: 'Vindi'}));
-    const afaturas = (asaas.faturas_tabela || []).map(f => ({...f, gateway: 'Asaas'}));
+    // Mesclar todas as faturas
     const faturas_tabela = [...vfaturas, ...afaturas].sort((a,b) => {
         const da = a.vencimento_iso || a.data_pagamento_iso || '';
         const db = b.vencimento_iso || b.data_pagamento_iso || '';
