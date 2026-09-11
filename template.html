@@ -320,6 +320,68 @@ footer{padding:30px 0 40px;color:var(--muted2);font-size:11.5px;text-align:cente
     <!-- CARDS KPIS HOME -->
     <div class="kpis" id="home-kpis-grid" style="margin-top:0; margin-bottom:24px; grid-template-columns: repeat(6, 1fr);"></div>
 
+    <!-- SEÇÃO AO VIVO & MONITORAMENTO DE 24H -->
+    <div class="card" id="home-live-section" style="padding:20px; margin-bottom:24px; border:1px solid rgba(18,161,122,0.3); background:linear-gradient(180deg, rgba(18,161,122,0.02) 0%, rgba(255,255,255,0) 100%), var(--card)">
+      
+      <!-- CABEÇALHO AO VIVO -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--line)">
+        <div style="display:flex; align-items:center; gap:12px">
+          <div style="display:flex; align-items:center; gap:8px; background:rgba(224,85,85,0.1); border:1px solid rgba(224,85,85,0.3); padding:4px 10px; border-radius:20px">
+            <span class="live-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#e05555; animation: livePulse 1.5s infinite"></span>
+            <span style="font-size:11px; font-weight:800; color:#e05555; letter-spacing:0.5px">AO VIVO</span>
+          </div>
+          <div>
+            <h3 style="font-size:16px; font-weight:800; color:var(--ink); margin:0">Atividade em Tempo Real &amp; Últimas 24 Horas</h3>
+            <p style="font-size:12px; color:var(--muted); margin:2px 0 0">Acompanhe as interações dos alunos nos últimos 60 minutos e o volume de ações de hora em hora.</p>
+          </div>
+        </div>
+        
+        <!-- MINI METRICS DA SESSÃO AO VIVO -->
+        <div style="display:flex; align-items:center; gap:10px" id="home-live-mini-kpis"></div>
+      </div>
+
+      <!-- GRID 2 COLUNAS: FEED (ESQUERDA) | GRÁFICO 24H (DIREITA) -->
+      <div style="display:grid; grid-template-columns: 390px 1fr; gap:20px">
+        
+        <!-- COLUNA FEED (ÚLTIMOS 60 MINUTOS) -->
+        <div style="display:flex; flex-direction:column; background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:14px">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+            <div style="display:flex; align-items:center; gap:6px">
+              <span style="font-size:13px; font-weight:700; color:var(--ink)">Feed dos Últimos 60 Min</span>
+              <span id="live-count-badge" style="font-size:10px; font-weight:800; padding:2px 7px; border-radius:10px; background:var(--emerald-w); color:var(--emerald-d)">0</span>
+            </div>
+            <span style="font-size:10.5px; color:var(--muted)" id="live-window-label">Janela recente</span>
+          </div>
+          
+          <div id="home-live-feed-list" style="display:flex; flex-direction:column; gap:8px; max-height:330px; overflow-y:auto; padding-right:4px"></div>
+        </div>
+
+        <!-- COLUNA GRÁFICO (ÚLTIMAS 24 HORAS) -->
+        <div style="display:flex; flex-direction:column; background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:16px">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px">
+            <div>
+              <span style="font-size:13.5px; font-weight:700; color:var(--ink)">Volume de Ações de Hora em Hora (24h)</span>
+              <p style="font-size:11px; color:var(--muted); margin:2px 0 0">Passe o mouse sobre as barras para ver detalhamento por horário.</p>
+            </div>
+            
+            <!-- FILTROS POR TIPO DE AÇÃO -->
+            <div style="display:flex; gap:6px; flex-wrap:wrap" id="home-live-action-filters"></div>
+          </div>
+
+          <!-- CONTAINER DO GRÁFICO HORÁRIO -->
+          <div id="home-hourly-chart-container" style="height:240px; width:100%; position:relative; margin-top:auto"></div>
+          
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:10.5px; color:var(--muted); margin-top:8px; padding-top:6px; border-top:1px dashed var(--line)">
+            <span id="home-chart-range-label">Últimas 24 horas</span>
+            <span id="home-chart-total-label">Total: 0 ações</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+
     <!-- GRID PRINCIPAL 2 COLUNAS -->
     <div style="display:grid; grid-template-columns: 1.12fr 0.88fr; gap:22px; margin-bottom:26px">
       
@@ -2267,6 +2329,302 @@ function goToStatus(st) {
     renderRows();
 }
 
+
+let currentLiveActionFilter = 'ALL';
+
+window.setLiveActionFilter = function(actionType) {
+    currentLiveActionFilter = actionType;
+    if (window._lastLiveBaseStudents) {
+        drawLiveHourlyChart(window._lastLiveBaseStudents, currentLiveActionFilter);
+    }
+};
+
+function parseEventDate(dStr) {
+    if (!dStr) return null;
+    const parts = dStr.split(' ');
+    const dParts = parts[0].split('/');
+    if (dParts.length !== 3) return null;
+    const tParts = (parts[1] || '00:00').split(':');
+    return new Date(Number(dParts[2]), Number(dParts[1]) - 1, Number(dParts[0]), Number(tParts[0]), Number(tParts[1] || 0));
+}
+
+function drawLiveMonitor(baseStudents) {
+    window._lastLiveBaseStudents = baseStudents;
+    const liveSectionEl = document.getElementById('home-live-section');
+    if (!liveSectionEl) return;
+
+    let allEvts = [];
+    baseStudents.forEach(s => {
+        (s.events || []).forEach(e => {
+            if (e.d) {
+                const dt = parseEventDate(e.d);
+                if (dt && !isNaN(dt.getTime())) {
+                    allEvts.push({
+                        dt: dt,
+                        d: e.d,
+                        aluno: s.nome || 'Aluno',
+                        email: s.email || '',
+                        curso: s.curso || '',
+                        plataforma: s.plataforma || 'Academy',
+                        acao: e.acao || 'AÇÃO',
+                        item: e.item || '',
+                        mod: e.mod || ''
+                    });
+                }
+            }
+        });
+    });
+
+    if (allEvts.length === 0) {
+        liveSectionEl.style.display = 'none';
+        return;
+    }
+    liveSectionEl.style.display = 'block';
+
+    allEvts.sort((a,b) => a.dt.getTime() - b.dt.getTime());
+    const maxDt = allEvts[allEvts.length - 1].dt;
+    
+    const t60m = new Date(maxDt.getTime() - 60 * 60 * 1000);
+    const t24h = new Date(maxDt.getTime() - 24 * 60 * 60 * 1000);
+
+    const evts60m = allEvts.filter(e => e.dt >= t60m).sort((a,b) => b.dt.getTime() - a.dt.getTime());
+    const evts24h = allEvts.filter(e => e.dt >= t24h);
+
+    const uniqueStudents60m = new Set(evts60m.map(e => (e.email || '').toLowerCase().trim()).filter(Boolean));
+    const uniqueStudents24h = new Set(evts24h.map(e => (e.email || '').toLowerCase().trim()).filter(Boolean));
+
+    const pad = n => n < 10 ? '0' + n : n;
+    const startTime60mFmt = `${pad(t60m.getHours())}:${pad(t60m.getMinutes())}`;
+
+    // Mini KPIs
+    const miniKpisEl = document.getElementById('home-live-mini-kpis');
+    if (miniKpisEl) {
+        miniKpisEl.innerHTML = `
+          <div style="background:var(--card); border:1px solid var(--line); border-radius:8px; padding:6px 12px; text-align:right">
+            <div style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase">Últimos 60 min</div>
+            <div style="font-size:16px; font-weight:800; color:var(--emerald-d)">${evts60m.length} <span style="font-size:11px; font-weight:600; color:var(--muted)">ações</span></div>
+          </div>
+          <div style="background:var(--card); border:1px solid var(--line); border-radius:8px; padding:6px 12px; text-align:right">
+            <div style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase">Alunos Ativos (60m)</div>
+            <div style="font-size:16px; font-weight:800; color:var(--sky-d)">${uniqueStudents60m.size} <span style="font-size:11px; font-weight:600; color:var(--muted)">online</span></div>
+          </div>
+          <div style="background:var(--card); border:1px solid var(--line); border-radius:8px; padding:6px 12px; text-align:right">
+            <div style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase">Total 24h</div>
+            <div style="font-size:16px; font-weight:800; color:var(--ink)">${evts24h.length} <span style="font-size:11px; font-weight:600; color:var(--muted)">ações</span></div>
+          </div>
+          <div style="background:var(--card); border:1px solid var(--line); border-radius:8px; padding:6px 12px; text-align:right">
+            <div style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase">Alunos em 24h</div>
+            <div style="font-size:16px; font-weight:800; color:#7c3aed">${uniqueStudents24h.size} <span style="font-size:11px; font-weight:600; color:var(--muted)">alunos</span></div>
+          </div>
+        `;
+    }
+
+    // Feed Últimos 60 min
+    const feedListEl = document.getElementById('home-live-feed-list');
+    const liveCountBadge = document.getElementById('live-count-badge');
+    const liveWindowLabel = document.getElementById('live-window-label');
+    
+    if (liveCountBadge) liveCountBadge.textContent = `${evts60m.length} eventos`;
+    if (liveWindowLabel) liveWindowLabel.textContent = `${startTime60mFmt} às ${pad(maxDt.getHours())}:${pad(maxDt.getMinutes())}`;
+
+    if (feedListEl) {
+        if (evts60m.length === 0) {
+            feedListEl.innerHTML = `
+              <div style="text-align:center; padding:30px 15px; color:var(--muted)">
+                <div style="font-size:24px; margin-bottom:6px">☕</div>
+                <div style="font-size:12.5px; font-weight:600; color:var(--ink)">Sem interações na última hora</div>
+                <div style="font-size:11px; margin-top:2px">Nenhum evento registrado entre ${startTime60mFmt} e ${pad(maxDt.getHours())}:${pad(maxDt.getMinutes())}.</div>
+              </div>
+            `;
+        } else {
+            feedListEl.innerHTML = evts60m.map(e => {
+                const diffMins = Math.max(0, Math.round((maxDt.getTime() - e.dt.getTime()) / 60000));
+                const timeAgo = diffMins === 0 ? 'agora mesmo' : `há ${diffMins} min`;
+                const timeHour = `${pad(e.dt.getHours())}:${pad(e.dt.getMinutes())}`;
+
+                let acaoStyle = { bg: 'var(--ink-soft)', color: 'var(--ink)', border: 'var(--line)', icon: '●' };
+                if (e.acao.includes('ASSISTIU') || e.acao.includes('INICIOU') || e.acao.includes('AULA')) {
+                    acaoStyle = { bg: 'var(--emerald-w)', color: 'var(--emerald-d)', border: 'rgba(18,161,122,0.25)', icon: '▶' };
+                } else if (e.acao.includes('LOGIN')) {
+                    acaoStyle = { bg: 'var(--sky-w)', color: 'var(--sky-d)', border: 'rgba(2,132,199,0.25)', icon: '🔑' };
+                } else if (e.acao.includes('MATERIAL') || e.acao.includes('PDF')) {
+                    acaoStyle = { bg: 'rgba(124,58,237,0.1)', color: '#7c3aed', border: 'rgba(124,58,237,0.25)', icon: '📄' };
+                } else if (e.acao.includes('TESTE') || e.acao.includes('CONCLUIU')) {
+                    acaoStyle = { bg: 'var(--amber-w)', color: 'var(--amber)', border: 'rgba(224,145,47,0.25)', icon: '✓' };
+                }
+
+                const initials = e.aluno.split(' ').map(n => n[0]).filter(Boolean).slice(0,2).join('').toUpperCase() || 'AL';
+                const platColor = e.plataforma === 'Cativa' ? '#db2777' : '#0284c7';
+                const platBg = e.plataforma === 'Cativa' ? 'rgba(236,72,153,0.1)' : 'rgba(2,132,199,0.1)';
+
+                return `
+                  <div style="display:flex; gap:10px; padding:8px 10px; background:var(--card); border:1px solid var(--line); border-radius:8px; transition:border-color 0.15s">
+                    <div style="width:30px; height:30px; border-radius:50%; background:var(--ink-soft); color:var(--ink); font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px">
+                      ${initials}
+                    </div>
+                    <div style="flex:1; min-width:0">
+                      <div style="display:flex; justify-content:space-between; align-items:center; gap:6px">
+                        <div style="display:flex; align-items:center; gap:6px; overflow:hidden">
+                          <span style="font-size:12px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis" title="${e.aluno}">${e.aluno}</span>
+                          <span style="font-size:9.5px; font-weight:700; padding:1px 5px; border-radius:3px; background:${platBg}; color:${platColor}">${e.plataforma}</span>
+                        </div>
+                        <span style="font-size:10px; color:var(--muted); white-space:nowrap" title="${timeHour}">${timeAgo}</span>
+                      </div>
+                      
+                      <div style="display:flex; align-items:center; gap:6px; margin-top:3px">
+                        <span style="font-size:9.5px; font-weight:700; padding:1px 6px; border-radius:4px; background:${acaoStyle.bg}; color:${acaoStyle.color}; border:1px solid ${acaoStyle.border}; white-space:nowrap">
+                          ${acaoStyle.icon} ${e.acao}
+                        </span>
+                        <span style="font-size:11px; font-weight:600; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap" title="${e.item || e.mod || e.curso}">
+                          ${e.item || e.mod || e.curso}
+                        </span>
+                      </div>
+                      
+                      <div style="font-size:10px; color:var(--muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">
+                        ${e.curso}
+                      </div>
+                    </div>
+                  </div>
+                `;
+            }).join('');
+        }
+    }
+
+    // Gráfico 24h
+    drawLiveHourlyChart(baseStudents, currentLiveActionFilter);
+}
+
+function drawLiveHourlyChart(baseStudents, actionFilter) {
+    const filtersEl = document.getElementById('home-live-action-filters');
+    const chartContainer = document.getElementById('home-hourly-chart-container');
+    const rangeLabel = document.getElementById('home-chart-range-label');
+    const totalLabel = document.getElementById('home-chart-total-label');
+    if (!chartContainer) return;
+
+    let allEvts = [];
+    baseStudents.forEach(s => {
+        (s.events || []).forEach(e => {
+            if (e.d) {
+                const dt = parseEventDate(e.d);
+                if (dt && !isNaN(dt.getTime())) {
+                    allEvts.push({
+                        dt: dt,
+                        d: e.d,
+                        aluno: s.nome || 'Aluno',
+                        email: s.email || '',
+                        acao: e.acao || '',
+                        item: e.item || ''
+                    });
+                }
+            }
+        });
+    });
+
+    if (allEvts.length === 0) {
+        chartContainer.innerHTML = '<div style="text-align:center; padding:40px 0; color:var(--muted)">Sem dados no período.</div>';
+        return;
+    }
+
+    allEvts.sort((a,b) => a.dt.getTime() - b.dt.getTime());
+    const maxDt = allEvts[allEvts.length - 1].dt;
+    const t24h = new Date(maxDt.getTime() - 24 * 60 * 60 * 1000);
+    const evts24h = allEvts.filter(e => e.dt >= t24h);
+
+    let countAulas = 0, countLogins = 0, countPDFs = 0, countOutros = 0;
+    evts24h.forEach(e => {
+        if (e.acao.includes('ASSISTIU') || e.acao.includes('AULA')) countAulas++;
+        else if (e.acao.includes('LOGIN')) countLogins++;
+        else if (e.acao.includes('MATERIAL') || e.acao.includes('PDF')) countPDFs++;
+        else countOutros++;
+    });
+
+    if (filtersEl) {
+        const filterBtns = [
+            { id: 'ALL', label: 'Todas as Ações', count: evts24h.length, color: 'var(--ink)' },
+            { id: 'AULA', label: 'Aulas Assistidas', count: countAulas, color: 'var(--emerald-d)' },
+            { id: 'LOGIN', label: 'Logins Web', count: countLogins, color: 'var(--sky-d)' },
+            { id: 'PDF', label: 'Materiais PDF', count: countPDFs, color: '#7c3aed' },
+            { id: 'OUTROS', label: 'Outros / Avaliações', count: countOutros, color: 'var(--amber)' }
+        ];
+
+        filtersEl.innerHTML = filterBtns.map(b => {
+            const isActive = actionFilter === b.id;
+            return `
+              <button onclick="setLiveActionFilter('${b.id}')" style="background:${isActive ? b.color : 'var(--card)'}; color:${isActive ? '#fff' : 'var(--ink)'}; border:1px solid ${isActive ? b.color : 'var(--line)'}; border-radius:20px; padding:3px 9px; font-size:10.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:5px; transition:all 0.15s">
+                <span>${b.label}</span>
+                <span style="padding:1px 5px; border-radius:10px; background:${isActive ? 'rgba(255,255,255,0.25)' : 'var(--ink-soft)'}; font-size:9.5px">${b.count}</span>
+              </button>
+            `;
+        }).join('');
+    }
+
+    const pad = n => n < 10 ? '0' + n : n;
+    let buckets = [];
+    let maxHourlyVal = 1;
+    let filteredTotal = 0;
+
+    for (let i = 0; i < 24; i++) {
+        const bStart = new Date(t24h.getTime() + i * 60 * 60 * 1000);
+        const bEnd = new Date(t24h.getTime() + (i + 1) * 60 * 60 * 1000);
+        
+        const inBucket = evts24h.filter(e => e.dt >= bStart && e.dt < bEnd);
+        
+        let matching = inBucket;
+        if (actionFilter === 'AULA') matching = inBucket.filter(e => e.acao.includes('ASSISTIU') || e.acao.includes('AULA'));
+        else if (actionFilter === 'LOGIN') matching = inBucket.filter(e => e.acao.includes('LOGIN'));
+        else if (actionFilter === 'PDF') matching = inBucket.filter(e => e.acao.includes('MATERIAL') || e.acao.includes('PDF'));
+        else if (actionFilter === 'OUTROS') matching = inBucket.filter(e => !e.acao.includes('ASSISTIU') && !e.acao.includes('AULA') && !e.acao.includes('LOGIN') && !e.acao.includes('MATERIAL') && !e.acao.includes('PDF'));
+
+        const count = matching.length;
+        if (count > maxHourlyVal) maxHourlyVal = count;
+        filteredTotal += count;
+
+        const studentsSet = new Set(matching.map(e => e.aluno).filter(Boolean));
+        const studentsList = Array.from(studentsSet).slice(0, 3).join(', ') + (studentsSet.size > 3 ? ` +${studentsSet.size - 3}` : '');
+
+        buckets.push({
+            hour: `${pad(bStart.getHours())}h`,
+            fullTime: `${pad(bStart.getDate())}/${pad(bStart.getMonth()+1)} ${pad(bStart.getHours())}:00 - ${pad(bStart.getHours())}:59`,
+            count: count,
+            totalBucket: inBucket.length,
+            studentsList: studentsList || 'Sem interações',
+            isNow: i === 23
+        });
+    }
+
+    if (rangeLabel) {
+        rangeLabel.textContent = `Janela das 24h: ${pad(t24h.getDate())}/${pad(t24h.getMonth()+1)} ${pad(t24h.getHours())}:00 às ${pad(maxDt.getDate())}/${pad(maxDt.getMonth()+1)} ${pad(maxDt.getHours())}:${pad(maxDt.getMinutes())}`;
+    }
+    if (totalLabel) {
+        totalLabel.innerHTML = `Volume no filtro: <b style="color:var(--ink)">${filteredTotal} ações</b>`;
+    }
+
+    let barColor = 'linear-gradient(180deg, #12A17A 0%, #0C7D5E 100%)';
+    if (actionFilter === 'LOGIN') barColor = 'linear-gradient(180deg, #3E7CB1 0%, #1A5484 100%)';
+    else if (actionFilter === 'PDF') barColor = 'linear-gradient(180deg, #8B5CF6 0%, #6D28D9 100%)';
+    else if (actionFilter === 'OUTROS') barColor = 'linear-gradient(180deg, #E0912F 0%, #B06E15 100%)';
+    else if (actionFilter === 'ALL') barColor = 'linear-gradient(180deg, #12232E 0%, #12A17A 100%)';
+
+    chartContainer.innerHTML = `
+      <div style="display:grid; grid-template-columns: repeat(24, 1fr); gap:4px; height:100%; align-items:flex-end; padding-bottom:22px; position:relative">
+        ${buckets.map(b => {
+            const heightPct = b.count > 0 ? Math.max(8, Math.round((b.count / maxHourlyVal) * 160)) : 3;
+            const barBg = b.count > 0 ? barColor : 'var(--line)';
+            const tooltip = `${b.fullTime}&#10;Ações selecionadas: ${b.count}&#10;Total geral na hora: ${b.totalBucket}&#10;Alunos: ${b.studentsList}`;
+            
+            return `
+              <div style="display:flex; flex-direction:column; align-items:center; height:100%; justify-content:flex-end; position:relative; cursor:pointer" title="${tooltip}">
+                ${b.count > 0 ? `<span style="font-size:9px; font-weight:800; color:var(--ink); margin-bottom:3px">${b.count}</span>` : ''}
+                <div style="width:100%; max-width:24px; height:${heightPct}px; background:${barBg}; border-radius:3px 3px 0 0; transition:all 0.2s" onmouseover="this.style.opacity='0.75'; this.style.transform='scaleY(1.05)'" onmouseout="this.style.opacity='1'; this.style.transform='none'"></div>
+                <span style="position:absolute; bottom:0; font-size:8.5px; font-weight:${b.isNow ? '800' : '600'}; color:${b.isNow ? 'var(--coral)' : 'var(--muted)'}; white-space:nowrap">${b.hour}</span>
+              </div>
+            `;
+        }).join('')}
+      </div>
+    `;
+}
+
+
 function drawHome(force) {
     if (!DATA.students) return;
     if (homeDrawn && !force) return;
@@ -2410,6 +2768,8 @@ function drawHome(force) {
     const medianaMat = maturacaoList.length > 0 ? maturacaoList[Math.floor(maturacaoList.length / 2)] : 0;
     const sortedEvents = Object.entries(eventsCount).sort((a,b) => b[1] - a[1]).slice(0, 5);
     const pctRastreadosRD = totalMatriculas > 0 ? ((countComRD / totalMatriculas) * 100).toFixed(0) : '0';
+
+    drawLiveMonitor(baseStudents);
 
     // WhatsApp
     const countWA = baseStudents.filter(s => s.wa_total > 0).length;
@@ -3211,6 +3571,12 @@ function triggerUpdate() {
 </script>
 <style>
 @keyframes spin { 100% { transform: rotate(360deg); } }
+
+@keyframes livePulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(224, 85, 85, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(224, 85, 85, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(224, 85, 85, 0); }
+}
 </style>
 </body>
 </html>
