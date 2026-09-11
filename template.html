@@ -167,6 +167,8 @@ tbody tr.clickable:hover .row-open{opacity:1}
 .b-login .b-dot{background:var(--muted2)}
 .b-aband{background:var(--coral-w);color:#B33030;border:1px solid #F3C7C7}
 .b-aband .b-dot{background:var(--coral)}
+.b-canc{background:rgba(100,116,139,0.1);color:#64748b;border:1px solid rgba(100,116,139,0.25)}
+.b-canc .b-dot{background:#64748b}
 .b-risco{background:#FAF2EE;color:#A2654D;border:1px solid #E6D0C5}
 .b-risco .b-dot{background:#C48B71}
 .b-atencao{background:#EFEBF7;color:#6A5A9E;border:1px solid #DFD7EF}
@@ -1045,6 +1047,15 @@ function applyFilters() {
             }
         }
         
+        // REGRA DE STATUS FINANCEIRO:
+        // Se o status for 'Abandonou' (ou 'Inativo'), mas no financeiro (Vindi)
+        // a assinatura for 'cancelado'/'canceled', o status passa a ser 'Cancelado'!
+        const vindiStatus = scopy.vindi ? (scopy.vindi.status_financeiro || scopy.vindi.status_assinatura) : null;
+        if ((scopy.status === 'Abandonou' || scopy.status === 'Inativo') && (vindiStatus === 'cancelado' || vindiStatus === 'canceled')) {
+            scopy.status = 'Cancelado';
+            scopy.status_motivo = 'Assinatura cancelada no sistema financeiro (Vindi).';
+        }
+
         return scopy;
     });
 
@@ -1071,7 +1082,7 @@ function applyFilters() {
 const STATUS = {
   'Concluído':{cls:'b-muito'}, 'Ativo':{cls:'b-ativo'},
   'Atenção':{cls:'b-atencao'}, 'Em Risco':{cls:'b-risco'},
-  'Abandonou':{cls:'b-aband'}, 'Inativo':{cls:'b-aband'},
+  'Abandonou':{cls:'b-aband'}, 'Inativo':{cls:'b-aband'}, 'Cancelado':{cls:'b-canc'},
   'Apenas Login':{cls:'b-login'}, 'Nunca acessou':{cls:'b-nunca'}
 };
 
@@ -2945,7 +2956,7 @@ function drawHome(force) {
 
     // Status da Base (calculados sobre os dados processados)
     let stCounts = {
-        'Concluído': 0, 'Ativo': 0, 'Em Risco': 0, 'Apenas Login': 0, 'Abandonou': 0, 'Nunca acessou': 0
+        'Concluído': 0, 'Ativo': 0, 'Em Risco': 0, 'Apenas Login': 0, 'Abandonou': 0, 'Cancelado': 0, 'Nunca acessou': 0
     };
     baseStudents.forEach(s => {
         let st = s.status;
@@ -3224,6 +3235,10 @@ function drawHome(force) {
             <div style="background:rgba(224,85,85,0.08); border:1px solid rgba(224,85,85,0.2); border-radius:6px; padding:5px 8px; display:flex; justify-content:space-between; align-items:center; cursor:pointer" onclick="goToStatus('Abandonou')">
               <span style="font-size:10.5px; font-weight:600; color:var(--coral)">● Abandonou</span>
               <span style="font-size:11.5px; font-weight:800; color:var(--coral)">${fmt(stCounts['Abandonou'])}</span>
+            </div>
+            <div style="background:rgba(100,116,139,0.08); border:1px solid rgba(100,116,139,0.2); border-radius:6px; padding:5px 8px; display:flex; justify-content:space-between; align-items:center; cursor:pointer" onclick="goToStatus('Cancelado')">
+              <span style="font-size:10.5px; font-weight:600; color:#64748b">● Cancelado</span>
+              <span style="font-size:11.5px; font-weight:800; color:#64748b">${fmt(stCounts['Cancelado'])}</span>
             </div>
             <div style="background:rgba(0,0,0,0.04); border:1px solid rgba(0,0,0,0.1); border-radius:6px; padding:5px 8px; display:flex; justify-content:space-between; align-items:center; cursor:pointer" onclick="goToStatus('Nunca acessou')">
               <span style="font-size:10.5px; font-weight:600; color:var(--muted)">● Nunca acessou</span>
