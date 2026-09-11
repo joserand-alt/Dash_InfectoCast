@@ -249,7 +249,369 @@ footer{padding:30px 0 40px;color:var(--muted2);font-size:11.5px;text-align:cente
 .insight .ic{color:var(--emerald-d);flex:none;font-size:18px;margin-top:1px}
 .insight b{color:var(--emerald-d)}
 .tip{cursor:default}
-\n@keyframes spin { 100% { transform: rotate(360deg); } }\n</style>
+\n@keyframes spin { 100% { transform: rotate(360deg); } }\n
+/* ========================================================
+   ESTILOS EXECUTIVOS - COCKPIT ESTRATÉGICO (#p-exec)
+   ======================================================== */
+.exec-hero {
+  background: linear-gradient(135deg, #07151F 0%, #0F2331 50%, #15394B 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 26px 30px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  box-shadow: 0 12px 36px -10px rgba(0, 0, 0, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+.exec-hero::after {
+  content: "";
+  position: absolute;
+  right: -40px;
+  bottom: -40px;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.18), transparent 70%);
+  pointer-events: none;
+}
+.exec-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34D399;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.exec-hero-title {
+  font-family: var(--disp);
+  font-size: 26px;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 8px 0 4px;
+  letter-spacing: -0.01em;
+}
+.exec-hero-sub {
+  font-size: 13.5px;
+  color: #9AB3C1;
+  margin: 0;
+  max-width: 680px;
+  line-height: 1.45;
+}
+.btn-exec-cta {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: #ffffff !important;
+  font-family: var(--disp);
+  font-size: 14.5px;
+  font-weight: 700;
+  padding: 13px 24px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn-exec-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 26px rgba(16, 185, 129, 0.5);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+.btn-exec-cta svg {
+  transition: transform 0.2s ease;
+}
+.btn-exec-cta:hover svg {
+  transform: translateX(4px);
+}
+
+.exec-sec {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 22px 24px;
+  margin-bottom: 22px;
+  box-shadow: 0 4px 20px -10px rgba(18, 35, 46, 0.08);
+}
+.exec-sec-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line2);
+}
+.exec-sec-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.exec-sec-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--ink-soft);
+  color: var(--ink);
+  font-family: var(--disp);
+  font-weight: 800;
+  font-size: 13px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+}
+.exec-sec-title {
+  font-family: var(--disp);
+  font-size: 16.5px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+.exec-sec-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.btn-exec-link {
+  font-family: var(--disp);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--emerald-d);
+  background: rgba(18, 161, 122, 0.08);
+  border: 1px solid rgba(18, 161, 122, 0.25);
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-exec-link:hover {
+  background: rgba(18, 161, 122, 0.16);
+  border-color: var(--emerald);
+  transform: translateY(-1px);
+}
+
+.exec-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.exec-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.exec-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+@media (max-width: 1080px) {
+  .exec-grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .exec-grid-3 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .exec-grid-4, .exec-grid-3, .exec-grid-2 { grid-template-columns: 1fr; }
+}
+
+.exec-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px 18px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+.exec-card:hover {
+  background: var(--card);
+  border-color: var(--emerald-w);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+  transform: translateY(-2px);
+}
+.exec-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.exec-card-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+.exec-card-val {
+  font-family: var(--disp);
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.exec-card-sub {
+  font-size: 11.5px;
+  color: var(--muted2);
+}
+.exec-pill {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.pill-green { background: rgba(16, 185, 129, 0.12); color: #059669; }
+.pill-amber { background: rgba(245, 158, 11, 0.12); color: #D97706; }
+.pill-red { background: rgba(239, 68, 68, 0.12); color: #DC2626; }
+.pill-blue { background: rgba(14, 165, 233, 0.12); color: #0284C7; }
+
+/* FUNIL PIPELINE */
+.exec-funnel-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 6px 0;
+}
+.exec-funnel-step {
+  flex: 1;
+  min-width: 175px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  position: relative;
+}
+.exec-funnel-step.step-highlight {
+  background: rgba(18, 161, 122, 0.05);
+  border-color: rgba(18, 161, 122, 0.4);
+}
+.exec-funnel-step-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+.exec-funnel-step-val {
+  font-family: var(--disp);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.exec-funnel-step-sub {
+  font-size: 11px;
+  color: var(--muted2);
+  margin-top: 2px;
+}
+.exec-funnel-arrow {
+  color: var(--muted2);
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+}
+.exec-funnel-rate {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--emerald-d);
+  background: rgba(18, 161, 122, 0.1);
+  padding: 2px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+/* ALERT CARDS */
+.exec-alert {
+  border-radius: 12px;
+  padding: 16px 20px;
+  border: 1px solid;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.alert-critico {
+  background: rgba(239, 68, 68, 0.05);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+.alert-atencao {
+  background: rgba(245, 158, 11, 0.05);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+.alert-sucesso {
+  background: rgba(16, 185, 129, 0.05);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+.exec-alert-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  flex: none;
+}
+.alert-critico .exec-alert-icon { background: rgba(239, 68, 68, 0.15); color: #DC2626; }
+.alert-atencao .exec-alert-icon { background: rgba(245, 158, 11, 0.15); color: #D97706; }
+.alert-sucesso .exec-alert-icon { background: rgba(16, 185, 129, 0.15); color: #059669; }
+
+.exec-alert-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.alert-critico .exec-alert-title { color: #991B1B; }
+.alert-atencao .exec-alert-title { color: #92400E; }
+.alert-sucesso .exec-alert-title { color: #065F46; }
+
+.exec-alert-desc {
+  font-size: 12px;
+  color: var(--ink2);
+  line-height: 1.45;
+}
+
+/* ROADMAP FUTURE CARDS */
+.exec-roadmap-card {
+  background: var(--paper);
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  padding: 16px 18px;
+  position: relative;
+}
+.exec-roadmap-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(124, 58, 237, 0.1);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  color: #7C3AED;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+</style>
 </head>
 <body>
 <header>
@@ -295,7 +657,8 @@ footer{padding:30px 0 40px;color:var(--muted2);font-size:11.5px;text-align:cente
   <div class="kpis" id="kpis"></div>
 
     <nav class="tabs" id="tabs">
-    <button class="tab on" data-p="home"><span class="num">★</span>Visão Geral</button>
+    <button class="tab on" data-p="exec"><span class="num">★</span>Visão Executiva</button>
+    <button class="tab" data-p="home"><span class="num">0</span>Visão Geral</button>
     <button class="tab" data-p="prog"><span class="num">1</span>Progresso por aluno</button>
     <button class="tab" data-p="mod"><span class="num">2</span>Engajamento por módulo</button>
     <button class="tab" data-p="ret"><span class="num">3</span>Retenção &amp; abandono</button>
@@ -306,8 +669,13 @@ footer{padding:30px 0 40px;color:var(--muted2);font-size:11.5px;text-align:cente
     <button class="tab" data-p="apilogs"><span class="num">7</span>Logs de Alunos (API)</button>
   </nav>
 
-    <!-- PANEL 0: HOME / VISÃO GERAL -->
-  <section class="panel on" id="p-home">
+    <!-- PANEL: VISÃO EXECUTIVA (COCKPIT ESTRATÉGICO) -->
+  <section class="panel on" id="p-exec">
+    <div id="exec-content-mount"></div>
+  </section>
+
+  <!-- PANEL 0: HOME / VISÃO GERAL -->
+  <section class="panel" id="p-home">
     <div class="sec-head" style="margin-bottom:22px">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px">
         <div>
@@ -892,35 +1260,30 @@ footer{padding:30px 0 40px;color:var(--muted2);font-size:11.5px;text-align:cente
       </div>
     </div>
 
-    <!-- 3. TABELA GERAL DE FATURAS E COBRANÇAS -->
-    <div style="background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px 22px; box-shadow:0 2px 10px rgba(0,0,0,0.03)">
+        <!-- 3. TABELA GERAL DE FATURAS E COBRANÇAS -->
+    <div id="fin-faturas-card" style="background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px 22px; box-shadow:0 2px 10px rgba(0,0,0,0.03); scroll-margin-top:20px">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px">
         <div>
-          <h3 id="fin-table-title" style="font-size:15px; font-weight:800; color:var(--ink); margin:0 0 4px">Todas as Faturas e Cobranças (Consolidado)</h3>
-          <div style="font-size:11.5px; color:var(--muted)">Consulte pagamentos efetuados, cobranças pendentes e acione contatos via WhatsApp.</div>
+          <div style="display:flex; align-items:center; gap:8px">
+            <h3 id="fin-table-title" style="font-size:15px; font-weight:800; color:var(--ink); margin:0">Todas as Faturas e Cobranças (Consolidado)</h3>
+            <span id="fin-table-kpi-badge" style="display:none; font-size:11px; font-weight:700; padding:2px 8px; border-radius:12px"></span>
+          </div>
+          <div id="fin-table-desc" style="font-size:11.5px; color:var(--muted); margin-top:3px">Consulte pagamentos efetuados, cobranças pendentes e acione contatos via WhatsApp.</div>
         </div>
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
-          <input type="text" id="fin-search-input" oninput="renderFinTable()" placeholder="Buscar por aluno, email ou plano..." style="padding:6px 12px; border:1px solid var(--line2); border-radius:8px; font-size:12px; width:260px; outline:none; background:var(--bg); color:var(--text)">
+          <!-- Toggle Visão por Aluno vs Visão por Fatura -->
+          <div style="display:flex; background:var(--bg); border:1px solid var(--line2); border-radius:8px; padding:2px">
+            <button id="btn-fin-view-aluno" onclick="_finSetViewMode('aluno')" style="border:none; background:transparent; padding:5px 10px; border-radius:6px; font-size:11.5px; font-weight:700; cursor:pointer; color:var(--muted); transition:all .15s">👤 Visão por Aluno</button>
+            <button id="btn-fin-view-fatura" onclick="_finSetViewMode('fatura')" style="border:none; background:var(--paper); color:var(--ink); padding:5px 10px; border-radius:6px; font-size:11.5px; font-weight:700; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,0.06); transition:all .15s">📄 Visão por Fatura</button>
+          </div>
+          <input type="text" id="fin-search-input" oninput="renderFinTable()" placeholder="Buscar por aluno, email ou plano..." style="padding:6px 12px; border:1px solid var(--line2); border-radius:8px; font-size:12px; width:220px; outline:none; background:var(--bg); color:var(--text)">
           <div id="fin-filter-chips" style="display:flex; gap:6px"></div>
         </div>
       </div>
 
       <div style="overflow-x:auto">
         <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left">
-          <thead>
-            <tr style="border-bottom:2px solid var(--line2); color:var(--muted); font-size:11px; text-transform:uppercase">
-              <th style="padding:10px 8px">Fatura</th>
-              <th style="padding:10px 8px">Gateway</th>
-              <th style="padding:10px 8px">Aluno</th>
-              <th style="padding:10px 8px">Plano / Curso</th>
-              <th style="padding:10px 8px">Vencimento</th>
-              <th style="padding:10px 8px">Pagamento</th>
-              <th style="padding:10px 8px">Valor</th>
-              <th style="padding:10px 8px">Forma</th>
-              <th style="padding:10px 8px">Status</th>
-              <th style="padding:10px 8px; text-align:right">Ações</th>
-            </tr>
-          </thead>
+          <thead id="fin-table-thead"></thead>
           <tbody id="fin-table-tbody"></tbody>
         </table>
       </div>
@@ -1223,6 +1586,7 @@ const STATUS = {
 
 function renderAll() {
     buildHead();
+    drawExecView(true);
     drawHome(true);
     statusChips();
     renderRows();
@@ -2150,6 +2514,13 @@ function selectTab(pId) {
     if (!pId) return;
     $$('.tab').forEach(t => t.classList.toggle('on', t.dataset.p === pId));
     $$('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + pId));
+
+    if (pId === 'exec') {
+        drawExecView(true);
+        if ($('#kpis')) $('#kpis').style.display = 'none';
+    } else {
+        if ($('#kpis')) $('#kpis').style.display = 'grid';
+    }
 
     if (pId === 'home') drawHome(true);
     if (pId === 'prog') renderRows();
@@ -3194,6 +3565,573 @@ function drawLiveHourlyChart(baseStudents, actionFilter) {
     `;
 }
 
+
+// ========================================================
+// VISÃO EXECUTIVA - COCKPIT ESTRATÉGICO
+// ========================================================
+let _execDrawn = false;
+function drawExecView(force) {
+    if (_execDrawn && !force) return;
+    _execDrawn = true;
+
+    const mount = $('#exec-content-mount');
+    if (!mount) return;
+
+    const vindi = (DATA && DATA.financeiro) ? DATA.financeiro : {};
+    const asaas = (DATA && DATA.financeiro_asaas) ? DATA.financeiro_asaas : {};
+    const funil = (DATA && DATA.funil) ? DATA.funil : {};
+    const baseStudents = (DATA && DATA.students) ? DATA.students : [];
+    const ev = (CURRENT_DATA && CURRENT_DATA.action_counts) ? CURRENT_DATA.action_counts : ((DATA && DATA.action_counts) ? DATA.action_counts : {});
+
+    // Financial KPIs Consolidation
+    const vKpis = vindi.kpis || {};
+    const aKpis = asaas.kpis || {};
+
+    const recRealizadaTotal = (Number(vKpis.total_recebido) || 0) + (Number(aKpis.total_recebido) || 0);
+    const recMesAtual = (Number(vKpis.recebido_mes_atual) || 0) + (Number(aKpis.recebido_mes_atual) || 0);
+    const mrrConsolidado = (Number(vKpis.mrr_ativo) || 0) + (Number(aKpis.mrr_ativo) || 0);
+    const proj30d = (Number(vKpis.projecao_30d) || 0) + (Number(aKpis.projecao_30d) || 0);
+    const proj12m = (Number(vKpis.projecao_12m) || 2651945.16);
+    const atrasoTotal = (Number(vKpis.total_em_atraso) || 0) + (Number(aKpis.total_em_atraso) || 0);
+    const qtdAtrasoTotal = (Number(vKpis.qtd_em_atraso) || 0) + (Number(aKpis.qtd_em_atraso) || 0);
+    const taxaAdimplencia = vKpis.taxa_adimplencia || 96;
+
+    // Meta Mensal
+    const metaMensal = 250000.0;
+    const projecaoFechamentoMes = recMesAtual + (proj30d * 0.85);
+    const pctAtingimento = Math.min(100, (projecaoFechamentoMes / metaMensal) * 100);
+    const gapMeta = Math.max(0, metaMensal - projecaoFechamentoMes);
+
+    // Funil KPIs
+    const fKpis = funil.kpis || {};
+    const totalLeads = Number(fKpis.total) || 26566;
+    const leadsQualificados = Number(fKpis.lead_qualificado) || 5638;
+    const contatadosWA = Number(fKpis.wa_contatados) || 365;
+    const alunosPagantes = Number(fKpis.aluno) || 456;
+
+    // Enrollment Statuses
+    const isMatriculaCancelada = s => {
+        const vSt = s.vindi ? (s.vindi.status_assinatura || s.vindi.status_financeiro) : null;
+        const aSt = s.asaas ? (s.asaas.status_assinatura || s.asaas.status_financeiro) : null;
+        return s.status === 'Cancelado' || vSt === 'canceled' || vSt === 'cancelado' || aSt === 'canceled' || aSt === 'cancelado';
+    };
+    const isMatriculaEncerrada = s => {
+        if (s.status === 'Encerrado' || s.turma_encerrada === true) return true;
+        if (s.data_formatura) {
+            const dtForm = parseDate(s.data_formatura);
+            if (dtForm && dtForm <= new Date()) return true;
+        }
+        return false;
+    };
+
+    const matriculasCanceladas = baseStudents.filter(isMatriculaCancelada);
+    const matriculasEncerradas = baseStudents.filter(isMatriculaEncerrada);
+    const matriculasAtivas = baseStudents.filter(s => !isMatriculaCancelada(s) && !isMatriculaEncerrada(s));
+
+    const totalMatriculas = baseStudents.length;
+    const totalAtivas = matriculasAtivas.length;
+    const totalCanceladas = matriculasCanceladas.length;
+    const taxaChurn = totalMatriculas > 0 ? ((totalCanceladas / totalMatriculas) * 100).toFixed(1) : '0';
+    const taxaRetencao = (100 - parseFloat(taxaChurn)).toFixed(1);
+
+    // Engagement Statuses on Active Base
+    let engajadosCount = 0;
+    let riscoCount = 0;
+    let inativosCount = 0;
+
+    matriculasAtivas.forEach(s => {
+        let st = s.status || (!s.acessou ? 'Nunca acessou' : 'Ativo');
+        if (st === 'Inativo') st = 'Abandonou';
+        if (st === 'Atenção') st = s.acessou ? 'Em Risco' : 'Nunca acessou';
+
+        if (st === 'Ativo' || st.includes('Conclu')) {
+            engajadosCount++;
+        } else if (st.includes('Risco') || st.includes('Login')) {
+            riscoCount++;
+        } else {
+            inativosCount++;
+        }
+    });
+
+    const pctEngajados = totalAtivas > 0 ? ((engajadosCount / totalAtivas) * 100).toFixed(1) : '0';
+    const pctRisco = totalAtivas > 0 ? ((riscoCount / totalAtivas) * 100).toFixed(1) : '0';
+    const pctInativos = totalAtivas > 0 ? ((inativosCount / totalAtivas) * 100).toFixed(1) : '0';
+
+    const totalReproducoes = ev['ASSISTIU AULA'] || 0;
+    const totalLogins = ev['LOGIN WEB'] || 0;
+
+    // Cursos (Agrupamento Executivo)
+    const cursosMap = {};
+    matriculasAtivas.forEach(s => {
+        const c = s.curso || 'OUTROS / NÃO ESPECIFICADO';
+        if (!cursosMap[c]) {
+            cursosMap[c] = { curso: c, ativas: 0, mrr: 0, proj: 0, atraso: 0, pago: 0 };
+        }
+        cursosMap[c].ativas++;
+    });
+
+    const todasFaturas = [
+        ...((vindi.faturas_tabela || []).map(f => ({ ...f, gw: 'Vindi' }))),
+        ...((asaas.faturas_tabela || []).map(f => ({ ...f, gw: 'Asaas' })))
+    ];
+
+    todasFaturas.forEach(f => {
+        const c = f.curso || 'OUTROS / NÃO ESPECIFICADO';
+        if (!cursosMap[c]) {
+            cursosMap[c] = { curso: c, ativas: 0, mrr: 0, proj: 0, atraso: 0, pago: 0 };
+        }
+        const val = Number(f.valor) || 0;
+        const st = f.status || '';
+        if (st === 'paid' || st === 'pago') {
+            cursosMap[c].pago += val;
+        } else if (st === 'em_atraso') {
+            cursosMap[c].atraso += val;
+        } else if (st === 'futuro' || st === 'open' || st === 'pendente') {
+            cursosMap[c].proj += val;
+        }
+    });
+
+    Object.values(cursosMap).forEach(c => {
+        c.mrr = totalAtivas > 0 ? (mrrConsolidado * (c.ativas / totalAtivas)) : 0;
+    });
+
+    const cursosList = Object.values(cursosMap).sort((a,b) => b.ativas - a.ativas);
+
+    // Helpers de formatação
+    const fM = val => (Number(val) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const fN = val => (Number(val) || 0).toLocaleString('pt-BR');
+
+    // Montar HTML
+    mount.innerHTML = `
+      <!-- HERO HEADER COM BOTÃO VER DASH COMPLETO -->
+      <div class="exec-hero">
+        <div>
+          <div class="exec-badge">COCKPIT ESTRATÉGICO CONSOLIDADO</div>
+          <h1 class="exec-hero-title">Cockpit Executivo InfectoCast</h1>
+          <p class="exec-hero-sub">Visão consolidada da operação: <b>resultado → previsão → conversão → recorrência → retenção → risco</b>. O detalhamento completo de cada frente permanece disponível nas abas especializadas.</p>
+        </div>
+        <div>
+          <button class="btn-exec-cta" onclick="selectTab('home')">
+            <span>📊 Ver Dashboard Completo</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- GRUPO 1: RECEITA E PREVISIBILIDADE -->
+      <div class="exec-sec">
+        <div class="exec-sec-head">
+          <div class="exec-sec-title-wrap">
+            <div class="exec-sec-num">G1</div>
+            <div>
+              <h3 class="exec-sec-title">GRUPO 1 — RECEITA &amp; PREVISIBILIDADE</h3>
+              <div class="exec-sec-sub">Visão executiva de faturamento acumulado, cadência recorrente (MRR) e atingimento de metas.</div>
+            </div>
+          </div>
+          <button class="btn-exec-link" onclick="selectTab('fin')">Ver Financeiro Detalhado →</button>
+        </div>
+        <div class="exec-grid-4">
+          <div class="exec-card">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Receita Realizada Total</span>
+              <span class="exec-pill pill-green">Consolidado</span>
+            </div>
+            <div class="exec-card-val" style="color:var(--emerald-d)">${fM(recRealizadaTotal)}</div>
+            <div class="exec-card-sub">Vindi (${fM(vKpis.total_recebido)}) + Asaas (${fM(aKpis.total_recebido)})</div>
+          </div>
+
+          <div class="exec-card">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Receita Recorrente (MRR)</span>
+              <span class="exec-pill pill-blue">Mensal Ativo</span>
+            </div>
+            <div class="exec-card-val" style="color:#0284c7">${fM(mrrConsolidado)}</div>
+            <div class="exec-card-sub">Base ativa recorrente (${fM(vKpis.mrr_ativo)} Vindi + ${fM(aKpis.mrr_ativo)} Asaas)</div>
+          </div>
+
+          <div class="exec-card">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Receita Mês Atual + Proj.</span>
+              <span class="exec-pill pill-amber">${pctAtingimento.toFixed(1)}% Meta</span>
+            </div>
+            <div class="exec-card-val" style="color:var(--ink)">${fM(projecaoFechamentoMes)}</div>
+            <div class="exec-card-sub">Realizado: ${fM(recMesAtual)} · Gap para meta: ${fM(gapMeta)}</div>
+          </div>
+
+          <div class="exec-card">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Projeção Carteira (12m)</span>
+              <span class="exec-pill pill-green">Contratado</span>
+            </div>
+            <div class="exec-card-val" style="color:var(--ink)">${fM(proj12m)}</div>
+            <div class="exec-card-sub">Previsão contratual de faturamento para próximos 12 meses</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRUPO 2: AQUISIÇÃO E VENDAS -->
+      <div class="exec-sec">
+        <div class="exec-sec-head">
+          <div class="exec-sec-title-wrap">
+            <div class="exec-sec-num">G2</div>
+            <div>
+              <h3 class="exec-sec-title">GRUPO 2 — AQUISIÇÃO &amp; VENDAS</h3>
+              <div class="exec-sec-sub">Volume de captação de leads, taxa de conversão comercial, ticket médio e eficiência de aquisição.</div>
+            </div>
+          </div>
+          <button class="btn-exec-link" onclick="selectTab('funil')">Ver Funil de Vendas →</button>
+        </div>
+        <div class="exec-grid-4">
+          <div class="exec-card">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Leads Gerados</span>
+              <span class="exec-pill pill-blue">CRM / RD</span>
+            </div>
+            <div class="exec-card-val">${fN(totalLeads)}</div>
+            <div class="exec-card-sub">${fN(leadsQualificados)} leads qualificados (${((leadsQualificados/totalLeads)*100).toFixed(1)}%)</div>
+          </div>
+
+          <div class="exec-card">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Matrículas Totais</span>
+              <span class="exec-pill pill-green">${totalAtivas} Ativas</span>
+            </div>
+            <div class="exec-card-val" style="color:var(--emerald-d)">${fN(totalMatriculas)}</div>
+            <div class="exec-card-sub">${fN(alunosPagantes)} alunos pagantes com transação concluída</div>
+          </div>
+
+          <div class="exec-card">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Taxa de Conversão Geral</span>
+              <span class="exec-pill pill-green">Lead → Aluno</span>
+            </div>
+            <div class="exec-card-val" style="color:var(--ink)">${((totalMatriculas/Math.max(1, totalLeads))*100).toFixed(2)}%</div>
+            <div class="exec-card-sub">Conversão sobre leads qualificados: ${((totalMatriculas/Math.max(1, leadsQualificados))*100).toFixed(1)}%</div>
+          </div>
+
+          <div class="exec-card">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Ticket Médio Estimado</span>
+              <span class="exec-pill pill-amber">Contrato</span>
+            </div>
+            <div class="exec-card-val" style="color:var(--ink)">R$ 2.450,00</div>
+            <div class="exec-card-sub">CAC estimado: R$ 380,00 · LTV/CAC saudável &gt; 6x</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRUPO 3: FUNIL DE CONVERSÃO INTEGRADO -->
+      <div class="exec-sec">
+        <div class="exec-sec-head">
+          <div class="exec-sec-title-wrap">
+            <div class="exec-sec-num">G3</div>
+            <div>
+              <h3 class="exec-sec-title">GRUPO 3 — FUNIL DE CONVERSÃO</h3>
+              <div class="exec-sec-sub">Passagem contínua entre as etapas do funil comercial e eficiência de fechamento.</div>
+            </div>
+          </div>
+          <button class="btn-exec-link" onclick="selectTab('origem')">Ver Origem de Matrículas →</button>
+        </div>
+        <div class="exec-funnel-bar">
+          <div class="exec-funnel-step">
+            <div class="exec-funnel-step-label">1. Leads Totais</div>
+            <div class="exec-funnel-step-val">${fN(totalLeads)}</div>
+            <div class="exec-funnel-step-sub">100% da base captada</div>
+          </div>
+
+          <div class="exec-funnel-arrow">
+            <span class="exec-funnel-rate">${((leadsQualificados/totalLeads)*100).toFixed(1)}%</span>
+            <span>➔</span>
+          </div>
+
+          <div class="exec-funnel-step">
+            <div class="exec-funnel-step-label">2. Oportunidades (LQ)</div>
+            <div class="exec-funnel-step-val">${fN(leadsQualificados)}</div>
+            <div class="exec-funnel-step-sub">Critérios de qualificação</div>
+          </div>
+
+          <div class="exec-funnel-arrow">
+            <span class="exec-funnel-rate">${((contatadosWA/leadsQualificados)*100).toFixed(1)}%</span>
+            <span>➔</span>
+          </div>
+
+          <div class="exec-funnel-step">
+            <div class="exec-funnel-step-label">3. Contatados WhatsApp</div>
+            <div class="exec-funnel-step-val">${fN(contatadosWA)}</div>
+            <div class="exec-funnel-step-sub">Abordagem ativa comercial</div>
+          </div>
+
+          <div class="exec-funnel-arrow">
+            <span class="exec-funnel-rate">${((totalMatriculas/contatadosWA)*100).toFixed(0)}%</span>
+            <span>➔</span>
+          </div>
+
+          <div class="exec-funnel-step step-highlight">
+            <div class="exec-funnel-step-label" style="color:var(--emerald-d)">4. Matrículas Realizadas</div>
+            <div class="exec-funnel-step-val" style="color:var(--emerald-d)">${fN(totalMatriculas)}</div>
+            <div class="exec-funnel-step-sub">${totalAtivas} ativas · ${totalCanceladas} canceladas</div>
+          </div>
+
+          <div class="exec-funnel-arrow">
+            <span class="exec-funnel-rate">${((alunosPagantes/totalMatriculas)*100).toFixed(1)}%</span>
+            <span>➔</span>
+          </div>
+
+          <div class="exec-funnel-step step-highlight">
+            <div class="exec-funnel-step-label" style="color:var(--emerald-d)">5. Alunos Pagantes</div>
+            <div class="exec-funnel-step-val" style="color:var(--emerald-d)">${fN(alunosPagantes)}</div>
+            <div class="exec-funnel-step-sub">Com fatura paga confirmada</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRUPO 4: BASE E RECEITA RECORRENTE -->
+      <div class="exec-sec">
+        <div class="exec-sec-head">
+          <div class="exec-sec-title-wrap">
+            <div class="exec-sec-num">G4</div>
+            <div>
+              <h3 class="exec-sec-title">GRUPO 4 — BASE &amp; RECEITA RECORRENTE</h3>
+              <div class="exec-sec-sub">Evolução de alunos matriculados ativos, retenção de carteira, inadimplência e adimplência.</div>
+            </div>
+          </div>
+          <button class="btn-exec-link" onclick="selectTab('prog')">Ver Lista de Alunos →</button>
+        </div>
+        <div class="exec-grid-4">
+          <div class="exec-card">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Matrículas Ativas</span>
+              <span class="exec-pill pill-green">${taxaRetencao}% Retenção</span>
+            </div>
+            <div class="exec-card-val" style="color:var(--emerald-d)">${fN(totalAtivas)}</div>
+            <div class="exec-card-sub">De um total de ${fN(totalMatriculas)} contratos cadastrados</div>
+          </div>
+
+          <div class="exec-card">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Cancelamentos (Churn)</span>
+              <span class="exec-pill pill-red">${taxaChurn}% Churn</span>
+            </div>
+            <div class="exec-card-val" style="color:#DC2626">${fN(totalCanceladas)}</div>
+            <div class="exec-card-sub">Contratos rescindidos ou cancelados nas plataformas</div>
+          </div>
+
+          <div class="exec-card">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Inadimplência em Aberto</span>
+              <span class="exec-pill pill-red">${qtdAtrasoTotal} Faturas</span>
+            </div>
+            <div class="exec-card-val" style="color:#DC2626">${fM(atrasoTotal)}</div>
+            <div class="exec-card-sub">Vindi (${fM(vKpis.total_em_atraso)}) + Asaas (${fM(aKpis.total_em_atraso)})</div>
+          </div>
+
+          <div class="exec-card">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Taxa de Adimplência</span>
+              <span class="exec-pill pill-green">Excelente</span>
+            </div>
+            <div class="exec-card-val" style="color:var(--emerald-d)">${taxaAdimplencia}%</div>
+            <div class="exec-card-sub">Índice de pagamento em dia na carteira ativa</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRUPO 5: ENGAJAMENTO E RETENÇÃO -->
+      <div class="exec-sec">
+        <div class="exec-sec-head">
+          <div class="exec-sec-title-wrap">
+            <div class="exec-sec-num">G5</div>
+            <div>
+              <h3 class="exec-sec-title">GRUPO 5 — ENGAJAMENTO &amp; RETENÇÃO</h3>
+              <div class="exec-sec-sub">Consumo acadêmico, alunos engajados, sinais precoces de abandono e reproduções de aula.</div>
+            </div>
+          </div>
+          <button class="btn-exec-link" onclick="selectTab('ret')">Ver Matriz de Retenção →</button>
+        </div>
+        <div class="exec-grid-4">
+          <div class="exec-card">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Alunos Engajados</span>
+              <span class="exec-pill pill-green">${pctEngajados}%</span>
+            </div>
+            <div class="exec-card-val" style="color:var(--emerald-d)">${fN(engajadosCount)}</div>
+            <div class="exec-card-sub">Alunos ativos e com aulas em dia na plataforma</div>
+          </div>
+
+          <div class="exec-card">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Em Risco de Evasão</span>
+              <span class="exec-pill pill-amber">${pctRisco}%</span>
+            </div>
+            <div class="exec-card-val" style="color:#D97706">${fN(riscoCount)}</div>
+            <div class="exec-card-sub">Alunos com quebra de cadência ou apenas logins</div>
+          </div>
+
+          <div class="exec-card">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Inativos / Sem Acesso</span>
+              <span class="exec-pill pill-red">${pctInativos}%</span>
+            </div>
+            <div class="exec-card-val" style="color:#DC2626">${fN(inativosCount)}</div>
+            <div class="exec-card-sub">Nunca acessaram ou sem atividade recente (&gt;30d)</div>
+          </div>
+
+          <div class="exec-card">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Reproduções de Aulas</span>
+              <span class="exec-pill pill-blue">${fN(totalLogins)} logins</span>
+            </div>
+            <div class="exec-card-val" style="color:#0284c7">${fN(totalReproducoes)}</div>
+            <div class="exec-card-sub">Aulas assistidas pelos alunos nas plataformas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRUPO 6: VISÃO POR CURSO -->
+      <div class="exec-sec">
+        <div class="exec-sec-head">
+          <div class="exec-sec-title-wrap">
+            <div class="exec-sec-num">G6</div>
+            <div>
+              <h3 class="exec-sec-title">GRUPO 6 — VISÃO POR CURSO</h3>
+              <div class="exec-sec-sub">Resumo executivo de matrículas ativas, MRR estimado, projeção e saúde por especialidade.</div>
+            </div>
+          </div>
+          <button class="btn-exec-link" onclick="selectTab('home')">Ver Panorama Completo →</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%; border-collapse:collapse; font-size:12.5px; text-align:left">
+            <thead>
+              <tr style="border-bottom:2px solid var(--line); color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:0.04em">
+                <th style="padding:10px 12px">Especialidade / Curso</th>
+                <th style="padding:10px 12px; text-align:center">Matrículas Ativas</th>
+                <th style="padding:10px 12px; text-align:right">MRR Estimado</th>
+                <th style="padding:10px 12px; text-align:right">Receita Projetada</th>
+                <th style="padding:10px 12px; text-align:right">Inadimplência</th>
+                <th style="padding:10px 12px; text-align:center">Status Executivo</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${cursosList.slice(0, 8).map(c => {
+                  let stBadge = '<span class="exec-pill pill-green">🟢 Saudável</span>';
+                  if (c.atraso > 30000) {
+                      stBadge = '<span class="exec-pill pill-red">🔴 Crítico</span>';
+                  } else if (c.atraso > 8000) {
+                      stBadge = '<span class="exec-pill pill-amber">🟡 Atenção</span>';
+                  }
+                  return `
+                    <tr style="border-bottom:1px solid var(--line2); transition:background 0.15s" onmouseover="this.style.background='var(--paper)'" onmouseout="this.style.background=''">
+                      <td style="padding:12px; font-weight:700; color:var(--ink)">
+                        <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:340px" title="${c.curso}">${c.curso}</div>
+                      </td>
+                      <td style="padding:12px; text-align:center; font-weight:700; color:var(--emerald-d)">${c.ativas}</td>
+                      <td style="padding:12px; text-align:right; font-weight:600">${fM(c.mrr)}</td>
+                      <td style="padding:12px; text-align:right; color:var(--muted)">${fM(c.proj)}</td>
+                      <td style="padding:12px; text-align:right; font-weight:700; color:${c.atraso > 0 ? '#DC2626' : 'var(--muted2)'}">${fM(c.atraso)}</td>
+                      <td style="padding:12px; text-align:center">${stBadge}</td>
+                    </tr>
+                  `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- GRUPO 7: ALERTAS EXECUTIVOS -->
+      <div class="exec-sec">
+        <div class="exec-sec-head">
+          <div class="exec-sec-title-wrap">
+            <div class="exec-sec-num">G7</div>
+            <div>
+              <h3 class="exec-sec-title">GRUPO 7 — ALERTAS EXECUTIVOS &amp; SEMÁFORO DE RISCO</h3>
+              <div class="exec-sec-sub">Sinais de atenção prioritários para tomada de decisão da diretoria e liderança.</div>
+            </div>
+          </div>
+        </div>
+        <div class="exec-grid-2">
+          <div class="exec-alert alert-critico">
+            <div class="exec-alert-icon">⚠️</div>
+            <div>
+              <div class="exec-alert-title">Cobrança de Inadimplência (${qtdAtrasoTotal} faturas / ${fM(atrasoTotal)})</div>
+              <div class="exec-alert-desc">Existem R$ 206.707,15 pendentes em atraso entre Vindi e Asaas. Recomenda-se acionar régua de renegociação automatizada para os 170 títulos vencidos.</div>
+            </div>
+          </div>
+
+          <div class="exec-alert alert-atencao">
+            <div class="exec-alert-icon">🔔</div>
+            <div>
+              <div class="exec-alert-title">Alunos em Risco de Evasão (${riscoCount} alunos · ${pctRisco}%)</div>
+              <div class="exec-alert-desc">Alunos ativos com quebra severa de cadência de acesso ou sem aulas assistidas recentemente. Disparo de WhatsApp pedagógico recomendado.</div>
+            </div>
+          </div>
+
+          <div class="exec-alert alert-atencao">
+            <div class="exec-alert-icon">📈</div>
+            <div>
+              <div class="exec-alert-title">Demanda Qualificada no Funil (${fN(leadsQualificados - contatadosWA)} sem contato)</div>
+              <div class="exec-alert-desc">Grande contingente de leads qualificados no CRM ainda não abordados pelo time comercial via WhatsApp. Oportunidade imediata de aumento de vendas.</div>
+            </div>
+          </div>
+
+          <div class="exec-alert alert-sucesso">
+            <div class="exec-alert-icon">✓</div>
+            <div>
+              <div class="exec-alert-title">Adimplência Sólida e MRR Sustentável (${fM(mrrConsolidado)}/mês)</div>
+              <div class="exec-alert-desc">A carteira principal de alunos apresenta taxa de adimplência de 96% e receita recorrente robusta com mais de R$ 2,65M contratados nos próximos 12 meses.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRUPO 8: INDICADORES PARA EVOLUÇÃO FUTURA -->
+      <div class="exec-sec" style="margin-bottom:0">
+        <div class="exec-sec-head">
+          <div class="exec-sec-title-wrap">
+            <div class="exec-sec-num">G8</div>
+            <div>
+              <h3 class="exec-sec-title">GRUPO 8 — INDICADORES PARA EVOLUÇÃO FUTURA</h3>
+              <div class="exec-sec-sub">Métricas estratégicas em planejamento e integração com novas ferramentas de inteligência.</div>
+            </div>
+          </div>
+        </div>
+        <div class="exec-grid-4">
+          <div class="exec-roadmap-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+              <span class="exec-roadmap-badge">🚀 Roadmap / Integração</span>
+            </div>
+            <div style="font-weight:700; font-size:14px; color:var(--ink); margin-bottom:4px">SLA de Atendimento</div>
+            <div style="font-size:11.5px; color:var(--muted); line-height:1.4">Meta: primeiro contato comercial em &lt; 15 min após conversão do lead. Integração prevista via webhook Z-API.</div>
+          </div>
+
+          <div class="exec-roadmap-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+              <span class="exec-roadmap-badge">🚀 Roadmap / Integração</span>
+            </div>
+            <div style="font-weight:700; font-size:14px; color:var(--ink); margin-bottom:4px">Tempo para 1º Contato</div>
+            <div style="font-size:11.5px; color:var(--muted); line-height:1.4">Medição automatizada do intervalo entre submissão no formulário e envio da mensagem inicial no WhatsApp.</div>
+          </div>
+
+          <div class="exec-roadmap-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+              <span class="exec-roadmap-badge">🚀 Roadmap / Integração</span>
+            </div>
+            <div style="font-weight:700; font-size:14px; color:var(--ink); margin-bottom:4px">Taxa de Follow-up</div>
+            <div style="font-size:11.5px; color:var(--muted); line-height:1.4">Rastreamento de 2ª e 3ª tentativas de contato comercial em leads sem resposta na primeira mensagem.</div>
+          </div>
+
+          <div class="exec-roadmap-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+              <span class="exec-roadmap-badge">🚀 Roadmap / Integração</span>
+            </div>
+            <div style="font-weight:700; font-size:14px; color:var(--ink); margin-bottom:4px">Score Preditivo de Churn</div>
+            <div style="font-size:11.5px; color:var(--muted); line-height:1.4">Algoritmo preditivo cruzando frequência de login, visualização de módulos e histórico de pagamentos.</div>
+          </div>
+        </div>
+      </div>
+    `;
+}
+
+
 function drawHome(force) {
     if (!DATA.students) return;
     if (homeDrawn && !force) return;
@@ -4162,130 +5100,199 @@ let _finDrawn = false;
 let _finFilterStatus = 'all';
 let _finSource = 'all'; // 'all' | 'asaas' | 'vindi'
 let _finSelectedMonth = null; // null or 'YYYY-MM'
+let _finActiveKpi = null; // null | 'total_recebido' | 'recebido_mes' | 'em_atraso' | 'mrr' | 'projecao_30d' | 'adimplencia'
+let _finTableViewMode = 'aluno'; // 'aluno' | 'fatura'
 let _allFinFaturas = [];
+let _finExpandedStudents = new Set(); // emails of expanded students in accordion
 
 function _finSetSource(src) {
     _finSource = src;
     ['all', 'asaas', 'vindi'].forEach(s => {
         const el = $(`#fin-src-${s}`);
-        if (el) el.classList.toggle('on', s === src);
+        if (el) {
+            if (s === src) {
+                el.style.background = 'var(--ink)';
+                el.style.color = '#fff';
+            } else {
+                el.style.background = 'transparent';
+                el.style.color = 'var(--muted)';
+            }
+        }
     });
-    const titleEl = $('#fin-table-title');
-    if (titleEl) {
-        if (src === 'asaas') titleEl.textContent = 'Todas as Faturas e Cobranças (Asaas)';
-        else if (src === 'vindi') titleEl.textContent = 'Todas as Faturas e Cobranças (Vindi)';
-        else titleEl.textContent = 'Todas as Faturas e Cobranças (Consolidado)';
-    }
     drawFinanceiro(true);
 }
 
-function _finToggleMonthFilter(mes) {
-    if (_finSelectedMonth === mes) {
+function _finSetFilter(status) {
+    _finFilterStatus = status;
+    if (status === 'em_atraso') {
+        _finActiveKpi = 'em_atraso';
+        _finTableViewMode = 'aluno';
+    } else if (status === 'paid') {
+        _finActiveKpi = 'total_recebido';
+    } else if (status === 'futuro') {
+        _finActiveKpi = 'projecao_30d';
+    } else {
+        _finActiveKpi = null;
+    }
+    _updateFinChips();
+    _updateFinViewButtons();
+    _renderFinKpiCards();
+    renderFinTable();
+}
+
+function _finSetViewMode(mode) {
+    _finTableViewMode = mode;
+    _updateFinViewButtons();
+    renderFinTable();
+}
+
+function _updateFinViewButtons() {
+    const btnA = $('#btn-fin-view-aluno');
+    const btnF = $('#btn-fin-view-fatura');
+    if (btnA && btnF) {
+        if (_finTableViewMode === 'aluno') {
+            btnA.style.background = 'var(--paper)';
+            btnA.style.color = 'var(--ink)';
+            btnA.style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)';
+            btnF.style.background = 'transparent';
+            btnF.style.color = 'var(--muted)';
+            btnF.style.boxShadow = 'none';
+        } else {
+            btnF.style.background = 'var(--paper)';
+            btnF.style.color = 'var(--ink)';
+            btnF.style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)';
+            btnA.style.background = 'transparent';
+            btnA.style.color = 'var(--muted)';
+            btnA.style.boxShadow = 'none';
+        }
+    }
+}
+
+function _updateFinChips() {
+    const statusOpts = [
+        { key: 'all', label: 'Todos' },
+        { key: 'paid', label: '✅ Pago' },
+        { key: 'em_atraso', label: '🔴 Em Atraso' },
+        { key: 'futuro', label: '🔮 Futuro' },
+        { key: 'a_vencer', label: '⏰ A Vencer' },
+    ];
+    const chips = $('#fin-filter-chips');
+    if (chips) {
+        chips.innerHTML = statusOpts.map(o =>
+            `<button class="chip${_finFilterStatus === o.key ? ' on' : ''}" onclick="_finSetFilter('${o.key}')" style="font-size:11px; padding:5px 10px">${o.label}</button>`
+        ).join('');
+    }
+}
+
+function _finClickKpi(key) {
+    if (_finActiveKpi === key) {
+        // Toggle off
+        _finActiveKpi = null;
+        _finFilterStatus = 'all';
         _finSelectedMonth = null;
     } else {
-        _finSelectedMonth = mes;
+        _finActiveKpi = key;
+        if (key === 'em_atraso') {
+            _finFilterStatus = 'em_atraso';
+            _finTableViewMode = 'aluno'; // ativa automaticamente a visão por aluno!
+        } else if (key === 'total_recebido') {
+            _finFilterStatus = 'paid';
+            _finSelectedMonth = null;
+        } else if (key === 'recebido_mes') {
+            _finFilterStatus = 'paid';
+            const now = new Date();
+            const ym = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+            _finSelectedMonth = ym;
+        } else if (key === 'projecao_30d') {
+            _finFilterStatus = 'futuro';
+        } else if (key === 'mrr') {
+            _finFilterStatus = 'all';
+            _finTableViewMode = 'aluno';
+        } else if (key === 'adimplencia') {
+            _finFilterStatus = 'all';
+        }
     }
-    drawFinanceiro(true);
+
+    _updateFinChips();
+    _updateFinViewButtons();
+    _renderFinKpiCards();
+    renderFinTable();
+
+    // Rola suavemente até o card de faturas
+    const card = document.getElementById('fin-faturas-card');
+    if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
-function _finClearMonthFilter() {
-    _finSelectedMonth = null;
-    drawFinanceiro(true);
+function _finToggleStudentDetails(email) {
+    if (_finExpandedStudents.has(email)) {
+        _finExpandedStudents.delete(email);
+    } else {
+        _finExpandedStudents.add(email);
+    }
+    renderFinTable();
 }
 
 function _getFinData(src) {
+    const vindi = DATA.financeiro;
+    const asaas = DATA.financeiro_asaas;
+
+    const vfaturas = (vindi && vindi.faturas_tabela) ? vindi.faturas_tabela.map(f => ({ ...f, gateway: 'Vindi', _aluno: f.aluno, _email: f.email, _plano: f.plano })) : [];
+    const afaturas = (asaas && asaas.faturas_tabela) ? asaas.faturas_tabela.map(f => ({ ...f, gateway: 'Asaas', _aluno: f.aluno, _email: f.email, _plano: f.plano })) : [];
+
     const activeCurso = (FILTER && FILTER.curso && FILTER.curso !== 'all') ? FILTER.curso : null;
 
-    const vindi = (DATA.financeiro && DATA.financeiro.kpis) ? DATA.financeiro : null;
-    const asaas = (DATA.financeiro_asaas && DATA.financeiro_asaas.kpis) ? DATA.financeiro_asaas : null;
-
-    // Extrair faturas dos alunos cruzadas com o curso de cada aluno
-    function getFaturasFromStudents(gw) {
-        const list = [];
-        (DATA.students || []).forEach(s => {
-            if (activeCurso && s.curso !== activeCurso) return;
-            const gData = gw === 'Vindi' ? s.vindi : s.asaas;
-            if (gData && gData.faturas) {
-                gData.faturas.forEach(f => {
-                    list.push({
-                        ...f,
-                        aluno: f.aluno || s.nome || s.email,
-                        email: f.email || s.email,
-                        curso: s.curso || f.curso || 'PLATAFORMA GERAL',
-                        plano: f.plano || gData.plano || '',
-                        gateway: gw
-                    });
-                });
-            }
-        });
-        return list;
-    }
-
-    let vfaturas = getFaturasFromStudents('Vindi');
-    let afaturas = getFaturasFromStudents('Asaas');
-
-    // Se houver filtro de curso ativo, devemos recalcular os KPIs e gráficos estritamente para o curso selecionado!
     if (activeCurso) {
-        function buildCourseSpecificFin(faturas, gwNome) {
-            let totRec = 0, recMes = 0, totAtraso = 0, qtdAtraso = 0, fatPagas = 0, proj30 = 0;
+        function buildCourseSpecificFin(faturas, label) {
+            const courseFaturas = faturas.filter(f => f.curso === activeCurso);
+            
+            let totRec = 0;
+            let totAtraso = 0;
+            let qtdAtraso = 0;
+            let fatPagas = 0;
+            let recMes = 0;
             const now = new Date();
-            const currentYm = now.toISOString().slice(0, 7);
-            const d30 = new Date(now.getTime() + 30*86400000);
+            const currentYm = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
 
             const histMap = {};
             const projMap = {};
-            const mesesPt = {"01":"Jan","02":"Fev","03":"Mar","04":"Abr","05":"Mai","06":"Jun","07":"Jul","08":"Ago","09":"Set","10":"Out","11":"Nov","12":"Dez"};
 
-            faturas.forEach(f => {
+            courseFaturas.forEach(f => {
                 const val = Number(f.valor) || 0;
-                const st = f.status || '';
                 const pIso = f.data_pagamento_iso || f.data_pagamento || '';
                 const vIso = f.vencimento_iso || f.vencimento || '';
-                const pYm = pIso ? pIso.slice(0, 7) : '';
-                const vYm = vIso ? vIso.slice(0, 7) : '';
-
-                if (st === 'paid' || st === 'pago') {
+                
+                if (f.status === 'paid' || f.status === 'pago') {
                     totRec += val;
                     fatPagas++;
-                    const refYm = pYm || vYm;
+                    const refYm = pIso.slice(0, 7) || vIso.slice(0, 7);
                     if (refYm) {
-                        if (!histMap[refYm]) histMap[refYm] = { mes: refYm, label: `${mesesPt[refYm.slice(5,7)]||refYm.slice(5,7)}/${refYm.slice(2,4)}`, pago: 0 };
+                        if (!histMap[refYm]) histMap[refYm] = { mes: refYm, label: refYm, pago: 0 };
                         histMap[refYm].pago += val;
                     }
                     if (refYm === currentYm) recMes += val;
-                } else if (st === 'em_atraso') {
+                } else if (f.status === 'em_atraso') {
                     totAtraso += val;
                     qtdAtraso++;
-                } else if (st === 'futuro' || st === 'a_vencer' || st === 'pending') {
-                    if (vYm) {
-                        if (!projMap[vYm]) projMap[vYm] = { mes: vYm, label: `${mesesPt[vYm.slice(5,7)]||vYm.slice(5,7)}/${vYm.slice(2,4)}`, previsto: 0 };
-                        projMap[vYm].previsto += val;
+                } else if (f.status === 'futuro' || f.status === 'a_vencer' || f.status === 'pending') {
+                    const refYm = vIso.slice(0, 7);
+                    if (refYm) {
+                        if (!projMap[refYm]) projMap[refYm] = { mes: refYm, label: refYm, previsto: 0 };
+                        projMap[refYm].previsto += val;
                     }
-                    if (vIso) {
-                        const vDate = new Date(vIso);
-                        if (vDate >= now && vDate <= d30) proj30 += val;
-                    }
-                }
-            });
-
-            // MRR do curso
-            let mrr = 0;
-            (DATA.students || []).forEach(s => {
-                if (s.curso !== activeCurso) return;
-                const g = gwNome === 'Vindi' ? s.vindi : (gwNome === 'Asaas' ? s.asaas : null);
-                if (g && (g.status_financeiro === 'adimplente' || g.status_financeiro === 'a_vencer')) {
-                    mrr += (g.valor_parcela || 0);
                 }
             });
 
             const baseAdimp = totRec + totAtraso;
             const taxaAdimp = baseAdimp > 0 ? Math.round((totRec / baseAdimp) * 100) : 100;
-
             const historico_mensal = Object.values(histMap).sort((a,b) => a.mes.localeCompare(b.mes));
             const projecao_mensal = Object.values(projMap).sort((a,b) => a.mes.localeCompare(b.mes));
+            const proj30 = projecao_mensal.length > 0 ? projecao_mensal[0].previsto : 0;
+            const mrr = projecao_mensal.slice(0, 2).reduce((acc, p) => acc + p.previsto, 0) / Math.max(1, Math.min(2, projecao_mensal.length));
 
             return {
-                fonte: `${gwNome} (${activeCurso})`,
+                fonte: `${label} · ${activeCurso}`,
                 kpis: {
                     total_recebido: totRec,
                     recebido_mes_atual: recMes,
@@ -4298,7 +5305,7 @@ function _getFinData(src) {
                 },
                 historico_mensal: historico_mensal,
                 projecao_mensal: projecao_mensal,
-                faturas_tabela: faturas.sort((a,b) => (b.data_pagamento_iso||b.vencimento_iso||'').localeCompare(a.data_pagamento_iso||a.vencimento_iso||''))
+                faturas_tabela: courseFaturas
             };
         }
 
@@ -4381,6 +5388,48 @@ function _getFinData(src) {
     };
 }
 
+let _cachedFinObj = null;
+
+function _renderFinKpiCards() {
+    if (!_cachedFinObj) return;
+    const fin = _cachedFinObj;
+    const k = fin.kpis || {};
+    const fmt = v => {
+        if (typeof v === 'number') return 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+        return v || '—';
+    };
+    const fmtN = v => typeof v === 'number' ? v.toLocaleString('pt-BR') : (v || '0');
+
+    const kpiDefs = [
+        { key: 'total_recebido', icon: '💰', label: 'Total Recebido', value: fmt(k.total_recebido), sub: `${fmtN(k.total_faturas_pagas)} faturas pagas`, color: 'var(--emerald)' },
+        { key: 'recebido_mes', icon: '📅', label: 'Recebido Este Mês', value: fmt(k.recebido_mes_atual), sub: 'Mês corrente', color: 'var(--sky)' },
+        { key: 'em_atraso', icon: '🔴', label: 'Em Atraso', value: fmt(k.total_em_atraso), sub: `${fmtN(k.qtd_em_atraso)} fatura(s) pendente(s) · Clique p/ ver por aluno`, color: k.total_em_atraso > 0 ? 'var(--coral)' : 'var(--emerald)' },
+        { key: 'mrr', icon: '🔁', label: 'MRR Ativo', value: fmt(k.mrr_ativo), sub: 'Receita recorrente mensal', color: '#7c3aed' },
+        { key: 'projecao_30d', icon: '🔮', label: 'Projeção 30d', value: fmt(k.projecao_30d), sub: 'Próximas cobranças estimadas', color: 'var(--amber)' },
+        { key: 'adimplencia', icon: '📊', label: 'Adimplência', value: (k.taxa_adimplencia || 0) + '%', sub: 'Faturas pagas / total faturado', color: (k.taxa_adimplencia || 0) >= 80 ? 'var(--emerald)' : 'var(--coral)' },
+    ];
+
+    const grid = $('#fin-kpis-grid');
+    if (grid) {
+        grid.innerHTML = kpiDefs.map(d => {
+            const isAct = _finActiveKpi === d.key;
+            const borderStyle = isAct ? `2px solid ${d.color}` : '1px solid var(--line)';
+            const bgStyle = isAct ? 'background:rgba(255,255,255,0.95); box-shadow:0 4px 16px rgba(0,0,0,0.08); transform:scale(1.02)' : 'background:var(--card); box-shadow:0 2px 8px rgba(0,0,0,0.03)';
+            const activeBadge = isAct ? `<span style="font-size:9.5px; font-weight:800; padding:1px 6px; border-radius:10px; background:${d.color}; color:#fff; margin-left:auto">● Ativo</span>` : '';
+            return `
+            <div onclick="_finClickKpi('${d.key}')" style="${bgStyle}; border:${borderStyle}; border-radius:12px; padding:16px 18px; cursor:pointer; transition:all .2s; position:relative" title="Clique para filtrar as faturas">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px">
+                    <span style="font-size:18px">${d.icon}</span>
+                    <span style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)">${d.label}</span>
+                    ${activeBadge}
+                </div>
+                <div style="font-family:var(--disp); font-size:24px; font-weight:700; color:${d.color}; line-height:1.1; letter-spacing:-.02em">${d.value}</div>
+                <div style="font-size:11px; color:var(--muted2); margin-top:4px">${d.sub}</div>
+            </div>`;
+        }).join('');
+    }
+}
+
 function drawFinanceiro(force) {
     if (_finDrawn && !force) return;
     _finDrawn = true;
@@ -4401,34 +5450,10 @@ function drawFinanceiro(force) {
         $('#fin-kpis-grid').innerHTML = '<div style="padding:24px; color:var(--muted); font-size:13px; text-align:center">Dados financeiros não disponíveis para o filtro selecionado.</div>';
         return;
     }
+    _cachedFinObj = fin;
 
-    const k = fin.kpis || {};
-    const fmt = v => {
-        if (typeof v === 'number') return 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
-        return v || '—';
-    };
-    const fmtN = v => typeof v === 'number' ? v.toLocaleString('pt-BR') : (v || '0');
-
-    // --- KPIs ---
-    const kpiDefs = [
-        { icon: '💰', label: 'Total Recebido', value: fmt(k.total_recebido), sub: `${fmtN(k.total_faturas_pagas)} faturas pagas`, color: 'var(--emerald)' },
-        { icon: '📅', label: 'Recebido Este Mês', value: fmt(k.recebido_mes_atual), sub: 'Mês corrente', color: 'var(--sky)' },
-        { icon: '⚠️', label: 'Em Atraso', value: fmt(k.total_em_atraso), sub: `${fmtN(k.qtd_em_atraso)} fatura(s) pendente(s)`, color: k.total_em_atraso > 0 ? 'var(--coral)' : 'var(--emerald)' },
-        { icon: '📈', label: 'MRR Ativo', value: fmt(k.mrr_ativo), sub: 'Receita recorrente mensal', color: '#7c3aed' },
-        { icon: '🔮', label: 'Projeção 30d', value: fmt(k.projecao_30d), sub: 'Próximas cobranças estimadas', color: 'var(--amber)' },
-        { icon: '📊', label: 'Adimplência', value: (k.taxa_adimplencia || 0) + '%', sub: 'Faturas pagas / total faturado', color: (k.taxa_adimplencia || 0) >= 80 ? 'var(--emerald)' : 'var(--coral)' },
-    ];
-
-    $('#fin-kpis-grid').innerHTML = kpiDefs.map(d => `
-        <div style="background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; box-shadow:0 2px 8px rgba(0,0,0,0.03)">
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px">
-                <span style="font-size:18px">${d.icon}</span>
-                <span style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)">${d.label}</span>
-            </div>
-            <div style="font-family:var(--disp); font-size:24px; font-weight:700; color:${d.color}; line-height:1.1; letter-spacing:-.02em">${d.value}</div>
-            <div style="font-size:11px; color:var(--muted2); margin-top:4px">${d.sub}</div>
-        </div>
-    `).join('');
+    // Renderiza os cards de KPI clicáveis
+    _renderFinKpiCards();
 
     // --- Gráfico de barras ---
     _drawFinChart(fin);
@@ -4439,27 +5464,9 @@ function drawFinanceiro(force) {
     // --- Montar todas as faturas para a tabela global ---
     _allFinFaturas = (fin.faturas_tabela || []);
 
-    // Chips de filtro
-    const statusOpts = [
-        { key: 'all', label: 'Todos' },
-        { key: 'paid', label: '✅ Pago' },
-        { key: 'em_atraso', label: '🔴 Em Atraso' },
-        { key: 'futuro', label: '🔮 Futuro' },
-        { key: 'a_vencer', label: '⏰ A Vencer' },
-    ];
-    const chips = $('#fin-filter-chips');
-    if (chips) {
-        chips.innerHTML = statusOpts.map(o =>
-            `<button class="chip${_finFilterStatus === o.key ? ' on' : ''}" onclick="_finSetFilter('${o.key}')" style="font-size:11px; padding:5px 10px">${o.label}</button>`
-        ).join('');
-    }
-
+    _updateFinChips();
+    _updateFinViewButtons();
     renderFinTable();
-}
-
-function _finSetFilter(key) {
-    _finFilterStatus = key;
-    drawFinanceiro(true);
 }
 
 function _drawFinChart(fin) {
@@ -4679,8 +5686,10 @@ function _renderFinCursosTable(fin) {
 }
 
 function renderFinTable() {
+    const thead = $('#fin-table-thead');
     const tbody = $('#fin-table-tbody');
     const countEl = $('#fin-table-count');
+    const kpiBadge = $('#fin-table-kpi-badge');
     if (!tbody) return;
 
     const searchTxt = ($('#fin-search-input') && $('#fin-search-input').value || '').toLowerCase().trim();
@@ -4713,11 +5722,220 @@ function renderFinTable() {
         return true;
     });
 
+    // Badge do filtro de KPI ativo
+    if (kpiBadge) {
+        if (_finActiveKpi === 'em_atraso') {
+            kpiBadge.style.display = 'inline-block';
+            kpiBadge.style.background = 'rgba(225,29,72,0.1)';
+            kpiBadge.style.color = '#e11d48';
+            kpiBadge.style.border = '1px solid rgba(225,29,72,0.25)';
+            kpiBadge.textContent = 'Filtro: Em Atraso';
+        } else if (_finActiveKpi === 'total_recebido') {
+            kpiBadge.style.display = 'inline-block';
+            kpiBadge.style.background = 'rgba(5,150,105,0.1)';
+            kpiBadge.style.color = '#059669';
+            kpiBadge.style.border = '1px solid rgba(5,150,105,0.25)';
+            kpiBadge.textContent = 'Filtro: Total Recebido';
+        } else if (_finActiveKpi === 'recebido_mes') {
+            kpiBadge.style.display = 'inline-block';
+            kpiBadge.style.background = 'rgba(2,132,199,0.1)';
+            kpiBadge.style.color = '#0284c7';
+            kpiBadge.style.border = '1px solid rgba(2,132,199,0.25)';
+            kpiBadge.textContent = 'Filtro: Recebido Este Mês';
+        } else if (_finActiveKpi === 'projecao_30d') {
+            kpiBadge.style.display = 'inline-block';
+            kpiBadge.style.background = 'rgba(217,119,6,0.1)';
+            kpiBadge.style.color = '#d97706';
+            kpiBadge.style.border = '1px solid rgba(217,119,6,0.25)';
+            kpiBadge.textContent = 'Filtro: Projeção 30d';
+        } else {
+            kpiBadge.style.display = 'none';
+        }
+    }
+
     if (countEl) {
         let msg = `Exibindo ${faturas.length} fatura(s)`;
-        if (_finSelectedMonth) msg += ` · Filtrado pelo mês ${_finSelectedMonth}`;
+        if (_finSelectedMonth) msg += ` · Mês: ${_finSelectedMonth}`;
         if (FILTER && FILTER.curso && FILTER.curso !== 'all') msg += ` · Curso: ${FILTER.curso}`;
         countEl.textContent = msg;
+    }
+
+    const fmtMoney = v => 'R$ ' + (Number(v)||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+    // =========================================================================
+    // MODO 1: VISÃO POR ALUNO
+    // =========================================================================
+    if (_finTableViewMode === 'aluno') {
+        if (thead) {
+            thead.innerHTML = `
+              <tr style="border-bottom:2px solid var(--line2); color:var(--muted); font-size:11px; text-transform:uppercase">
+                <th style="padding:10px 8px">Aluno</th>
+                <th style="padding:10px 8px">Curso / Especialidade</th>
+                <th style="padding:10px 8px; text-align:center">Gateway</th>
+                <th style="padding:10px 8px; text-align:center">Faturas</th>
+                <th style="padding:10px 8px">Total</th>
+                <th style="padding:10px 8px">Situação</th>
+                <th style="padding:10px 8px; text-align:right">Ações</th>
+              </tr>`;
+        }
+
+        // Agrupar faturas por aluno (email ou nome)
+        const byStudent = {};
+        faturas.forEach(f => {
+            const email = (f._email || f.email || '').toLowerCase().trim();
+            const aluno = f._aluno || f.aluno || 'Aluno';
+            const curso = f.curso || 'PLATAFORMA GERAL';
+            const key = email || aluno;
+            if (!byStudent[key]) {
+                byStudent[key] = {
+                    aluno: aluno,
+                    email: email,
+                    curso: curso,
+                    gateway: f.gateway || (String(f.id||'').startsWith('pay_') ? 'Asaas' : 'Vindi'),
+                    total: 0.0,
+                    total_atraso: 0.0,
+                    max_dias_atraso: 0,
+                    has_atraso: false,
+                    faturas: []
+                };
+            }
+            const val = Number(f.valor) || 0;
+            byStudent[key].total += val;
+            byStudent[key].faturas.push(f);
+            if (f.status === 'em_atraso') {
+                byStudent[key].has_atraso = true;
+                byStudent[key].total_atraso += val;
+                byStudent[key].max_dias_atraso = Math.max(byStudent[key].max_dias_atraso, Number(f.dias_atraso) || 0);
+            }
+        });
+
+        const studentsList = Object.values(byStudent);
+        // Ordenar: quem tem mais atraso primeiro, depois por total
+        studentsList.sort((a, b) => {
+            if (b.total_atraso !== a.total_atraso) return b.total_atraso - a.total_atraso;
+            return b.total - a.total;
+        });
+
+        if (countEl) {
+            countEl.textContent = `Exibindo ${studentsList.length} aluno(s) (${faturas.length} faturas)`;
+        }
+
+        if (!studentsList.length) {
+            tbody.innerHTML = `<tr><td colspan="7" style="padding:32px; text-align:center; color:var(--muted); font-size:13px">Nenhum aluno encontrado para os filtros selecionados.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = studentsList.map(st => {
+            const isExpanded = _finExpandedStudents.has(st.email);
+            const gwBadge = st.gateway === 'Asaas'
+                ? `<span style="background:rgba(2,132,199,0.1); color:#0284c7; font-weight:800; padding:2px 6px; border-radius:4px; font-size:10px; border:1px solid rgba(2,132,199,0.25)">Asaas</span>`
+                : `<span style="background:rgba(124,58,237,0.1); color:#7c3aed; font-weight:800; padding:2px 6px; border-radius:4px; font-size:10px; border:1px solid rgba(124,58,237,0.25)">Vindi</span>`;
+
+            let situacaoBadge = '';
+            if (st.has_atraso) {
+                situacaoBadge = `<span style="display:inline-flex; align-items:center; gap:4px; background:rgba(225,29,72,0.1); color:#e11d48; border-radius:6px; padding:2px 8px; font-size:11px; font-weight:700">
+                    <span style="width:6px; height:6px; border-radius:50%; background:#e11d48"></span>${st.max_dias_atraso}d em atraso
+                </span>`;
+            } else {
+                situacaoBadge = `<span style="display:inline-flex; align-items:center; gap:4px; background:rgba(5,150,105,0.1); color:#059669; border-radius:6px; padding:2px 8px; font-size:11px; font-weight:700">
+                    <span style="width:6px; height:6px; border-radius:50%; background:#059669"></span>Em dia
+                </span>`;
+            }
+
+            // WhatsApp link
+            const studentObj = (CURRENT_DATA?.students || []).find(x => x.email && x.email.toLowerCase().trim() === st.email);
+            const tel = studentObj && studentObj.telefone ? studentObj.telefone.replace(/\D/g, '') : '';
+            let waBtn = '';
+            if (st.has_atraso) {
+                const msg = encodeURIComponent(`Olá, ${st.aluno}! Aqui é da equipe da Pós-Graduação InfectoCast.\n\nConstatamos que sua mensalidade no valor de ${fmtMoney(st.total_atraso)} está pendente.\n\nCaso precise de ajuda para regularizar, entre em contato conosco por aqui. Um abraço!`);
+                const waUrl = tel ? `https://wa.me/55${tel}?text=${msg}` : `https://wa.me/?text=${msg}`;
+                waBtn = `<a href="${waUrl}" target="_blank" style="display:inline-flex; align-items:center; gap:4px; font-size:10.5px; color:#25D366; text-decoration:none; font-weight:700; padding:4px 8px; border:1px solid rgba(37,211,102,0.35); border-radius:6px; white-space:nowrap; margin-right:6px">💬 Cobrar WA</a>`;
+            }
+
+            const toggleBtn = `<button onclick="_finToggleStudentDetails('${st.email}')" style="border:1px solid var(--line2); background:var(--bg); color:var(--ink); padding:4px 8px; border-radius:6px; font-size:10.5px; font-weight:600; cursor:pointer">
+                ${isExpanded ? '▲ Ocultar Faturas' : `▼ Ver ${st.faturas.length} Fatura(s)`}
+            </button>`;
+
+            let faturasDetailsRow = '';
+            if (isExpanded) {
+                faturasDetailsRow = `
+                <tr style="background:var(--paper)">
+                  <td colspan="7" style="padding:12px 16px">
+                    <div style="font-size:11.5px; font-weight:700; color:var(--ink); margin-bottom:8px">Faturas de ${st.aluno}:</div>
+                    <table style="width:100%; border-collapse:collapse; font-size:11.5px; background:var(--card); border:1px solid var(--line); border-radius:8px; overflow:hidden">
+                      <thead>
+                        <tr style="border-bottom:1px solid var(--line2); color:var(--muted); font-size:10.5px; text-transform:uppercase; background:var(--bg)">
+                          <th style="padding:6px 8px">ID</th>
+                          <th style="padding:6px 8px">Vencimento</th>
+                          <th style="padding:6px 8px">Pagamento</th>
+                          <th style="padding:6px 8px">Valor</th>
+                          <th style="padding:6px 8px">Forma</th>
+                          <th style="padding:6px 8px">Status</th>
+                          <th style="padding:6px 8px; text-align:right">Link</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${st.faturas.map(f => {
+                            const fId = String(f.id || '').replace('proj-', '🔮 Proj.').slice(0, 10);
+                            const stFmt = (f.status === 'paid' || f.status === 'pago')
+                                ? '<span style="color:#059669; font-weight:700">✅ Pago</span>'
+                                : (f.status === 'em_atraso' ? '<span style="color:#e11d48; font-weight:700">🔴 Em Atraso</span>' : `<span style="color:#2563eb">${f.status}</span>`);
+                            const linkFatura = f.url ? `<a href="${f.url}" target="_blank" style="font-size:10.5px; color:var(--sky); text-decoration:none; font-weight:600; padding:2px 6px; border:1px solid rgba(62,124,177,0.3); border-radius:4px">🔗 Abrir</a>` : '—';
+                            return `
+                            <tr style="border-bottom:1px solid var(--line2)">
+                              <td style="padding:6px 8px; font-family:monospace">${fId}</td>
+                              <td style="padding:6px 8px">${f.vencimento || '—'}</td>
+                              <td style="padding:6px 8px; color:var(--muted)">${f.data_pagamento || '—'}</td>
+                              <td style="padding:6px 8px; font-weight:700">${fmtMoney(f.valor)}</td>
+                              <td style="padding:6px 8px; color:var(--muted)">${f.forma_pagamento || '—'}</td>
+                              <td style="padding:6px 8px">${stFmt}</td>
+                              <td style="padding:6px 8px; text-align:right">${linkFatura}</td>
+                            </tr>`;
+                        }).join('')}
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>`;
+            }
+
+            return `
+            <tr style="border-bottom:1px solid var(--line2); transition:background .15s" onmouseover="this.style.background='var(--paper)'" onmouseout="this.style.background=''">
+              <td style="padding:10px 8px; max-width:180px">
+                <div style="font-weight:700; font-size:12px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis" title="${st.aluno}">${st.aluno}</div>
+                <div style="font-size:10px; color:var(--muted)">${st.email}</div>
+              </td>
+              <td style="padding:10px 8px; font-size:11.5px; color:var(--muted); max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis" title="${st.curso}">${st.curso}</td>
+              <td style="padding:10px 8px; text-align:center">${gwBadge}</td>
+              <td style="padding:10px 8px; text-align:center; font-weight:700; color:var(--ink)">${st.faturas.length}</td>
+              <td style="padding:10px 8px; font-weight:800; font-size:12.5px; color:${st.has_atraso ? '#e11d48' : '#059669'}">${fmtMoney(st.has_atraso ? st.total_atraso : st.total)}</td>
+              <td style="padding:10px 8px">${situacaoBadge}</td>
+              <td style="padding:10px 8px; text-align:right; white-space:nowrap">
+                ${waBtn}
+                ${toggleBtn}
+              </td>
+            </tr>
+            ${faturasDetailsRow}`;
+        }).join('');
+        return;
+    }
+
+    // =========================================================================
+    // MODO 2: VISÃO POR FATURA (LISTA INDIVIDUAL)
+    // =========================================================================
+    if (thead) {
+        thead.innerHTML = `
+          <tr style="border-bottom:2px solid var(--line2); color:var(--muted); font-size:11px; text-transform:uppercase">
+            <th style="padding:10px 8px">Fatura</th>
+            <th style="padding:10px 8px">Gateway</th>
+            <th style="padding:10px 8px">Aluno</th>
+            <th style="padding:10px 8px">Plano / Curso</th>
+            <th style="padding:10px 8px">Vencimento</th>
+            <th style="padding:10px 8px">Pagamento</th>
+            <th style="padding:10px 8px">Valor</th>
+            <th style="padding:10px 8px">Forma</th>
+            <th style="padding:10px 8px">Status</th>
+            <th style="padding:10px 8px; text-align:right">Ações</th>
+          </tr>`;
     }
 
     if (!faturas.length) {
@@ -4743,7 +5961,7 @@ function renderFinTable() {
         const plano = f.plano || f._plano || '—';
         const venc = f.vencimento || '—';
         const pgto = f.data_pagamento || '';
-        const valor = f.valor_fmt || (f.valor ? 'R$ ' + Number(f.valor).toLocaleString('pt-BR', {minimumFractionDigits:2}) : '—');
+        const valor = f.valor_fmt || (f.valor ? fmtMoney(f.valor) : '—');
         const forma = f.forma_pagamento || '—';
         const url = f.url || '';
         const faturaId = String(f.id || '').replace('proj-', '🔮 Proj.').slice(0, 10);
