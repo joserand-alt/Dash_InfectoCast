@@ -848,7 +848,45 @@ footer{padding:30px 0 40px;color:var(--muted2);font-size:11.5px;text-align:cente
         </div>
       </div>
 
-      <div id="fin-chart-container" style="height:260px; position:relative"></div>
+            <div id="fin-chart-container" style="height:260px; position:relative"></div>
+      <div style="margin-top:10px; font-size:11.5px; color:var(--sky-d); display:flex; align-items:center; gap:6px">
+        <span>💡</span> <span>Dica: <b>Clique em qualquer mês no gráfico</b> acima para filtrar a composição da receita e as faturas pelo mês escolhido.</span>
+      </div>
+    </div>
+
+    <!-- 2.5 COMPOSIÇÃO DA RECEITA POR CURSO -->
+    <div style="background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px 22px; margin-bottom:22px; box-shadow:0 2px 10px rgba(0,0,0,0.03)">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px">
+        <div>
+          <div style="display:flex; align-items:center; gap:8px">
+            <h3 style="font-size:15.5px; font-weight:800; color:var(--ink); margin:0">📚 Composição da Receita por Curso</h3>
+            <span id="fin-curso-filtro-badge" style="display:none; font-size:11px; font-weight:700; padding:2px 8px; border-radius:12px; background:rgba(2,132,199,0.1); color:#0284c7; border:1px solid rgba(2,132,199,0.3)"></span>
+          </div>
+          <div style="font-size:11.5px; color:var(--muted); margin-top:3px" id="fin-curso-sub">
+            Distribuição de faturamento realizado, previsão futura e inadimplência por especialidade acadêmica.
+          </div>
+        </div>
+        <div id="fin-mes-chip-container" style="display:none; align-items:center; gap:8px; background:rgba(18,161,122,0.08); border:1px solid rgba(18,161,122,0.25); padding:4px 10px; border-radius:8px">
+          <span style="font-size:11.5px; font-weight:700; color:var(--emerald-d)">Mês selecionado no gráfico: <b id="fin-mes-chip-txt" style="color:var(--ink)"></b></span>
+          <button onclick="_finClearMonthFilter()" style="border:none; background:var(--emerald); color:#fff; padding:3px 8px; border-radius:5px; font-size:10.5px; font-weight:700; cursor:pointer">✕ Ver Todos os Meses</button>
+        </div>
+      </div>
+
+      <div style="overflow-x:auto">
+        <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left">
+          <thead>
+            <tr style="border-bottom:2px solid var(--line2); color:var(--muted); font-size:11px; text-transform:uppercase">
+              <th style="padding:10px 8px">Curso / Especialidade</th>
+              <th style="padding:10px 8px; text-align:center">Alunos</th>
+              <th style="padding:10px 8px">Realizado (Pago)</th>
+              <th style="padding:10px 8px">Projetado / Previsto</th>
+              <th style="padding:10px 8px">Em Atraso</th>
+              <th style="padding:10px 8px; width:220px">Participação (%)</th>
+            </tr>
+          </thead>
+          <tbody id="fin-cursos-tbody"></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- 3. TABELA GERAL DE FATURAS E COBRANÇAS -->
@@ -1189,6 +1227,7 @@ function renderAll() {
     drawTimeline(true);
     renderModules();
     drawOrigem(true);
+    drawFinanceiro(true);
 }
 
 function renderRetention() {
@@ -2404,6 +2443,7 @@ let origemSearchQuery = '';
 function setOrigemCatFilter(cat) {
     origemCatFilter = cat;
     drawOrigem(true);
+    drawFinanceiro(true);
 }
 
 function filterOrigemTable() {
@@ -4098,6 +4138,7 @@ function triggerUpdate() {
 let _finDrawn = false;
 let _finFilterStatus = 'all';
 let _finSource = 'all'; // 'all' | 'asaas' | 'vindi'
+let _finSelectedMonth = null; // null or 'YYYY-MM'
 let _allFinFaturas = [];
 
 function _finSetSource(src) {
@@ -4115,14 +4156,31 @@ function _finSetSource(src) {
     drawFinanceiro(true);
 }
 
+function _finToggleMonthFilter(mes) {
+    if (_finSelectedMonth === mes) {
+        _finSelectedMonth = null;
+    } else {
+        _finSelectedMonth = mes;
+    }
+    drawFinanceiro(true);
+}
+
+function _finClearMonthFilter() {
+    _finSelectedMonth = null;
+    drawFinanceiro(true);
+}
+
 function _getFinData(src) {
+    const activeCurso = (FILTER && FILTER.curso && FILTER.curso !== 'all') ? FILTER.curso : null;
+
     const vindi = (DATA.financeiro && DATA.financeiro.kpis) ? DATA.financeiro : null;
     const asaas = (DATA.financeiro_asaas && DATA.financeiro_asaas.kpis) ? DATA.financeiro_asaas : null;
 
-    // Extrair faturas dos alunos caso não estejam na raiz
+    // Extrair faturas dos alunos cruzadas com o curso de cada aluno
     function getFaturasFromStudents(gw) {
         const list = [];
         (DATA.students || []).forEach(s => {
+            if (activeCurso && s.curso !== activeCurso) return;
             const gData = gw === 'Vindi' ? s.vindi : s.asaas;
             if (gData && gData.faturas) {
                 gData.faturas.forEach(f => {
@@ -4130,6 +4188,7 @@ function _getFinData(src) {
                         ...f,
                         aluno: f.aluno || s.nome || s.email,
                         email: f.email || s.email,
+                        curso: s.curso || f.curso || 'PLATAFORMA GERAL',
                         plano: f.plano || gData.plano || '',
                         gateway: gw
                     });
@@ -4139,14 +4198,93 @@ function _getFinData(src) {
         return list;
     }
 
-    let vfaturas = (vindi && vindi.faturas_tabela && vindi.faturas_tabela.length)
-        ? vindi.faturas_tabela.map(f => ({...f, gateway: 'Vindi'}))
-        : getFaturasFromStudents('Vindi');
+    let vfaturas = getFaturasFromStudents('Vindi');
+    let afaturas = getFaturasFromStudents('Asaas');
 
-    let afaturas = (asaas && asaas.faturas_tabela && asaas.faturas_tabela.length)
-        ? asaas.faturas_tabela.map(f => ({...f, gateway: 'Asaas'}))
-        : getFaturasFromStudents('Asaas');
+    // Se houver filtro de curso ativo, devemos recalcular os KPIs e gráficos estritamente para o curso selecionado!
+    if (activeCurso) {
+        function buildCourseSpecificFin(faturas, gwNome) {
+            let totRec = 0, recMes = 0, totAtraso = 0, qtdAtraso = 0, fatPagas = 0, proj30 = 0;
+            const now = new Date();
+            const currentYm = now.toISOString().slice(0, 7);
+            const d30 = new Date(now.getTime() + 30*86400000);
 
+            const histMap = {};
+            const projMap = {};
+            const mesesPt = {"01":"Jan","02":"Fev","03":"Mar","04":"Abr","05":"Mai","06":"Jun","07":"Jul","08":"Ago","09":"Set","10":"Out","11":"Nov","12":"Dez"};
+
+            faturas.forEach(f => {
+                const val = Number(f.valor) || 0;
+                const st = f.status || '';
+                const pIso = f.data_pagamento_iso || f.data_pagamento || '';
+                const vIso = f.vencimento_iso || f.vencimento || '';
+                const pYm = pIso ? pIso.slice(0, 7) : '';
+                const vYm = vIso ? vIso.slice(0, 7) : '';
+
+                if (st === 'paid' || st === 'pago') {
+                    totRec += val;
+                    fatPagas++;
+                    const refYm = pYm || vYm;
+                    if (refYm) {
+                        if (!histMap[refYm]) histMap[refYm] = { mes: refYm, label: `${mesesPt[refYm.slice(5,7)]||refYm.slice(5,7)}/${refYm.slice(2,4)}`, pago: 0 };
+                        histMap[refYm].pago += val;
+                    }
+                    if (refYm === currentYm) recMes += val;
+                } else if (st === 'em_atraso') {
+                    totAtraso += val;
+                    qtdAtraso++;
+                } else if (st === 'futuro' || st === 'a_vencer' || st === 'pending') {
+                    if (vYm) {
+                        if (!projMap[vYm]) projMap[vYm] = { mes: vYm, label: `${mesesPt[vYm.slice(5,7)]||vYm.slice(5,7)}/${vYm.slice(2,4)}`, previsto: 0 };
+                        projMap[vYm].previsto += val;
+                    }
+                    if (vIso) {
+                        const vDate = new Date(vIso);
+                        if (vDate >= now && vDate <= d30) proj30 += val;
+                    }
+                }
+            });
+
+            // MRR do curso
+            let mrr = 0;
+            (DATA.students || []).forEach(s => {
+                if (s.curso !== activeCurso) return;
+                const g = gwNome === 'Vindi' ? s.vindi : (gwNome === 'Asaas' ? s.asaas : null);
+                if (g && (g.status_financeiro === 'adimplente' || g.status_financeiro === 'a_vencer')) {
+                    mrr += (g.valor_parcela || 0);
+                }
+            });
+
+            const baseAdimp = totRec + totAtraso;
+            const taxaAdimp = baseAdimp > 0 ? Math.round((totRec / baseAdimp) * 100) : 100;
+
+            const historico_mensal = Object.values(histMap).sort((a,b) => a.mes.localeCompare(b.mes));
+            const projecao_mensal = Object.values(projMap).sort((a,b) => a.mes.localeCompare(b.mes));
+
+            return {
+                fonte: `${gwNome} (${activeCurso})`,
+                kpis: {
+                    total_recebido: totRec,
+                    recebido_mes_atual: recMes,
+                    total_em_atraso: totAtraso,
+                    qtd_em_atraso: qtdAtraso,
+                    mrr_ativo: mrr,
+                    projecao_30d: proj30,
+                    total_faturas_pagas: fatPagas,
+                    taxa_adimplencia: taxaAdimp
+                },
+                historico_mensal: historico_mensal,
+                projecao_mensal: projecao_mensal,
+                faturas_tabela: faturas.sort((a,b) => (b.data_pagamento_iso||b.vencimento_iso||'').localeCompare(a.data_pagamento_iso||a.vencimento_iso||''))
+            };
+        }
+
+        if (src === 'vindi') return buildCourseSpecificFin(vfaturas, 'Vindi');
+        if (src === 'asaas') return buildCourseSpecificFin(afaturas, 'Asaas');
+        return buildCourseSpecificFin([...vfaturas, ...afaturas], 'Consolidado');
+    }
+
+    // Sem filtro de curso: usa os totais consolidados completos
     if (src === 'vindi') {
         if (!vindi) return null;
         return { ...vindi, faturas_tabela: vfaturas };
@@ -4174,7 +4312,6 @@ function _getFinData(src) {
     const baseAdimp = totRec + totAtraso;
     const taxaAdimp = baseAdimp > 0 ? Math.round((totRec / baseAdimp) * 100) : 100;
 
-    // Mesclar histórico mensal
     const histMap = {};
     (vindi.historico_mensal || []).forEach(h => {
         if (!histMap[h.mes]) histMap[h.mes] = { mes: h.mes, label: h.label, pago: 0 };
@@ -4186,7 +4323,6 @@ function _getFinData(src) {
     });
     const historico_mensal = Object.values(histMap).sort((a,b) => a.mes.localeCompare(b.mes));
 
-    // Mesclar projeção mensal
     const projMap = {};
     (vindi.projecao_mensal || []).forEach(p => {
         if (!projMap[p.mes]) projMap[p.mes] = { mes: p.mes, label: p.label, previsto: 0 };
@@ -4198,7 +4334,6 @@ function _getFinData(src) {
     });
     const projecao_mensal = Object.values(projMap).sort((a,b) => a.mes.localeCompare(b.mes));
 
-    // Mesclar todas as faturas
     const faturas_tabela = [...vfaturas, ...afaturas].sort((a,b) => {
         const da = a.vencimento_iso || a.data_pagamento_iso || '';
         const db = b.vencimento_iso || b.data_pagamento_iso || '';
@@ -4227,9 +4362,20 @@ function drawFinanceiro(force) {
     if (_finDrawn && !force) return;
     _finDrawn = true;
 
+    const activeCurso = (FILTER && FILTER.curso && FILTER.curso !== 'all') ? FILTER.curso : null;
+    const badgeFiltro = $('#fin-curso-filtro-badge');
+    if (badgeFiltro) {
+        if (activeCurso) {
+            badgeFiltro.style.display = 'inline-block';
+            badgeFiltro.textContent = `Curso ativo: ${activeCurso}`;
+        } else {
+            badgeFiltro.style.display = 'none';
+        }
+    }
+
     const fin = _getFinData(_finSource);
     if (!fin) {
-        $('#fin-kpis-grid').innerHTML = '<div style="padding:24px; color:var(--muted); font-size:13px; text-align:center">Dados financeiros não disponíveis. Atualize os dados pelo servidor local.</div>';
+        $('#fin-kpis-grid').innerHTML = '<div style="padding:24px; color:var(--muted); font-size:13px; text-align:center">Dados financeiros não disponíveis para o filtro selecionado.</div>';
         return;
     }
 
@@ -4263,6 +4409,9 @@ function drawFinanceiro(force) {
 
     // --- Gráfico de barras ---
     _drawFinChart(fin);
+
+    // --- Tabela de Composição da Receita por Curso ---
+    _renderFinCursosTable(fin);
 
     // --- Montar todas as faturas para a tabela global ---
     _allFinFaturas = (fin.faturas_tabela || []);
@@ -4301,7 +4450,7 @@ function _drawFinChart(fin) {
     const sortedMeses = [...allMeses].sort();
 
     if (!sortedMeses.length) {
-        container.innerHTML = '<div style="padding:40px; text-align:center; color:var(--muted)">Sem dados de histórico disponíveis.</div>';
+        container.innerHTML = '<div style="padding:40px; text-align:center; color:var(--muted)">Sem dados de histórico disponíveis para o filtro selecionado.</div>';
         return;
     }
 
@@ -4350,18 +4499,23 @@ function _drawFinChart(fin) {
         const cx = xPos(i);
         const hv = histVals[i];
         const pv = projVals[i];
-        const isFuture = mes > today;
-
         const isCurrent = (mes === today);
+        const isFuture = (mes > today);
+        const isSelected = (mes === _finSelectedMonth);
         const hasBoth = (hv > 0 && pv > 0 && (isCurrent || isFuture));
+
+        // Highlight visual se o mês estiver clicado / selecionado
+        if (isSelected) {
+            svg += `<rect x="${cx - step/2 + 1}" y="${padT}" width="${step - 2}" height="${H - padT - padB + 2}" rx="6" fill="rgba(18,161,122,0.12)" stroke="var(--emerald)" stroke-width="1.5" stroke-dasharray="3,3"/>`;
+        }
 
         // 1. Realizado (Verde)
         if (hv > 0) {
             const bh = Math.max(2, (hv / maxVal) * (H - padT - padB));
             const by = H - padB - bh;
             const bx = hasBoth ? (cx - grpW / 2) : (cx - barW / 2);
-            svg += `<rect x="${bx}" y="${by}" width="${barW}" height="${bh}" rx="3" fill="url(#gradGreen)" opacity="${isFuture ? 0.4 : 1}">
-                <title>${labelsMap[mes]} - Realizado: R$ ${hv.toLocaleString('pt-BR', {minimumFractionDigits:2})}</title>
+            svg += `<rect x="${bx}" y="${by}" width="${barW}" height="${bh}" rx="3" fill="url(#gradGreen)" opacity="${isFuture ? 0.4 : 1}" style="cursor:pointer" onclick="_finToggleMonthFilter('${mes}')">
+                <title>${labelsMap[mes]} - Realizado: R$ ${hv.toLocaleString('pt-BR', {minimumFractionDigits:2})} (Clique para filtrar)</title>
             </rect>`;
         }
 
@@ -4370,15 +4524,20 @@ function _drawFinChart(fin) {
             const bh = Math.max(2, (pv / maxVal) * (H - padT - padB));
             const by = H - padB - bh;
             const bx = hasBoth ? (cx + 2) : (cx - barW / 2);
-            svg += `<rect x="${bx}" y="${by}" width="${barW}" height="${bh}" rx="3" fill="url(#gradBlue)" opacity="${isCurrent ? 0.95 : 0.75}">
-                <title>${labelsMap[mes]} - Projeção: R$ ${pv.toLocaleString('pt-BR', {minimumFractionDigits:2})}</title>
+            svg += `<rect x="${bx}" y="${by}" width="${barW}" height="${bh}" rx="3" fill="url(#gradBlue)" opacity="${isCurrent ? 0.95 : 0.75}" style="cursor:pointer" onclick="_finToggleMonthFilter('${mes}')">
+                <title>${labelsMap[mes]} - Projeção: R$ ${pv.toLocaleString('pt-BR', {minimumFractionDigits:2})} (Clique para filtrar)</title>
             </rect>`;
         }
 
-        // X-axis label com destaque no mês atual
-        const labelColor = isCurrent ? 'var(--emerald)' : 'var(--muted)';
-        const labelWeight = isCurrent ? '800' : '500';
-        svg += `<text x="${cx}" y="${H - 4}" text-anchor="middle" font-size="9" fill="${labelColor}" font-weight="${labelWeight}">${labelsMap[mes] || mes}</text>`;
+        // Área transparente clicável em toda a coluna do mês para facilitar o clique
+        svg += `<rect x="${cx - step/2}" y="${padT}" width="${step}" height="${H - padT - padB}" fill="transparent" style="cursor:pointer" onclick="_finToggleMonthFilter('${mes}')">
+            <title>${labelsMap[mes]}: Clique para filtrar composição por este mês</title>
+        </rect>`;
+
+        // X-axis label com destaque
+        const labelColor = isSelected ? '#047857' : (isCurrent ? 'var(--emerald)' : 'var(--muted)');
+        const labelWeight = (isSelected || isCurrent) ? '800' : '500';
+        svg += `<text x="${cx}" y="${H - 4}" text-anchor="middle" font-size="9" fill="${labelColor}" font-weight="${labelWeight}" style="cursor:pointer" onclick="_finToggleMonthFilter('${mes}')">${labelsMap[mes] || mes}</text>`;
     });
 
     svg += `<defs>
@@ -4396,6 +4555,106 @@ function _drawFinChart(fin) {
     container.innerHTML = svg;
 }
 
+function _renderFinCursosTable(fin) {
+    const tbody = $('#fin-cursos-tbody');
+    const chipContainer = $('#fin-mes-chip-container');
+    const chipTxt = $('#fin-mes-chip-txt');
+    const subTxt = $('#fin-curso-sub');
+    if (!tbody) return;
+
+    const labelsMap = {};
+    [...(fin.historico_mensal||[]), ...(fin.projecao_mensal||[])].forEach(x => { if (x.mes && x.label) labelsMap[x.mes] = x.label; });
+
+    if (_finSelectedMonth) {
+        if (chipContainer) chipContainer.style.display = 'inline-flex';
+        if (chipTxt) chipTxt.textContent = labelsMap[_finSelectedMonth] || _finSelectedMonth;
+        if (subTxt) subTxt.innerHTML = `Mostrando dados financeiros filtrados especificamente para o mês de <b style="color:var(--emerald-d)">${labelsMap[_finSelectedMonth] || _finSelectedMonth}</b>.`;
+    } else {
+        if (chipContainer) chipContainer.style.display = 'none';
+        if (subTxt) subTxt.textContent = 'Distribuição de faturamento realizado, previsão futura e inadimplência por especialidade acadêmica.';
+    }
+
+    // Agrupar por curso
+    const byCourse = {};
+    const studentsList = DATA.students || [];
+
+    // Contagem de alunos por curso
+    studentsList.forEach(s => {
+        const c = s.curso || 'PLATAFORMA GERAL';
+        if (!byCourse[c]) {
+            byCourse[c] = { curso: c, alunos: 0, pago: 0, previsto: 0, atraso: 0 };
+        }
+        byCourse[c].alunos++;
+    });
+
+    // Faturas a considerar
+    const faturas = fin.faturas_tabela || [];
+    faturas.forEach(f => {
+        const c = f.curso || 'PLATAFORMA GERAL';
+        if (!byCourse[c]) {
+            byCourse[c] = { curso: c, alunos: 0, pago: 0, previsto: 0, atraso: 0 };
+        }
+
+        const pIso = f.data_pagamento_iso || f.data_pagamento || '';
+        const vIso = f.vencimento_iso || f.vencimento || '';
+        const refYm = (f.status === 'paid' || f.status === 'pago') ? (pIso.slice(0, 7) || vIso.slice(0, 7)) : vIso.slice(0, 7);
+
+        // Se o usuário clicou em um mês específico no gráfico, filtra estritamente por esse mês!
+        if (_finSelectedMonth && refYm !== _finSelectedMonth) {
+            return;
+        }
+
+        const val = Number(f.valor) || 0;
+        const st = f.status || '';
+
+        if (st === 'paid' || st === 'pago') {
+            byCourse[c].pago += val;
+        } else if (st === 'em_atraso') {
+            byCourse[c].atraso += val;
+        } else if (st === 'futuro' || st === 'a_vencer' || st === 'pending') {
+            byCourse[c].previsto += val;
+        }
+    });
+
+    const rows = Object.values(byCourse).filter(r => r.pago > 0 || r.previsto > 0 || r.atraso > 0 || r.alunos > 0);
+    const totalVolume = rows.reduce((acc, r) => acc + r.pago + r.previsto, 0);
+
+    // Ordena pelo volume total
+    rows.sort((a, b) => (b.pago + b.previsto) - (a.pago + a.previsto));
+
+    const fmt = v => 'R$ ' + (Number(v)||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+    if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="6" style="padding:24px; text-align:center; color:var(--muted); font-size:12px">Nenhuma receita registrada para este filtro.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = rows.map((r, idx) => {
+        const vol = r.pago + r.previsto;
+        const pct = totalVolume > 0 ? ((vol / totalVolume) * 100).toFixed(1) : '0.0';
+        return `<tr style="border-bottom:1px solid var(--line2); transition:background .15s" onmouseover="this.style.background='var(--paper)'" onmouseout="this.style.background=''">
+            <td style="padding:10px 8px; font-weight:700; color:var(--ink)">
+                <div style="display:flex; align-items:center; gap:6px">
+                    <span style="font-size:11px; color:var(--muted); font-family:monospace">#${idx + 1}</span>
+                    <span title="${r.curso}">${r.curso}</span>
+                </div>
+            </td>
+            <td style="padding:10px 8px; text-align:center; font-weight:600; color:var(--muted)">${r.alunos}</td>
+            <td style="padding:10px 8px; font-weight:700; color:#059669">${fmt(r.pago)}</td>
+            <td style="padding:10px 8px; font-weight:600; color:#2563eb">${fmt(r.previsto)}</td>
+            <td style="padding:10px 8px; font-weight:600; color:${r.atraso > 0 ? '#e11d48' : 'var(--muted)'}">${fmt(r.atraso)}</td>
+            <td style="padding:10px 8px">
+                <div style="display:flex; align-items:center; gap:8px">
+                    <div style="flex:1; background:var(--line); height:7px; border-radius:4px; overflow:hidden">
+                        <div style="width:${Math.min(100, Math.max(3, parseFloat(pct)))}%; background:linear-gradient(90deg, #12A17A, #3B82F6); height:100%; border-radius:4px"></div>
+                    </div>
+                    <span style="font-size:11px; font-weight:700; color:var(--ink); min-width:42px; text-align:right">${pct}%</span>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
 function renderFinTable() {
     const tbody = $('#fin-table-tbody');
     const countEl = $('#fin-table-count');
@@ -4404,6 +4663,14 @@ function renderFinTable() {
     const searchTxt = ($('#fin-search-input') && $('#fin-search-input').value || '').toLowerCase().trim();
 
     let faturas = _allFinFaturas.filter(f => {
+        // Filtro por mês clicado no gráfico
+        if (_finSelectedMonth) {
+            const pIso = f.data_pagamento_iso || f.data_pagamento || '';
+            const vIso = f.vencimento_iso || f.vencimento || '';
+            const refYm = (f.status === 'paid' || f.status === 'pago') ? (pIso.slice(0, 7) || vIso.slice(0, 7)) : vIso.slice(0, 7);
+            if (refYm !== _finSelectedMonth) return false;
+        }
+
         // Filtro por status
         if (_finFilterStatus !== 'all') {
             const st = f.status || '';
@@ -4417,15 +4684,21 @@ function renderFinTable() {
             const aluno = (f._aluno || f.aluno || '').toLowerCase();
             const email = (f._email || f.email || '').toLowerCase();
             const plano = (f._plano || f.plano || '').toLowerCase();
-            if (!aluno.includes(searchTxt) && !email.includes(searchTxt) && !plano.includes(searchTxt)) return false;
+            const curso = (f.curso || '').toLowerCase();
+            if (!aluno.includes(searchTxt) && !email.includes(searchTxt) && !plano.includes(searchTxt) && !curso.includes(searchTxt)) return false;
         }
         return true;
     });
 
-    if (countEl) countEl.textContent = `Exibindo ${faturas.length} fatura(s)`;
+    if (countEl) {
+        let msg = `Exibindo ${faturas.length} fatura(s)`;
+        if (_finSelectedMonth) msg += ` · Filtrado pelo mês ${_finSelectedMonth}`;
+        if (FILTER && FILTER.curso && FILTER.curso !== 'all') msg += ` · Curso: ${FILTER.curso}`;
+        countEl.textContent = msg;
+    }
 
     if (!faturas.length) {
-        tbody.innerHTML = `<tr><td colspan="9" style="padding:32px; text-align:center; color:var(--muted); font-size:13px">Nenhuma fatura encontrada para os filtros selecionados.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" style="padding:32px; text-align:center; color:var(--muted); font-size:13px">Nenhuma fatura encontrada para os filtros selecionados.</td></tr>`;
         return;
     }
 
@@ -4441,7 +4714,7 @@ function renderFinTable() {
 
     tbody.innerHTML = faturas.slice(0, 300).map(f => {
         const st = f.status || '';
-        const cfg = stConfig[st] || { label: st || '—', color: 'var(--muted)', bg: 'rgba(0,0,0,0.04)' };
+        const cfg = stConfig[st] || { label: st || '?', color: 'var(--muted)', bg: 'rgba(0,0,0,0.04)' };
         const aluno = f.aluno || f._aluno || '—';
         const email = f.email || f._email || '';
         const plano = f.plano || f._plano || '—';
