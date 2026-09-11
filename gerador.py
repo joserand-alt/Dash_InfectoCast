@@ -1314,6 +1314,26 @@ def main():
             'captacao_timeline': captacao_timeline,
         }
     
+    # ============================================
+    # VINDI FINANCEIRO — Mapeamento por e-mail
+    # ============================================
+    vindi_matched = 0
+    try:
+        from vindi_service import get_vindi_data
+        vindi_map = get_vindi_data(force_reload=False)
+        for s in students:
+            em = str(s.get('email', '')).lower().strip()
+            if em in vindi_map:
+                s['vindi'] = vindi_map[em]
+                vindi_matched += 1
+            else:
+                s['vindi'] = None
+        print(f"[VINDI] {vindi_matched} estudantes vinculados com dados financeiros da Vindi.")
+    except Exception as e_vindi:
+        print(f"[VINDI] Erro ao integrar Vindi no gerador: {e_vindi}")
+        for s in students:
+            s['vindi'] = None
+
     data = {
         "meta": {
             "generated": datetime.date.today().strftime("%d/%m/%Y"),

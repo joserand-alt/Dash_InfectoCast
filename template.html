@@ -318,7 +318,7 @@ footer{padding:30px 0 40px;color:var(--muted2);font-size:11.5px;text-align:cente
     </div>
 
     <!-- CARDS KPIS HOME -->
-    <div class="kpis" id="home-kpis-grid" style="margin-top:0; margin-bottom:24px; grid-template-columns: repeat(6, 1fr);"></div>
+    <div class="kpis" id="home-kpis-grid" style="margin-top:0; margin-bottom:24px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));"></div>
 
     <!-- SEÇÃO AO VIVO & MONITORAMENTO DE 24H -->
     <div class="card" id="home-live-section" style="padding:20px; margin-bottom:24px; border:1px solid rgba(18,161,122,0.3); background:linear-gradient(180deg, rgba(18,161,122,0.02) 0%, rgba(255,255,255,0) 100%), var(--card)">
@@ -1244,6 +1244,7 @@ const COLS = [
   { id: 'nome', label: 'Aluno', defaultAsc: true, align: 'left' },
   { id: 'curso', label: 'Curso', defaultAsc: true, align: 'left' },
   { id: 'status', label: 'Status', defaultAsc: false, align: 'left' },
+  { id: 'vindi', label: 'Vindi (Pgto)', defaultAsc: false, align: 'left' },
   { id: 'progresso', label: 'Progresso', defaultAsc: false, align: 'left' },
   { id: 'last', label: 'Último acesso', defaultAsc: false, align: 'left' },
   { id: 'aulas_feitas', label: 'Aulas feitas', defaultAsc: false, align: 'right' },
@@ -1274,6 +1275,26 @@ function getPlatBadge(plat) {
         return `<span style="font-size:9.5px; padding:1.5px 6px; border-radius:4px; background:rgba(168,85,247,0.12); color:#7c3aed; border:1px solid rgba(168,85,247,0.3); font-weight:600; margin-left:6px; vertical-align:middle;" title="Presente em ambas as plataformas">Ambas</span>`;
     }
     return `<span style="font-size:9.5px; padding:1.5px 6px; border-radius:4px; background:rgba(2,132,199,0.12); color:#0284c7; border:1px solid rgba(2,132,199,0.3); font-weight:600; margin-left:6px; vertical-align:middle;" title="Plataforma InfectoCast Academy">Academy</span>`;
+}
+
+function getVindiBadge(v) {
+    if (!v || !v.has_vindi) {
+        return `<span style="color:var(--muted2); font-size:11px;" title="Sem assinatura Vindi vinculada">—</span>`;
+    }
+    const st = v.status_financeiro;
+    if (st === 'em_atraso') {
+        const d = v.dias_atraso || 0;
+        return `<span class="badge" style="background:rgba(244,63,94,0.12); color:#e11d48; border:1px solid rgba(244,63,94,0.3); font-weight:700; cursor:pointer;" title="Em atraso há ${d} dias · R$ ${(v.valor_atraso||0).toFixed(2)}"><span class="b-dot" style="background:#e11d48"></span>Atraso ${d}d</span>`;
+    } else if (st === 'a_vencer') {
+        return `<span class="badge" style="background:rgba(245,158,11,0.12); color:#d97706; border:1px solid rgba(245,158,11,0.3); font-weight:600;" title="Vencimento próximo: ${v.proximo_vencimento || '—'}"><span class="b-dot" style="background:#d97706"></span>A Vencer</span>`;
+    } else if (st === 'adimplente') {
+        return `<span class="badge" style="background:rgba(16,185,129,0.12); color:#059669; border:1px solid rgba(16,185,129,0.3); font-weight:600;" title="Em dia · Próx: ${v.proximo_vencimento || '—'}"><span class="b-dot" style="background:#059669"></span>Em Dia</span>`;
+    } else if (st === 'quitado') {
+        return `<span class="badge" style="background:rgba(100,116,139,0.1); color:#64748b; border:1px solid rgba(100,116,139,0.25); font-weight:600;" title="Assinatura finalizada / quitada"><span class="b-dot" style="background:#64748b"></span>Quitado</span>`;
+    } else if (st === 'cancelado') {
+        return `<span class="badge" style="background:rgba(0,0,0,0.05); color:var(--muted); border:1px solid rgba(0,0,0,0.1); font-weight:500;" title="Cancelada"><span class="b-dot" style="background:var(--muted)"></span>Cancelado</span>`;
+    }
+    return `<span class="badge" style="background:rgba(0,0,0,0.05); color:var(--muted); font-weight:500;"><span class="b-dot"></span>${v.status_label || 'Vindi'}</span>`;
 }
 
 function renderRows(){
@@ -1309,7 +1330,13 @@ function renderRows(){
           vB = (b.status || '').toLowerCase();
           return sortAsc ? vA.localeCompare(vB) : vB.localeCompare(vA);
       }
-      if (sortCol === 'progresso') {
+      if (sortCol === 'vindi') {
+          const rank = { 'em_atraso': 1, 'a_vencer': 2, 'adimplente': 3, 'quitado': 4, 'cancelado': 5 };
+          const rA = (a.vindi && rank[a.vindi.status_financeiro]) ? rank[a.vindi.status_financeiro] : 99;
+          const rB = (b.vindi && rank[b.vindi.status_financeiro]) ? rank[b.vindi.status_financeiro] : 99;
+          vA = rA;
+          vB = rB;
+      } else if (sortCol === 'progresso') {
           vA = a.pct_mods || 0;
           vB = b.pct_mods || 0;
       } else if (sortCol === 'last') {
@@ -1356,6 +1383,7 @@ function renderRows(){
       <td><div class="al-nome">${s.nome}${getPlatBadge(s.plataforma)}${na?'':' <span class="row-open">ver histórico ›</span>'}</div><div class="al-mail">${s.email}</div></td>
       <td style="font-size:11.5px;color:var(--muted);white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis" title="${s.curso}">${s.curso}</td>
       <td class="st-td"><span class="badge ${st.cls}" title="${s.status_motivo}"><span class="b-dot"></span>${s.status}</span></td>
+      <td>${getVindiBadge(s.vindi)}</td>
       <td>${prog}</td>
       <td class="num-c" style="text-align:left">${ultimo}</td>
       <td class="num-c">${na?dash:s.aulas_feitas}</td>
@@ -1442,6 +1470,106 @@ function openStudent(email, curso){
       `;
   }
   
+  let vindiHtml = '';
+  if (s.vindi && s.vindi.has_vindi) {
+      const v = s.vindi;
+      const isAtraso = v.status_financeiro === 'em_atraso';
+      const stColor = isAtraso ? '#e11d48' : (v.status_financeiro === 'adimplente' ? '#059669' : (v.status_financeiro === 'a_vencer' ? '#d97706' : '#64748b'));
+      const stBg = isAtraso ? 'rgba(244,63,94,0.12)' : (v.status_financeiro === 'adimplente' ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)');
+      const stBorder = isAtraso ? 'rgba(244,63,94,0.3)' : (v.status_financeiro === 'adimplente' ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)');
+      
+      let btnCobranca = '';
+      if (isAtraso) {
+          const primFaturaAtraso = (v.faturas || []).find(f => f.is_overdue) || (v.faturas || [])[0];
+          const faturaUrl = primFaturaAtraso ? (primFaturaAtraso.url || '') : '';
+          const faturaVenc = primFaturaAtraso ? primFaturaAtraso.vencimento : (v.proximo_vencimento || '');
+          const valorFmt = (v.valor_atraso || v.valor_parcela || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+          const safeNome = (s.nome || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+          
+          btnCobranca = `
+            <button onclick="sendVindiCobranca('${s.email}', '${safeNome}', '${valorFmt}', '${faturaVenc}', '${faturaUrl}')" style="display:inline-flex; align-items:center; gap:6px; background:#e11d48; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(225,29,72,0.25); transition:all 0.15s" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">
+              <span>💬</span> <span>Cobrar via WhatsApp</span>
+            </button>
+          `;
+      }
+
+      let faturasRows = '';
+      if (v.faturas && v.faturas.length) {
+          faturasRows = v.faturas.map(f => {
+              const isPendente = f.status === 'pending';
+              const isOver = f.is_overdue;
+              const fStCls = isOver ? 'color:#e11d48; font-weight:700' : (isPendente ? 'color:#d97706; font-weight:600' : 'color:#059669; font-weight:600');
+              const fStTxt = isOver ? `Atrasada (${f.days_overdue}d)` : (isPendente ? 'Pendente' : 'Paga');
+              const linkBtn = f.url ? `<a href="${f.url}" target="_blank" style="display:inline-block; padding:2px 8px; border-radius:4px; background:var(--sky-w); color:var(--sky-d); border:1px solid rgba(2,132,199,0.3); font-size:10px; font-weight:700; text-decoration:none;">Abrir Fatura ↗</a>` : '—';
+              return `
+                <tr style="border-bottom:1px solid var(--line2); font-size:11px">
+                  <td style="padding:6px 8px; font-family:monospace; color:var(--muted)">#${f.id}</td>
+                  <td style="padding:6px 8px">${f.vencimento}</td>
+                  <td style="padding:6px 8px; font-weight:600">R$ ${(f.valor||0).toFixed(2)}</td>
+                  <td style="padding:6px 8px">${f.forma || 'Boleto'}</td>
+                  <td style="padding:6px 8px; ${fStCls}">${fStTxt}</td>
+                  <td style="padding:6px 8px; text-align:right">${linkBtn}</td>
+                </tr>
+              `;
+          }).join('');
+      } else {
+          faturasRows = `<tr><td colspan="6" style="padding:10px; text-align:center; color:var(--muted); font-size:11px">Nenhuma fatura recente registrada.</td></tr>`;
+      }
+
+      const safeMailId = s.email.replace(/[^a-zA-Z0-9]/g,'');
+      vindiHtml = `
+      <div style="margin:20px 20px 0; padding:14px 16px; border:1px solid ${isAtraso ? 'rgba(244,63,94,0.3)' : 'var(--line2)'}; border-radius:10px; background:${isAtraso ? 'rgba(244,63,94,0.03)' : 'rgba(255,255,255,0.03)'}; box-shadow:0 2px 8px rgba(0,0,0,0.04)">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px">
+              <span style="font-size:15px">💳</span>
+              <b style="font-size:12.5px; color:var(--text)">Assinatura e Financeiro (Vindi)</b>
+              <span style="background:${stBg}; color:${stColor}; font-size:10px; font-weight:700; padding:2px 8px; border-radius:12px; border:1px solid ${stBorder}">${v.status_label || 'Vindi'}</span>
+              ${v.subscription_id ? `<span style="font-size:10px; color:var(--muted); font-family:monospace">Sub #${v.subscription_id}</span>` : ''}
+            </div>
+            <div style="font-size:11px; color:var(--muted)">
+              Plano: <b style="color:var(--ink)">${v.plano || '—'}</b> · Forma: <b>${v.forma_pagamento || 'Boleto / Cartão'}</b>
+              ${v.valor_parcela ? ` · Parcela: <b>R$ ${v.valor_parcela.toFixed(2)}</b>` : ''}
+              ${v.proximo_vencimento ? ` · Próx. Vencimento: <b>${v.proximo_vencimento}</b>` : ''}
+            </div>
+            ${isAtraso ? `
+              <div style="margin-top:6px; font-size:11.5px; color:#e11d48; font-weight:700; display:flex; align-items:center; gap:6px">
+                <span>⚠️</span> <span>Em atraso há ${v.dias_atraso} dias · Total em aberto: R$ ${(v.valor_atraso||v.valor_parcela||0).toFixed(2)}</span>
+              </div>
+            ` : ''}
+          </div>
+          <div style="display:flex; align-items:center; gap:8px">
+            ${btnCobranca}
+            <button onclick="const fb=document.getElementById('vindi-faturas-${safeMailId}'); fb.style.display=fb.style.display==='none'?'block':'none'" style="border:1px solid var(--line2); background:var(--bg); color:var(--text); padding:5px 10px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer">
+              Faturas (${v.faturas ? v.faturas.length : 0}) ▾
+            </button>
+          </div>
+        </div>
+
+        <div id="vindi-faturas-${safeMailId}" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--line2)">
+          <div style="font-size:11px; font-weight:700; color:var(--text); margin-bottom:8px">Histórico de Cobranças na Vindi:</div>
+          <div style="overflow-x:auto">
+            <table style="width:100%; border-collapse:collapse; text-align:left">
+              <thead>
+                <tr style="border-bottom:1px solid var(--line); font-size:10px; color:var(--muted); text-transform:uppercase">
+                  <th style="padding:4px 8px">Fatura</th>
+                  <th style="padding:4px 8px">Vencimento</th>
+                  <th style="padding:4px 8px">Valor</th>
+                  <th style="padding:4px 8px">Forma</th>
+                  <th style="padding:4px 8px">Status</th>
+                  <th style="padding:4px 8px; text-align:right">Ação</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${faturasRows}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      `;
+  }
+
   const evs=s.events||[];
   $('#md-sub').textContent=`Histórico de acessos plataforma — ${evs.length} evento${evs.length!==1?'s':''} (mais recente primeiro)`;
   
@@ -1490,9 +1618,30 @@ function openStudent(email, curso){
         </div>
       `;
   }
-  $('#md-body').innerHTML= modProgressHtml + rdHtml + platHtml;
+  $('#md-body').innerHTML= modProgressHtml + vindiHtml + rdHtml + platHtml;
   modal.classList.add('on'); $('#md-body').scrollTop=0; document.body.style.overflow='hidden';
 }
+window.sendVindiCobranca = function(email, nome, valor, vencimento, faturaUrl) {
+    const s = (CURRENT_DATA?.students || []).find(x => x.email === email);
+    let tel = (s && s.telefone) ? s.telefone.replace(/\D/g, '') : '';
+    const primeironome = (nome || 'Aluno').split(' ')[0];
+    
+    let linkTexto = faturaUrl ? `\n\n📄 Segue o link direto da sua fatura: ${faturaUrl}` : '';
+    let msg = `Olá, ${primeironome}! Tudo bem?\n\nAqui é da equipe acadêmica da Pós-Graduação InfectoCast.\n\nNotamos que a sua mensalidade de ${vencimento} no valor de R$ ${valor} consta pendente em nosso sistema.${linkTexto}\n\nCaso já tenha realizado o pagamento, por favor desconsidere este aviso. Se precisar de alguma ajuda ou emitir 2ª via, pode nos responder por aqui!\n\nUm abraço,\nEquipe InfectoCast`;
+    
+    const waUrl = tel ? `https://wa.me/55${tel}?text=${encodeURIComponent(msg)}` : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    window.open(waUrl, '_blank');
+};
+
+window.goToVindiAtraso = function() {
+    switchTab('prog');
+    ST_FILT = 'all';
+    statusChips();
+    sortCol = 'vindi';
+    sortAsc = true;
+    renderRows();
+};
+
 function closeModal(){ $('#modal').classList.remove('on'); document.body.style.overflow=''; }
 function closeListModal(){ $('#modal-list').classList.remove('on'); if(!$('#modal').classList.contains('on')) document.body.style.overflow=''; }
 
@@ -2844,6 +2993,13 @@ function drawHome(force) {
     // WhatsApp
     const countWA = baseStudents.filter(s => s.wa_total > 0).length;
 
+    // Vindi Financeiro
+    const vindiComAssinatura = baseStudents.filter(s => s.vindi && s.vindi.has_vindi);
+    const vindiAtrasados = vindiComAssinatura.filter(s => s.vindi.status_financeiro === 'em_atraso').length;
+    const vindiAdimplentes = vindiComAssinatura.filter(s => s.vindi.status_financeiro === 'adimplente' || s.vindi.status_financeiro === 'a_vencer').length;
+    const vindiTotalAtraso = vindiComAssinatura.filter(s => s.vindi.status_financeiro === 'em_atraso').reduce((acc, s) => acc + (s.vindi.valor_atraso || 0), 0);
+    const vindiTaxaAdimp = (vindiAtrasados + vindiAdimplentes) > 0 ? Math.round((vindiAdimplentes / (vindiAtrasados + vindiAdimplentes)) * 100) : 100;
+
     // --- 1. RENDERIZAR KPIS TOPO HOME ---
     const homeKpisEl = document.getElementById('home-kpis-grid');
     if (homeKpisEl) {
@@ -2877,6 +3033,11 @@ function drawHome(force) {
             <div class="k-lab"><i class="k-dot" style="background:#25D366"></i>Contatos WhatsApp</div>
             <div class="k-val" style="color:#25D366">${fmt(countWA)}</div>
             <div class="k-sub">Com histórico no chat</div>
+          </div>
+          <div class="kpi" style="border-top:3px solid #8b5cf6; cursor:pointer" onclick="goToVindiAtraso()" title="Clique para ver alunos ordenados por situação na Vindi">
+            <div class="k-lab"><i class="k-dot" style="background:#8b5cf6"></i>Financeiro Vindi</div>
+            <div class="k-val" style="color:${vindiAtrasados > 0 ? '#e11d48' : '#059669'}">${vindiTaxaAdimp}%</div>
+            <div class="k-sub">${vindiAtrasados > 0 ? `${vindiAtrasados} em atraso (R$ ${Math.round(vindiTotalAtraso).toLocaleString('pt-BR')})` : `${vindiAdimplentes} alunos em dia`}</div>
           </div>
         `;
     }
