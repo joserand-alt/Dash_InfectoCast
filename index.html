@@ -3607,6 +3607,9 @@ function fN(val) {
     return n.toLocaleString('pt-BR');
 }
 
+function isPosPos(v) {
+    return Number(v) >= 0 ? 'var(--emerald-d)' : '#DC2626';
+}
 function drawExecView(force) {
     if (_execDrawn && !force) return;
     _execDrawn = true;
@@ -3630,6 +3633,36 @@ function drawExecView(force) {
         if (em.includes('teste') || nm.includes('teste')) return true;
         if (em.includes('gcotta29') || em.includes('j.o.s.e.r.a.n.d@gmail.com') || em.includes('email@email.com')) return true;
         return false;
+    };
+
+    // Resolução canônica de cursos para agrupar 100% de forma precisa
+    const resolveCanonicalCourse = name => {
+        const n = (name || '').toString().toUpperCase().trim();
+        if (n.includes('CCIH') || n.includes('PREVENCAO') || n.includes('CONTROLE DE INFECCAO')) {
+            return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)';
+        }
+        if (n.includes('IMUNODEPRIMIDO')) {
+            return 'POS-GRADUACAO EM INFECTOLOGIA DO PACIENTE IMUNODEPRIMIDO';
+        }
+        if (n.includes('ORTOPED') || n.includes('MOLES')) {
+            return 'POS-GRADUACAO EM INFECCOES ORTOPEDICAS E DE PARTES MOLES';
+        }
+        if (n.includes('INFECTOPED') || n.includes('PEDIATR')) {
+            return 'POS-GRADUACAO EM INFECTOPEDIATRIA';
+        }
+        if (n.includes('MULTI-R') || n.includes('MULTIR') || n.includes('JORNADA')) {
+            return 'JORNADA MULTI-R';
+        }
+        if (n.includes('FUNGO') || n.includes('ANTIFUNGICO')) {
+            return 'DO FUNGO AO ANTIFUNGICO';
+        }
+        if (n.includes('SOS') || n.includes('ANTIBIOTICO') || n.includes('S.O.S')) {
+            return 'S.O.S ANTIBIOTICO';
+        }
+        if (n.includes('INFECTOXPERT')) {
+            return 'INFECTOXPERT';
+        }
+        return 'PLATAFORMA GERAL';
     };
 
     // Usar CURRENT_DATA.students ou rawStudents enriquecido (sempre excluindo testes e contas internas)
@@ -3771,20 +3804,40 @@ function drawExecView(force) {
         }
     });
 
-    // Mapeamento por Curso (Especialidade)
+    // Mapeamento por Curso Canonizado (Especialidade) com Métricas Financeiras e Projeções Completas
     const coursesMap = {};
-    const emailToStudent = {};
-    const nameToStudent = {};
+    const emailToCourse = {};
+    const nameToCourse = {};
 
     baseStudents.forEach(s => {
         const em = (s.email || '').toString().toLowerCase().trim();
         const nm = (s.nome || '').toString().toLowerCase().trim();
-        if (em) emailToStudent[em] = s;
-        if (nm) nameToStudent[nm] = s;
+        const c = resolveCanonicalCourse(s.curso);
+        if (em) emailToCourse[em] = c;
+        if (nm) nameToCourse[nm] = c;
 
-        const c = s.curso || 'OUTROS / PLATAFORMA GERAL';
         if (!coursesMap[c]) {
-            coursesMap[c] = { curso: c, total: 0, vigentes: 0, ativos: 0, em_risco: 0, abandono: 0, nunca: 0, concluidos: 0, cancelados: 0, pago: 0, atraso: 0, proj: 0, mrr: 0 };
+            coursesMap[c] = {
+                curso: c,
+                total: 0,
+                vigentes: 0,
+                ativos: 0,
+                em_risco: 0,
+                abandono: 0,
+                nunca: 0,
+                concluidos: 0,
+                cancelados: 0,
+                pago_total: 0,
+                pago_mes_atual: 0,
+                proj_mes_atual: 0,
+                pago_mes_ant: 0,
+                atraso: 0,
+                mrr: 0,
+                proj_1m: 0,
+                proj_3m: 0,
+                proj_6m: 0,
+                proj_12m: 0
+            };
         }
         const cm = coursesMap[c];
         cm.total++;
@@ -3825,63 +3878,58 @@ function drawExecView(force) {
                     cm.ativos++;
                 }
             }
-        }
 
-        // MRR e Projeção do Curso (apenas matrículas ativas/vigentes)
-        if (!isCancel && !isConcluido) {
-            const vindiObj = s.vindi;
-            const asaasObj = s.asaas;
-            const vParcela = vindiObj ? (Number(vindiObj.valor_parcela) || 0) : 0;
-            const aParcela = asaasObj ? (Number(asaasObj.valor_parcela) || Number(asaasObj.mrr) || 0) : 0;
+            // MRR daquele curso
+            const vParcela = s.vindi ? (Number(s.vindi.valor_parcela) || 0) : 0;
+            const aParcela = s.asaas ? (Number(s.asaas.valor_parcela) || Number(s.asaas.mrr) || 0) : 0;
             cm.mrr += (vParcela + aParcela);
+        }
+    });
 
-            if (vindiObj && Array.isArray(vindiObj.faturas)) {
-                vindiObj.faturas.forEach(f => {
-                    if (f.status === 'futuro') {
-                        cm.proj += (Number(f.valor) || 0);
-                    }
-                });
+    // Faturas globais (Vindi + Asaas) para cálculo de Realizado Total, Realizado no Mês, Projetado no Mês, Mês Anterior e Atraso
+    [...vFaturas, ...aFaturas].forEach(f => {
+        const em = (f.email || '').toString().toLowerCase().trim();
+        const nm = (f.aluno || '').toString().toLowerCase().trim();
+        const c = emailToCourse[em] || nameToCourse[nm] || resolveCanonicalCourse(f.curso);
+
+        if (!coursesMap[c]) {
+            coursesMap[c] = {
+                curso: c, total: 0, vigentes: 0, ativos: 0, em_risco: 0, abandono: 0, nunca: 0, concluidos: 0, cancelados: 0,
+                pago_total: 0, pago_mes_atual: 0, proj_mes_atual: 0, pago_mes_ant: 0, atraso: 0, mrr: 0,
+                proj_1m: 0, proj_3m: 0, proj_6m: 0, proj_12m: 0
+            };
+        }
+        const cm = coursesMap[c];
+        const val = Number(f.valor) || 0;
+        const st = (f.status || '').toLowerCase();
+        const dt = (f.data || f.vencimento || '').toString();
+
+        if (st === 'pago' || st === 'paid') {
+            cm.pago_total += val;
+            if (dt.includes('09/2026') || dt.includes('2026-09') || dt.includes('/09/26')) {
+                cm.pago_mes_atual += val;
+            } else if (dt.includes('08/2026') || dt.includes('2026-08') || dt.includes('/08/26')) {
+                cm.pago_mes_ant += val;
+            }
+        } else if (st === 'em_atraso' || st === 'overdue') {
+            cm.atraso += val;
+        } else if (st === 'futuro' || st === 'a_vencer' || st === 'pending') {
+            if (dt.includes('09/2026') || dt.includes('2026-09') || dt.includes('/09/26')) {
+                cm.proj_mes_atual += val;
             }
         }
     });
 
-    // Faturas globais para cálculo de Pago, Atraso e Projeção adicional
-    vFaturas.forEach(f => {
-        const em = (f.email || '').toString().toLowerCase().trim();
-        const nm = (f.aluno || '').toString().toLowerCase().trim();
-        const stObj = emailToStudent[em] || nameToStudent[nm];
-        const c = (stObj && stObj.curso) ? stObj.curso : 'OUTROS / PLATAFORMA GERAL';
-
-        if (!coursesMap[c]) {
-            coursesMap[c] = { curso: c, total: 0, vigentes: 0, ativos: 0, em_risco: 0, abandono: 0, nunca: 0, concluidos: 0, cancelados: 0, pago: 0, atraso: 0, proj: 0, mrr: 0 };
-        }
-        const val = Number(f.valor) || 0;
-        const st = (f.status || '').toLowerCase();
-        if (st === 'pago' || st === 'paid') {
-            coursesMap[c].pago += val;
-        } else if (st === 'em_atraso') {
-            coursesMap[c].atraso += val;
-        }
-    });
-
-    aFaturas.forEach(f => {
-        const em = (f.email || '').toString().toLowerCase().trim();
-        const nm = (f.aluno || '').toString().toLowerCase().trim();
-        const stObj = emailToStudent[em] || nameToStudent[nm];
-        const c = (stObj && stObj.curso) ? stObj.curso : 'OUTROS / PLATAFORMA GERAL';
-
-        if (!coursesMap[c]) {
-            coursesMap[c] = { curso: c, total: 0, vigentes: 0, ativos: 0, em_risco: 0, abandono: 0, nunca: 0, concluidos: 0, cancelados: 0, pago: 0, atraso: 0, proj: 0, mrr: 0 };
-        }
-        const val = Number(f.valor) || 0;
-        const st = (f.status || '').toLowerCase();
-        if (st === 'pago' || st === 'paid') {
-            coursesMap[c].pago += val;
-        } else if (st === 'em_atraso') {
-            coursesMap[c].atraso += val;
-        } else if (st === 'a_vencer' || st === 'pending' || st === 'futuro') {
-            coursesMap[c].proj += val;
-        }
+    // Calcular Projeções 1m, 3m, 6m, 12m e Crescimento MoM por Curso
+    Object.values(coursesMap).forEach(cm => {
+        cm.previsto_mes_vigente = cm.pago_mes_atual + cm.proj_mes_atual;
+        const diff = cm.previsto_mes_vigente - cm.pago_mes_ant;
+        cm.crescimento_mom = cm.pago_mes_ant > 0 ? ((diff / cm.pago_mes_ant) * 100).toFixed(1) : (cm.previsto_mes_vigente > 0 ? '+100' : '0.0');
+        
+        cm.proj_1m = cm.proj_mes_atual > 0 ? cm.proj_mes_atual : (cm.mrr * 0.9);
+        cm.proj_3m = cm.mrr * 3;
+        cm.proj_6m = cm.mrr * 6;
+        cm.proj_12m = cm.mrr * 12;
     });
 
     // Totalizadores Consolidados Financeiros
@@ -3918,6 +3966,10 @@ function drawExecView(force) {
     const pctCrescimentoMoM = totalMesAnterior > 0 ? ((diffMoM / totalMesAnterior) * 100).toFixed(1) : '0';
     const isCrescimentoPositivo = Number(pctCrescimentoMoM) >= 0;
 
+    // Projeções Futuras Consolidadas
+    const proj3mConsolidada = mrrConsolidado * 3;
+    const proj6mConsolidada = mrrConsolidado * 6;
+
     const mesesNomes = { '01':'Jan', '02':'Fev', '03':'Mar', '04':'Abr', '05':'Mai', '06':'Jun', '07':'Jul', '08':'Ago', '09':'Set', '10':'Out', '11':'Nov', '12':'Dez' };
     const formatMesLabel = (k) => {
         if (!k || k.length < 7) return k;
@@ -3926,12 +3978,6 @@ function drawExecView(force) {
     };
     const labelMesVigente = formatMesLabel(mesVigenteKey);
     const labelMesAnterior = formatMesLabel(mesAnteriorKey);
-
-    // Meta Mensal
-    const metaMensal = 250000.0;
-    const projecaoFechamentoMes = recMesAtual + (proj30d * 0.85);
-    const pctAtingimento = Math.min(100, (projecaoFechamentoMes / metaMensal) * 100);
-    const gapMeta = Math.max(0, metaMensal - projecaoFechamentoMes);
 
     // Funil Comercial
     const fKpis = funil.kpis || {};
@@ -3946,7 +3992,7 @@ function drawExecView(force) {
     const totalLogins = ev['LOGIN WEB'] || 0;
 
     // Ordenar cursos por matrículas vigentes e receita
-    const cursosList = Object.values(coursesMap).filter(c => c.total > 0 || c.pago > 0 || c.atraso > 0 || c.proj > 0).sort((a,b) => b.vigentes - a.vigentes || b.total - a.total);
+    const cursosList = Object.values(coursesMap).filter(c => c.total > 0 || c.pago_total > 0 || c.atraso > 0 || c.mrr > 0).sort((a,b) => b.vigentes - a.vigentes || b.pago_total - a.pago_total);
 
     mount.innerHTML = `
       <!-- GRUPO 1: RECEITA & PROJEÇÃO -->
@@ -3956,13 +4002,15 @@ function drawExecView(force) {
             <div class="exec-sec-num">G1</div>
             <div>
               <h3 class="exec-sec-title">GRUPO 1 — RECEITA &amp; PROJEÇÃO</h3>
-              <div class="exec-sec-sub">Faturamento do mês vigente (realizado + projetado), evolução em relação ao mês anterior e previsibilidade de caixa (MRR e Carteira 12m).</div>
+              <div class="exec-sec-sub">Faturamento do mês vigente (realizado + projetado), evolução em relação ao mês anterior e previsibilidade de caixa (MRR, 1m, 3m, 6m e 12m).</div>
             </div>
           </div>
           <button class="btn-exec-link" onclick="selectTab('fin')">Ver Detalhes Financeiros →</button>
         </div>
-        <div class="exec-grid-4">
-          <!-- CARD 1: RECEITA MÊS VIGENTE (REALIZADA + PROJETADA) -->
+
+        <!-- LINHA 1: PERFORMANCE DO MÊS E MRR -->
+        <div class="exec-grid-4" style="margin-bottom:14px">
+          <!-- CARD 1: RECEITA MÊS VIGENTE -->
           <div class="exec-card" style="border-top:3px solid var(--emerald)">
             <div class="exec-card-top">
               <span class="exec-card-label">Receita Mês Vigente (${labelMesVigente})</span>
@@ -3976,7 +4024,7 @@ function drawExecView(force) {
             </div>
           </div>
 
-          <!-- CARD 2: RECEITA MÊS ANTERIOR (COMPARATIVO REALIZADO) -->
+          <!-- CARD 2: REALIZADO MÊS ANTERIOR -->
           <div class="exec-card" style="border-top:3px solid var(--sky)">
             <div class="exec-card-top">
               <span class="exec-card-label">Realizado Mês Anterior (${labelMesAnterior})</span>
@@ -3996,14 +4044,57 @@ function drawExecView(force) {
             <div class="exec-card-sub">Base ativa: Vindi (${fM(vKpis.mrr_ativo)}) + Asaas (${fM(aKpis.mrr_ativo)})</div>
           </div>
 
-          <!-- CARD 4: PROJEÇÃO CARTEIRA (12 MESES) -->
-          <div class="exec-card" style="border-top:3px solid #7c3aed">
+          <!-- CARD 4: RECEITA REALIZADA TOTAL -->
+          <div class="exec-card" style="border-top:3px solid #0d9488">
             <div class="exec-card-top">
-              <span class="exec-card-label">Projeção Carteira (12m)</span>
+              <span class="exec-card-label">Receita Realizada (Total)</span>
+              <span class="exec-pill pill-green">Caixa Acumulado</span>
+            </div>
+            <div class="exec-card-val" style="color:var(--emerald-d)">${fM(recRealizadaTotal)}</div>
+            <div class="exec-card-sub">Vindi (${fM(vKpis.total_recebido)}) + Asaas (${fM(aKpis.total_recebido)})</div>
+          </div>
+        </div>
+
+        <!-- LINHA 2: PROJEÇÕES FUTURAS DE CARTEIRA (1m, 3m, 6m, 12m) -->
+        <div class="exec-grid-4">
+          <!-- CARD 5: PROJEÇÃO 1 MÊS (30 DIAS) -->
+          <div class="exec-card" style="background:rgba(2,132,199,0.02); border-left:3px solid #0284c7">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Projeção 1 Mês (30 dias)</span>
+              <span class="exec-pill pill-blue">A Vencer (30d)</span>
+            </div>
+            <div class="exec-card-val" style="color:#0284c7">${fM(proj30d)}</div>
+            <div class="exec-card-sub">Faturas agendadas com vencimento nos próximos 30 dias</div>
+          </div>
+
+          <!-- CARD 6: PROJEÇÃO 3 MESES (TRIMESTRE) -->
+          <div class="exec-card" style="background:rgba(79,70,229,0.02); border-left:3px solid #4f46e5">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Projeção 3 Meses (Trimestre)</span>
+              <span class="exec-pill pill-blue">Próx. 90d</span>
+            </div>
+            <div class="exec-card-val" style="color:#4f46e5">${fM(proj3mConsolidada)}</div>
+            <div class="exec-card-sub">Previsão contratual da carteira para os próximos 3 meses</div>
+          </div>
+
+          <!-- CARD 7: PROJEÇÃO 6 MESES (SEMESTRE) -->
+          <div class="exec-card" style="background:rgba(124,58,237,0.02); border-left:3px solid #7c3aed">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Projeção 6 Meses (Semestre)</span>
+              <span class="exec-pill pill-blue">Próx. 180d</span>
+            </div>
+            <div class="exec-card-val" style="color:#7c3aed">${fM(proj6mConsolidada)}</div>
+            <div class="exec-card-sub">Previsão contratual da carteira para os próximos 6 meses</div>
+          </div>
+
+          <!-- CARD 8: PROJEÇÃO 12 MESES (ANUAL) -->
+          <div class="exec-card" style="background:rgba(5,150,105,0.02); border-left:3px solid var(--emerald-d)">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Projeção Carteira (12 Meses)</span>
               <span class="exec-pill pill-green">Contratado</span>
             </div>
             <div class="exec-card-val" style="color:var(--ink)">${fM(proj12m)}</div>
-            <div class="exec-card-sub">Previsão contratual · Total histórico: ${fM(recRealizadaTotal)}</div>
+            <div class="exec-card-sub">Previsão contratual de faturamento anual da carteira</div>
           </div>
         </div>
       </div>
@@ -4228,32 +4319,36 @@ function drawExecView(force) {
         </div>
       </div>
 
-      <!-- GRUPO 6: VISÃO POR CURSO -->
+      <!-- GRUPO 6: VISÃO POR CURSO (FINANCEIRO E PROJEÇÕES COMPLETAS) -->
       <div class="exec-sec">
         <div class="exec-sec-head">
           <div class="exec-sec-title-wrap">
             <div class="exec-sec-num">G6</div>
             <div>
-              <h3 class="exec-sec-title">GRUPO 6 — VISÃO POR CURSO</h3>
-              <div class="exec-sec-sub">Desempenho por especialidade com alunos vigentes, em risco, abandono, cancelamento, MRR, projeção e inadimplência.</div>
+              <h3 class="exec-sec-title">GRUPO 6 — VISÃO POR CURSO (RECEITA, MRR &amp; PROJEÇÕES 1M, 3M, 6M, 12M)</h3>
+              <div class="exec-sec-sub">Detalhamento por especialidade com alunos vigentes, realizado histórico, realizado no mês, projetado no mês, receita vigente com crescimento, receita mês anterior, MRR e projeções para 1m, 3m, 6m e 12m.</div>
             </div>
           </div>
           <button class="btn-exec-link" onclick="selectTab('home')">Ver Panorama Completo →</button>
         </div>
         <div style="overflow-x:auto">
-          <table style="width:100%; border-collapse:collapse; font-size:12.5px; text-align:left">
+          <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left; min-width:1150px">
             <thead>
-              <tr style="border-bottom:2px solid var(--line); color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:0.04em">
-                <th style="padding:10px 12px">Especialidade / Curso</th>
-                <th style="padding:10px 8px; text-align:center">Vigentes</th>
-                <th style="padding:10px 8px; text-align:center">Engajados</th>
-                <th style="padding:10px 8px; text-align:center">Em Risco</th>
-                <th style="padding:10px 8px; text-align:center">Abandono</th>
-                <th style="padding:10px 8px; text-align:center">Cancelados</th>
-                <th style="padding:10px 12px; text-align:right">MRR Estimado</th>
-                <th style="padding:10px 12px; text-align:right">Receita Projetada</th>
-                <th style="padding:10px 12px; text-align:right">Inadimplência</th>
-                <th style="padding:10px 12px; text-align:center">Status Executivo</th>
+              <tr style="border-bottom:2px solid var(--line); color:var(--muted); font-size:10.5px; text-transform:uppercase; letter-spacing:0.04em">
+                <th style="padding:10px 10px; min-width:200px">Especialidade / Curso</th>
+                <th style="padding:10px 6px; text-align:center">Vigentes</th>
+                <th style="padding:10px 8px; text-align:right">Receita Total (Histórica)</th>
+                <th style="padding:10px 8px; text-align:right">Realizado (${labelMesVigente})</th>
+                <th style="padding:10px 8px; text-align:right">Projetado (${labelMesVigente})</th>
+                <th style="padding:10px 8px; text-align:right">Receita Mês (${labelMesVigente})</th>
+                <th style="padding:10px 8px; text-align:right">Mês Anterior (${labelMesAnterior})</th>
+                <th style="padding:10px 8px; text-align:right">MRR Estimado</th>
+                <th style="padding:10px 8px; text-align:right">Proj. 1m (30d)</th>
+                <th style="padding:10px 8px; text-align:right">Proj. 3m</th>
+                <th style="padding:10px 8px; text-align:right">Proj. 6m</th>
+                <th style="padding:10px 8px; text-align:right">Proj. 12m</th>
+                <th style="padding:10px 8px; text-align:right">Inadimplência</th>
+                <th style="padding:10px 8px; text-align:center">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -4264,30 +4359,30 @@ function drawExecView(force) {
                   } else if (c.atraso > 8000 || c.em_risco > 2 || c.abandono > 30) {
                       stBadge = '<span class="exec-pill pill-amber">🟡 Atenção</span>';
                   }
+                  const isPosMoM = Number(c.crescimento_mom) >= 0;
                   return `
                     <tr style="border-bottom:1px solid var(--line2); transition:background 0.15s" onmouseover="this.style.background='var(--paper)'" onmouseout="this.style.background=''">
-                      <td style="padding:12px; font-weight:700; color:var(--ink)">
-                        <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:300px" title="${c.curso}">${c.curso}</div>
+                      <td style="padding:10px; font-weight:700; color:var(--ink)">
+                        <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:240px" title="${c.curso}">${c.curso}</div>
                       </td>
-                      <td style="padding:12px 8px; text-align:center">
+                      <td style="padding:10px 6px; text-align:center">
                         <span class="exec-pill pill-blue" style="font-weight:700">${c.vigentes}</span>
                       </td>
-                      <td style="padding:12px 8px; text-align:center">
-                        <span class="exec-pill pill-green" style="font-weight:700">${c.ativos}</span>
+                      <td style="padding:10px 8px; text-align:right; font-weight:600; color:var(--emerald-d)">${fM(c.pago_total)}</td>
+                      <td style="padding:10px 8px; text-align:right; font-weight:600; color:var(--ink)">${fM(c.pago_mes_atual)}</td>
+                      <td style="padding:10px 8px; text-align:right; font-weight:600; color:#0284c7">${fM(c.proj_mes_atual)}</td>
+                      <td style="padding:10px 8px; text-align:right; font-weight:700; color:var(--ink)">
+                        <div>${fM(c.previsto_mes_vigente)}</div>
+                        <div style="font-size:9.5px; font-weight:700; color:${isPosPos(c.crescimento_mom)}">${isPosMoM ? '+' : ''}${c.crescimento_mom}%</div>
                       </td>
-                      <td style="padding:12px 8px; text-align:center">
-                        <span class="exec-pill ${c.em_risco > 0 ? 'pill-amber' : ''}" style="font-weight:${c.em_risco > 0 ? '700' : '400'}; color:${c.em_risco > 0 ? '#D97706' : 'var(--muted2)'}">${c.em_risco}</span>
-                      </td>
-                      <td style="padding:12px 8px; text-align:center">
-                        <span class="exec-pill ${c.abandono > 0 ? 'pill-red' : ''}" style="font-weight:${c.abandono > 0 ? '700' : '400'}; color:${c.abandono > 0 ? '#DC2626' : 'var(--muted2)'}">${c.abandono}</span>
-                      </td>
-                      <td style="padding:12px 8px; text-align:center">
-                        <span style="font-weight:${c.cancelados > 0 ? '700' : '400'}; color:${c.cancelados > 0 ? '#DC2626' : 'var(--muted2)'}">${c.cancelados}</span>
-                      </td>
-                      <td style="padding:12px; text-align:right; font-weight:600; color:var(--ink)">${fM(c.mrr)}</td>
-                      <td style="padding:12px; text-align:right; font-weight:600; color:#0284c7">${fM(c.proj)}</td>
-                      <td style="padding:12px; text-align:right; font-weight:700; color:${c.atraso > 0 ? '#DC2626' : 'var(--muted2)'}">${fM(c.atraso)}</td>
-                      <td style="padding:12px; text-align:center">${stBadge}</td>
+                      <td style="padding:10px 8px; text-align:right; color:var(--muted)">${fM(c.pago_mes_ant)}</td>
+                      <td style="padding:10px 8px; text-align:right; font-weight:700; color:var(--brand)">${fM(c.mrr)}</td>
+                      <td style="padding:10px 8px; text-align:right; font-weight:600; color:#0284c7">${fM(c.proj_1m)}</td>
+                      <td style="padding:10px 8px; text-align:right; font-weight:600; color:#4f46e5">${fM(c.proj_3m)}</td>
+                      <td style="padding:10px 8px; text-align:right; font-weight:600; color:#7c3aed">${fM(c.proj_6m)}</td>
+                      <td style="padding:10px 8px; text-align:right; font-weight:700; color:var(--ink)">${fM(c.proj_12m)}</td>
+                      <td style="padding:10px 8px; text-align:right; font-weight:700; color:${c.atraso > 0 ? '#DC2626' : 'var(--muted2)'}">${fM(c.atraso)}</td>
+                      <td style="padding:10px 8px; text-align:center">${stBadge}</td>
                     </tr>
                   `;
               }).join('')}
@@ -4336,7 +4431,7 @@ function drawExecView(force) {
             <div class="exec-alert-icon">✓</div>
             <div>
               <div class="exec-alert-title">Adimplência Sólida e MRR Sustentável (${fM(mrrConsolidado)}/mês)</div>
-              <div class="exec-alert-desc">A carteira principal de alunos apresenta taxa de adimplência de 96% e receita recorrente robusta com mais de R$ 2,65M contratados nos próximos 12 meses.</div>
+              <div class="exec-alert-desc">A carteira principal de alunos apresenta taxa de adimplência de 96% e receita recorrente robusta com mais de R$ 2,66M contratados nos próximos 12 meses.</div>
             </div>
           </div>
         </div>
