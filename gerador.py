@@ -1404,21 +1404,55 @@ def main():
             pair_key = (em_clean, c_inferido)
             if pair_key not in existing_vindi_keys:
                 existing_vindi_keys.add(pair_key)
+                # Check if this Vindi subscriber has Cativa account / login
+                st_plat = "Academy"
+                st_nome = v_obj.get('customer_name') or 'Aluno Vindi'
+                st_tel = ""
+                st_acessou = False
+                st_events = []
+                st_last_fmt = None
+                st_dias_inativo = None
+                
+                if em_clean in cativa_users_meta:
+                    c_meta = cativa_users_meta[em_clean]
+                    st_plat = "Cativa"
+                    st_tel = normalize_phone(c_meta.get('phone', ''))
+                    if c_meta.get('first_name') or c_meta.get('last_name'):
+                        c_fullname = f"{c_meta.get('first_name', '')} {c_meta.get('last_name', '')}".strip()
+                        if c_fullname: st_nome = c_fullname
+                    
+                    last_login_s = c_meta.get('last_login_at')
+                    if last_login_s:
+                        dt_c_login = pd.to_datetime(last_login_s[:19], errors='coerce')
+                        if pd.notna(dt_c_login):
+                            st_acessou = True
+                            st_events.append({
+                                "d": dt_c_login.strftime("%d/%m/%Y %H:%M"),
+                                "acao": "LOGIN WEB (Cativa)",
+                                "cat": "login",
+                                "item": "Plataforma Cativa Digital",
+                                "mod": ""
+                            })
+                            st_last_fmt = dt_c_login.strftime("%d/%m/%Y")
+                            st_dias_inativo = max(0, (hoje - dt_c_login.date()).days)
+
                 new_v_st = {
                     "email": em_clean,
-                    "nome": v_obj.get('customer_name') or 'Aluno Vindi',
+                    "nome": st_nome,
                     "curso": c_inferido,
                     "curso_inferido": True,
                     "curso_origem": c_orig,
-                    "telefone": "",
-                    "acessou": False,
+                    "telefone": st_tel,
+                    "acessou": st_acessou,
                     "data_insc": None,
                     "data_inscricao": None,
                     "inscricao": None,
                     "dias_desde_insc": 0,
-                    "plataforma": "Academy",
+                    "plataforma": st_plat,
                     "id_aluno": str(v_obj.get('customer_id', '')),
-                    "events": [],
+                    "events": st_events,
+                    "last_fmt": st_last_fmt,
+                    "dias_inativo": st_dias_inativo,
                     "vindi": v_obj,
                     "asaas": None
                 }

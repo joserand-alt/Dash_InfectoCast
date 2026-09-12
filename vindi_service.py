@@ -337,18 +337,28 @@ def get_vindi_data(force_reload=False):
         plan_name = sub.get('plan', {}).get('name') or 'Assinatura Pós-Graduação'
         course_name = normalize_vindi_course(plan_name)
 
-        # Matched bills ONLY for this subscription
+        # Matched bills for this subscription + customer's faturas avulsas
         aluno_bills = []
         if sub_id and sub_id in bills_by_sub_id:
-            aluno_bills = list(bills_by_sub_id[sub_id])
-        elif cid and cid in bills_by_cid:
+            aluno_bills.extend(bills_by_sub_id[sub_id])
+            
+        # Also include customer's faturas avulsas (subscription is None)
+        faturas_avulsas = []
+        if cid and cid in bills_by_cid:
             for b in bills_by_cid[cid]:
-                if b.get('plano') == plan_name or not b.get('subscription_id'):
-                    aluno_bills.append(b)
+                if not b.get('subscription_id'):
+                    faturas_avulsas.append(b)
         elif email in bills_by_email:
             for b in bills_by_email[email]:
-                if b.get('plano') == plan_name or not b.get('subscription_id'):
-                    aluno_bills.append(b)
+                if not b.get('subscription_id'):
+                    faturas_avulsas.append(b)
+                    
+        for fa in faturas_avulsas:
+            fa_copy = dict(fa)
+            fa_copy['is_fatura_avulsa'] = True
+            fa_copy['plano'] = f"Fatura Avulsa ({plan_name})"
+            fa_copy['curso'] = course_name
+            aluno_bills.append(fa_copy)
 
         seen_ids = set()
         unique_bills = []
@@ -357,60 +367,47 @@ def get_vindi_data(force_reload=False):
                 seen_ids.add(b['id'])
                 unique_bills.append(b)
 
-        student_overdue_bills = [b for b in unique_bills if b['status'] == 'em_atraso']
-        valor_atraso = sum(b['valor'] for b in student_overdue_bills)
-        dias_atraso = max([b['dias_atraso'] for b in student_overdue_bills], default=0)
+        # Check for paid fatura avulsa (renegociação / acordo)
+        has_paid_renegociacao = any(b.get('is_fatura_avulsa') and b.get('status') in ['paid', 'pago'] for b in unique_bills)
+        
+        student_overdue_bills = [b for b in unique_bills if b['status'] == 'em_atraso' and not b.get('is_fatura_avulsa')]
+        dias_atraso = max([b.get('dias_atraso', 0) for b in student_overdue_bills], default=0)
+        valor_atraso = sum(b.get('valor', 0) for b in student_overdue_bills)
 
-        if sub_status == 'canceled':
-            st_fin = 'cancelado'
-            st_lbl = 'Cancelado'
-            st_color = 'var(--muted)'
-            st_bg = 'rgba(0,0,0,0.06)'
-        elif student_overdue_bills or overdue_since:
+        paid_bills_count = sum(1 for b in unique_bills if b['status'] in ['paid', 'pago'])
+
+        if student_overdue_bills and not has_paid_renegociacao:
             st_fin = 'em_atraso'
-            st_lbl = f'Atraso ({dias_atraso}d)' if dias_atraso > 0 else 'Em Atraso'
-            st_color = '#e11d48'
-            st_bg = 'rgba(225,29,72,0.1)'
+            st_lbl = 'Em Atraso'
+            st_color = 'var(--rose-d)'
+            st_bg = 'var(--rose-bg)'
         elif sub_status == 'active':
             st_fin = 'adimplente'
-            st_lbl = 'Em Dia'
-            st_color = '#059669'
-            st_bg = 'rgba(16,185,129,0.1)'
-            mrr_ativo_total += price
-            
-            if next_b_dt:
-                base_dt = next_b_dt if next_b_dt > now else (now + timedelta(days=5))
-                for m_offset in range(6):
-                    proj_dt = base_dt + timedelta(days=30 * m_offset)
-                    ym = proj_dt.strftime('%Y-%m')
-                    projecao_mensal_map[ym] = projecao_mensal_map.get(ym, 0.0) + price
-                    
-                    if m_offset > 0 or not any(b['status'] == 'a_vencer' for b in unique_bills):
-                        proj_fmt = proj_dt.strftime('%d/%m/%Y')
-                        unique_bills.append({
-                            "id": f"proj-{sub_id}-{m_offset}",
-                            "status": "futuro",
-                            "status_label": "Futuro (Agendado)",
-                            "valor": price,
-                            "valor_fmt": f"R$ {price:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
-                            "vencimento": proj_fmt,
-                            "vencimento_iso": proj_dt.isoformat(),
-                            "data_pagamento": "",
-                            "data_pagamento_iso": "",
-                            "forma_pagamento": sub.get('payment_method', {}).get('public_name') or 'Recorrência',
-                            "url": f"https://app.vindi.com.br/admin/subscriptions/{sub_id}",
-                            "dias_atraso": 0,
-                            "aluno": c.get('name'),
-                            "email": email,
-                            "subscription_id": sub_id,
-                            "plano": plan_name,
-                            "curso": course_name
-                        })
+            st_lbl = 'Adimplente'
+            st_color = 'var(--emerald-d)'
+            st_bg = 'var(--emerald-bg)'
         elif sub_status in ['expired', 'inactive']:
-            st_fin = 'quitado'
-            st_lbl = 'Quitado'
-            st_color = '#64748b'
-            st_bg = 'rgba(100,116,139,0.1)'
+            if has_paid_renegociacao or paid_bills_count > 0:
+                st_fin = 'quitado'
+                st_lbl = 'Quitado (Acordo/Renegociação)' if has_paid_renegociacao else 'Quitado'
+                st_color = '#64748b'
+                st_bg = 'rgba(100,116,139,0.1)'
+            else:
+                st_fin = 'inativo'
+                st_lbl = 'Inativo'
+                st_color = 'var(--muted)'
+                st_bg = 'rgba(0,0,0,0.05)'
+        elif sub_status == 'canceled':
+            if has_paid_renegociacao or paid_bills_count > 0:
+                st_fin = 'quitado' if has_paid_renegociacao else 'cancelado'
+                st_lbl = 'Quitado (Renegociação)' if has_paid_renegociacao else 'Cancelado'
+                st_color = '#64748b' if has_paid_renegociacao else 'var(--muted)'
+                st_bg = 'rgba(100,116,139,0.1)' if has_paid_renegociacao else 'rgba(0,0,0,0.05)'
+            else:
+                st_fin = 'cancelado'
+                st_lbl = 'Cancelado'
+                st_color = 'var(--muted)'
+                st_bg = 'rgba(0,0,0,0.05)'
         else:
             st_fin = sub_status
             st_lbl = sub_status.capitalize()
@@ -419,6 +416,14 @@ def get_vindi_data(force_reload=False):
 
         sub_pm = sub.get('payment_method', {}).get('public_name') or sub.get('payment_method', {}).get('name') or 'Outro'
         unique_bills.sort(key=lambda x: x.get('vencimento_iso') or x.get('data_pagamento_iso') or '', reverse=True)
+
+        # Calculate a quality score for this subscription to select the best one
+        sub_score = 0
+        if sub_status == 'active': sub_score += 1000
+        elif sub_status in ['expired', 'inactive']: sub_score += 500
+        elif sub_status == 'canceled': sub_score += 100
+        sub_score += (paid_bills_count * 50)
+        if has_paid_renegociacao: sub_score += 300
 
         sub_data = {
             "has_vindi": True,
@@ -436,18 +441,23 @@ def get_vindi_data(force_reload=False):
             "forma_pagamento": sub_pm,
             "valor_parcela": price,
             "proximo_vencimento": next_b_fmt,
-            "dias_atraso": dias_atraso,
-            "valor_atraso": valor_atraso,
-            "faturas": unique_bills
+            "dias_atraso": dias_atraso if not has_paid_renegociacao else 0,
+            "valor_atraso": valor_atraso if not has_paid_renegociacao else 0.0,
+            "has_renegociacao": has_paid_renegociacao,
+            "faturas": unique_bills,
+            "_score": sub_score
         }
 
         subscriptions_list.append(sub_data)
         
-        # Save by email
-        if email not in students_vindi or sub_status == 'active':
+        # Save by email prioritizing higher score
+        if email not in students_vindi or sub_score > students_vindi[email].get('_score', 0):
             students_vindi[email] = sub_data
-        # Map by (email, course)
-        students_vindi[f"{email}___{course_name}"] = sub_data
+            
+        key_ec = f"{email}___{course_name}"
+        if key_ec not in students_vindi or sub_score > students_vindi[key_ec].get('_score', 0):
+            students_vindi[key_ec] = sub_data
+
 
     sorted_ym = sorted(historico_mensal_map.keys())
     meses_pt = {'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'}
