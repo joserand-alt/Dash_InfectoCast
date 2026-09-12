@@ -5378,50 +5378,54 @@ function _finToggleStudentDetails(email) {
 
 function _resolveFinCourse(f) {
     if (!f) return 'PLATAFORMA GERAL';
-    if (f.curso && f.curso !== 'PLATAFORMA GERAL' && f.curso !== 'None') return f.curso;
-
-    const email = (f.email || f._email || '').toString().toLowerCase().trim();
-    const aluno = (f.aluno || f._aluno || '').toString().toLowerCase().trim();
-    const plano = (f.plano || f._plano || f.description || '').toString();
-
-    // 1. Tentar encontrar aluno no cadastro da plataforma (Academy / Cativa)
-    const stList = (CURRENT_DATA && CURRENT_DATA.students) ? CURRENT_DATA.students : (DATA && DATA.students ? DATA.students : []);
-    let stMatch = null;
-    if (email) {
-        stMatch = stList.find(s => s.email && s.email.toLowerCase().trim() === email);
-    }
-    if (!stMatch && aluno) {
-        stMatch = stList.find(s => s.nome && s.nome.toLowerCase().trim() === aluno);
-    }
-    if (stMatch && stMatch.curso && stMatch.curso !== 'PLATAFORMA GERAL' && stMatch.curso !== 'None') {
-        return stMatch.curso;
+    if (f.curso && f.curso !== 'PLATAFORMA GERAL' && f.curso !== 'None' && f.curso !== 'SEM CURSO' && !f.curso.startsWith('Fatura Avulsa')) {
+        return f.curso;
     }
 
-    // 2. Inferir a partir do nome do plano ou descrição da cobrança na Vindi / Asaas
-    const textFull = (plano + ' ' + (f.description || '')).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    if (textFull.includes('ccih') || textFull.includes('prevencao') || textFull.includes('hospitalar')) {
-        return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)';
+    const plano = (f.plano || f._plano || f.description || f.descricao || '').toString();
+    const textFull = plano.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    // 1. Inferir PRIMEIRO a partir do plano / descrição da própria fatura
+    if (textFull.includes('ortop') || textFull.includes('partes moles') || textFull.includes('pele') || textFull.includes('musculo')) {
+        return 'POS-GRADUACAO EM INFECCOES ORTOPEDICAS E DE PARTES MOLES';
     }
-    if (textFull.includes('ortop') || textFull.includes('partes moles')) {
-        return 'POS-GRADUACAO EM INFECCOES ORTOPEDICAS E DE PELE E PARTES MOLES';
-    }
-    if (textFull.includes('imuno') || textFull.includes('inuno')) {
+    if (textFull.includes('imuno') || textFull.includes('inuno') || textFull.includes('transplante')) {
         return 'POS-GRADUACAO EM INFECTOLOGIA DO PACIENTE IMUNODEPRIMIDO';
     }
-    if (textFull.includes('pediatria') || textFull.includes('infectoped')) {
+    if (textFull.includes('ccih') || textFull.includes('prevencao') || textFull.includes('hospitalar') || textFull.includes('pav') || textFull.includes('isc')) {
+        if (textFull.includes('farm')) return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH) - FARMACIA';
+        if (textFull.includes('enf')) return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH) - ENFERMAGEM';
+        return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)';
+    }
+    if (textFull.includes('pediatria') || textFull.includes('infectoped') || textFull.includes('ped')) {
         return 'POS-GRADUACAO EM INFECTOPEDIATRIA';
     }
-    if (textFull.includes('multi-r') || textFull.includes('multi r')) {
+    if (textFull.includes('multi-r') || textFull.includes('multi r') || textFull.includes('multir')) {
         return 'JORNADA MULTI-R';
     }
     if (textFull.includes('fungo') || textFull.includes('antifung')) {
         return 'DO FUNGO AO ANTIFUNGICO';
     }
-    if (textFull.includes('s.o.s') || textFull.includes('antibiotico')) {
+    if (textFull.includes('s.o.s') || textFull.includes('sos') || textFull.includes('antibiotico') || textFull.includes('atb') || textFull.includes('mdr')) {
         return 'S.O.S ANTIBIOTICO';
     }
-    if (textFull.includes('qualidade')) {
+    if (textFull.includes('qualidade') || textFull.includes('ferramenta') || textFull.includes('ishikawa') || textFull.includes('pdca')) {
         return 'FERRAMENTAS DE QUALIDADE';
+    }
+    if (textFull.includes('expert')) {
+        return 'INFECTOXPERT';
+    }
+
+    // 2. Fallback para aluno na plataforma
+    const email = (f.email || f._email || '').toString().toLowerCase().trim();
+    const aluno = (f.aluno || f._aluno || '').toString().toLowerCase().trim();
+    const stList = (CURRENT_DATA && CURRENT_DATA.students) ? CURRENT_DATA.students : (DATA && DATA.students ? DATA.students : []);
+    let stMatch = null;
+    if (email) {
+        stMatch = stList.find(s => s.email && s.email.toLowerCase().trim() === email && s.curso !== 'PLATAFORMA GERAL');
+    }
+    if (stMatch && stMatch.curso && stMatch.curso !== 'PLATAFORMA GERAL') {
+        return stMatch.curso;
     }
 
     return 'PLATAFORMA GERAL';
@@ -5972,15 +5976,16 @@ function renderFinTable() {
               </tr>`;
         }
 
-        // Agrupar faturas por aluno (email ou nome)
+        // Agrupar faturas por aluno E curso (para não misturar matrículas diferentes)
         const byStudent = {};
         faturas.forEach(f => {
             const email = (f._email || f.email || '').toLowerCase().trim();
             const aluno = f._aluno || f.aluno || 'Aluno';
             const curso = f.curso || _resolveFinCourse(f) || 'PLATAFORMA GERAL';
-            const key = email || aluno;
+            const key = `${email}___${curso}`;
             if (!byStudent[key]) {
                 byStudent[key] = {
+                    key: key,
                     aluno: aluno,
                     email: email,
                     curso: curso,
@@ -6019,7 +6024,7 @@ function renderFinTable() {
         }
 
         tbody.innerHTML = studentsList.map(st => {
-            const isExpanded = _finExpandedStudents.has(st.email);
+            const isExpanded = _finExpandedStudents.has(st.key || st.email);
             const gwBadge = st.gateway === 'Asaas'
                 ? `<span style="background:rgba(2,132,199,0.1); color:#0284c7; font-weight:800; padding:2px 6px; border-radius:4px; font-size:10px; border:1px solid rgba(2,132,199,0.25)">Asaas</span>`
                 : `<span style="background:rgba(124,58,237,0.1); color:#7c3aed; font-weight:800; padding:2px 6px; border-radius:4px; font-size:10px; border:1px solid rgba(124,58,237,0.25)">Vindi</span>`;
@@ -6045,7 +6050,7 @@ function renderFinTable() {
                 waBtn = `<a href="${waUrl}" target="_blank" style="display:inline-flex; align-items:center; gap:4px; font-size:10.5px; color:#25D366; text-decoration:none; font-weight:700; padding:4px 8px; border:1px solid rgba(37,211,102,0.35); border-radius:6px; white-space:nowrap; margin-right:6px">💬 Cobrar WA</a>`;
             }
 
-            const toggleBtn = `<button onclick="_finToggleStudentDetails('${st.email}')" style="border:1px solid var(--line2); background:var(--bg); color:var(--ink); padding:4px 8px; border-radius:6px; font-size:10.5px; font-weight:600; cursor:pointer">
+            const toggleBtn = `<button onclick="_finToggleStudentDetails('${st.key || st.email}')" style="border:1px solid var(--line2); background:var(--bg); color:var(--ink); padding:4px 8px; border-radius:6px; font-size:10.5px; font-weight:600; cursor:pointer">
                 ${isExpanded ? '▲ Ocultar Faturas' : `▼ Ver ${st.faturas.length} Fatura(s)`}
             </button>`;
 
