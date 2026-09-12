@@ -1,5 +1,5 @@
 {
-  "cached_at": "2026-09-11T21:21:08.706288",
+  "cached_at": "2026-09-11T21:32:07.669733",
   "total_matched": 807,
   "data": {
     "sara.grigna@gmail.com": {
@@ -236287,14 +236287,14 @@
       "total_em_atraso": 190022.15,
       "total_em_atraso_fmt": "R$ 190.022,15",
       "qtd_em_atraso": 158,
-      "mrr_ativo": 0.0,
-      "mrr_ativo_fmt": "R$ 0,00",
-      "projecao_30d": 0.0,
-      "projecao_30d_fmt": "R$ 0,00",
-      "projecao_60d": 0.0,
-      "projecao_60d_fmt": "R$ 0,00",
-      "projecao_12m": 0.0,
-      "projecao_12m_fmt": "R$ 0,00",
+      "mrr_ativo": 221982.43,
+      "mrr_ativo_fmt": "R$ 221.982,43",
+      "projecao_30d": 150401.83,
+      "projecao_30d_fmt": "R$ 150.401,83",
+      "projecao_60d": 220594.43,
+      "projecao_60d_fmt": "R$ 220.594,43",
+      "projecao_12m": 2663789.16,
+      "projecao_12m_fmt": "R$ 2.663.789,16",
       "taxa_adimplencia": 96
     },
     "historico_mensal": [
@@ -236383,7 +236383,18 @@
         "qtd": 63
       }
     ],
-    "projecao_mensal": [],
+    "projecao_mensal": [
+      {
+        "mes": "2026-09",
+        "label": "Set/26",
+        "previsto": 150401.83
+      },
+      {
+        "mes": "2026-10",
+        "label": "Out/26",
+        "previsto": 70192.6
+      }
+    ],
     "faturas_tabela": [
       {
         "id": 527016672,

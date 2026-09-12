@@ -386,6 +386,12 @@ def get_vindi_data(force_reload=False):
             st_lbl = 'Adimplente'
             st_color = 'var(--emerald-d)'
             st_bg = 'var(--emerald-bg)'
+            mrr_ativo_total += price
+            if next_b_dt:
+                proj_ym = next_b_dt.strftime('%Y-%m')
+                projecao_mensal_map[proj_ym] = projecao_mensal_map.get(proj_ym, 0.0) + price
+            else:
+                projecao_mensal_map[current_ym] = projecao_mensal_map.get(current_ym, 0.0) + price
         elif sub_status in ['expired', 'inactive']:
             if has_paid_renegociacao or paid_bills_count > 0:
                 st_fin = 'quitado'
