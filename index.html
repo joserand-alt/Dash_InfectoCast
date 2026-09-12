@@ -3597,6 +3597,15 @@ function drawLiveHourlyChart(baseStudents, actionFilter) {
 // VISÃO EXECUTIVA - COCKPIT ESTRATÉGICO
 // ========================================================
 let _execDrawn = false;
+function fM(val) {
+    const n = Number(val) || 0;
+    return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function fN(val) {
+    const n = Number(val) || 0;
+    return n.toLocaleString('pt-BR');
+}
+
 function drawExecView(force) {
     if (_execDrawn && !force) return;
     _execDrawn = true;
@@ -4462,6 +4471,11 @@ function drawHome(force) {
     
     const criticos = (stCounts['Abandonou'] || 0) + (stCounts['Nunca acessou'] || 0);
     const taxaCriticos = totalMatriculasAtivas > 0 ? ((criticos / totalMatriculasAtivas) * 100).toFixed(0) : '0';
+
+    const unicosAtivos = new Set(matriculasAtivas.filter(s => (s.status === 'Ativo' || (s.status||'').includes('Conclu'))).map(s => (s.email||'').toLowerCase().trim()).filter(Boolean)).size;
+    const unicosRisco = new Set(matriculasAtivas.filter(s => ((s.status||'').includes('Risco') || (s.status||'').includes('Login'))).map(s => (s.email||'').toLowerCase().trim()).filter(Boolean)).size;
+    const unicosAbandonaram = new Set(matriculasAtivas.filter(s => (s.status === 'Abandonou' || s.status === 'Inativo')).map(s => (s.email||'').toLowerCase().trim()).filter(Boolean)).size;
+    const unicosNunca = new Set(matriculasAtivas.filter(s => (s.status === 'Nunca acessou' || !s.acessou)).map(s => (s.email||'').toLowerCase().trim()).filter(Boolean)).size;
 
     // RD Marketing
     let countComRD = 0;
