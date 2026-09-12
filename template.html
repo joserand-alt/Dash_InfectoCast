@@ -3610,10 +3610,23 @@ function drawExecView(force) {
     const rawStudents = (DATA && DATA.students) ? DATA.students : [];
     const ev = (CURRENT_DATA && CURRENT_DATA.action_counts) ? CURRENT_DATA.action_counts : ((DATA && DATA.action_counts) ? DATA.action_counts : {});
 
-    // Usar CURRENT_DATA.students ou rawStudents enriquecido
+    // Regra de exclusão para contas internas, testes e curso Nutrify Connect
+    const isInvalidOrInternal = s => {
+        const em = (s.email || '').toString().toLowerCase().trim();
+        const nm = (s.nome || '').toString().toLowerCase().trim();
+        const cr = (s.curso || '').toString().toUpperCase().trim();
+        if (cr.includes('NUTRIFY')) return true;
+        if (em.includes('@infectocast') || em.includes('@integralmedica') || em.includes('@nutrify') || em.includes('@vectorcomunica')) return true;
+        if (em.includes('teste') || nm.includes('teste')) return true;
+        if (em.includes('gcotta29') || em.includes('j.o.s.e.r.a.n.d@gmail.com') || em.includes('email@email.com')) return true;
+        return false;
+    };
+
+    // Usar CURRENT_DATA.students ou rawStudents enriquecido (sempre excluindo testes e contas internas)
+    const validRawStudents = rawStudents.filter(s => !isInvalidOrInternal(s));
     const baseStudents = (CURRENT_DATA && CURRENT_DATA.students && CURRENT_DATA.students.length > 0)
-        ? CURRENT_DATA.students
-        : rawStudents.map(s => {
+        ? CURRENT_DATA.students.filter(s => !isInvalidOrInternal(s))
+        : validRawStudents.map(s => {
             const scopy = { ...s };
             const acessou = scopy.acessou;
             const logins = scopy.logins || 0;
