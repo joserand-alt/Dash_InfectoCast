@@ -120,24 +120,38 @@ def _parse_iso(iso_str):
         return None
 
 def normalize_vindi_course(name):
-    if not name: return 'SEM CURSO'
+    if not name or str(name).lower() in ['none', 'nan', '']:
+        return 'PLATAFORMA GERAL'
     n = str(name).strip().upper()
     n = ''.join(c for c in unicodedata.normalize('NFD', n) if unicodedata.category(c) != 'Mn')
-    if 'ORTOPED' in n or 'PARTES MOLES' in n:
-        return 'PÓS-GRADUAÇÃO EM INFECÇÕES ORTOPÉDICAS E DE PARTES MOLES'
-    if 'CCIH' in n or 'PREVENCAO' in n or 'HOSPITALAR' in n:
-        if 'FARM' in n: return 'PÓS-GRADUAÇÃO EM PREVENÇÃO E CONTROLE DE INFECÇÃO HOSPITALAR (CCIH) - FARMÁCIA'
-        if 'ENF' in n: return 'PÓS-GRADUAÇÃO EM PREVENÇÃO E CONTROLE DE INFECÇÃO HOSPITALAR (CCIH) - ENFERMAGEM'
-        return 'PÓS-GRADUAÇÃO EM PREVENÇÃO E CONTROLE DE INFECÇÃO HOSPITALAR (CCIH)'
-    if 'IMUNO' in n:
-        return 'PÓS-GRADUAÇÃO EM INFECÇÕES EM IMUNODEPRIMIDOS'
-    if 'PED' in n or 'INFECTOPED' in n:
-        return 'PÓS-GRADUAÇÃO EM INFECTOPEDIATRIA'
-    if 'SOS' in n or 'ANTIBIOTICO' in n or 'ATB' in n:
-        return 'S.O.S ANTIBIÓTICO'
-    if 'FERRAMENTA' in n or 'QUALIDADE' in n:
+    
+    if any(k in n for k in ['ORTOPED', 'ORTO', 'PARTES MOLES', 'PELE', 'MUSCULO']):
+        return 'POS-GRADUACAO EM INFECCOES ORTOPEDICAS E DE PARTES MOLES'
+    if any(k in n for k in ['CCIH', 'PREVENCAO', 'HOSPITALAR', 'PAV', 'ISC']):
+        if 'FARM' in n:
+            return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH) - FARMACIA'
+        elif 'ENF' in n:
+            return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH) - ENFERMAGEM'
+        return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)'
+    if any(k in n for k in ['IMUNO', 'INUNO', 'TRANSPLANT']):
+        return 'POS-GRADUACAO EM INFECTOLOGIA DO PACIENTE IMUNODEPRIMIDO'
+    if any(k in n for k in ['PED', 'INFECTOPED', 'CRIANCA', 'NEONATAL']):
+        return 'POS-GRADUACAO EM INFECTOPEDIATRIA'
+    if any(k in n for k in ['MULTI-R', 'MULTIR', 'MULTI R']):
+        return 'JORNADA MULTI-R'
+    if any(k in n for k in ['FUNGO', 'ANTIFUNGIC']):
+        return 'DO FUNGO AO ANTIFUNGICO'
+    if any(k in n for k in ['SOS', 'ANTIBIOTICO', 'ATB', 'MDR']):
+        return 'S.O.S ANTIBIOTICO'
+    if any(k in n for k in ['FERRAMENTA', 'QUALIDADE', 'ISHIKAWA', 'PDCA']):
         return 'FERRAMENTAS DE QUALIDADE'
-    return n
+    if any(k in n for k in ['INFECTOXPERT', 'EXPERT']):
+        return 'INFECTOXPERT'
+    if any(k in n for k in ['NUTRIFY']):
+        return 'NUTRIFY CONNECT'
+        
+    return 'PLATAFORMA GERAL'
+
 
 def get_vindi_data(force_reload=False):
     """
