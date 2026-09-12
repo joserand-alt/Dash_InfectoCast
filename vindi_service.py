@@ -280,19 +280,24 @@ def get_vindi_data(force_reload=False):
             bills_by_cid.setdefault(cid, []).append(fatura_item)
         if cemail:
             bills_by_email.setdefault(cemail, []).append(fatura_item)
-
         if status == 'paid':
-            total_recebido += amount_val
-            total_faturas_pagas += 1
-            ref_dt = paid_dt or due_dt or _parse_iso(b.get('created_at'))
-            if ref_dt:
-                ym = ref_dt.strftime('%Y-%m')
-                if ym not in historico_mensal_map:
-                    historico_mensal_map[ym] = {'pago': 0.0, 'qtd': 0}
-                historico_mensal_map[ym]['pago'] += amount_val
-                historico_mensal_map[ym]['qtd'] += 1
-                if ym == current_ym:
-                    recebido_mes_atual += amount_val
+            # Se for vencimento futuro sem data de pagamento efetiva, vai para projeção
+            is_future_paid = (paid_dt is None) and (due_dt and due_dt.date() > now.date())
+            if is_future_paid:
+                ym = due_dt.strftime("%Y-%m")
+                projecao_mensal_map[ym] = projecao_mensal_map.get(ym, 0.0) + amount_val
+            else:
+                total_recebido += amount_val
+                total_faturas_pagas += 1
+                ref_dt = paid_dt or due_dt or _parse_iso(b.get('created_at'))
+                if ref_dt:
+                    ym = ref_dt.strftime('%Y-%m')
+                    if ym not in historico_mensal_map:
+                        historico_mensal_map[ym] = {'pago': 0.0, 'qtd': 0}
+                    historico_mensal_map[ym]['pago'] += amount_val
+                    historico_mensal_map[ym]['qtd'] += 1
+                    if ym == current_ym:
+                        recebido_mes_atual += amount_val
         elif is_overdue:
             total_em_atraso += amount_val
             qtd_em_atraso += 1

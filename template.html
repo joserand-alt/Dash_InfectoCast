@@ -3610,7 +3610,7 @@ function drawExecView(force) {
     const rawStudents = (DATA && DATA.students) ? DATA.students : [];
     const ev = (CURRENT_DATA && CURRENT_DATA.action_counts) ? CURRENT_DATA.action_counts : ((DATA && DATA.action_counts) ? DATA.action_counts : {});
 
-    // Usar CURRENT_DATA.students quando já enriquecido com status, ou enriquecer localmente
+    // Usar CURRENT_DATA.students ou rawStudents enriquecido
     const baseStudents = (CURRENT_DATA && CURRENT_DATA.students && CURRENT_DATA.students.length > 0)
         ? CURRENT_DATA.students
         : rawStudents.map(s => {
@@ -3621,8 +3621,8 @@ function drawExecView(force) {
             const cadencia = scopy.cadencia || 0;
             const dias_ativo = scopy.dias_ativo || 0;
 
-            const vSt = scopy.vindi ? (scopy.vindi.status_financeiro || scopy.vindi.status_assinatura) : null;
-            const aSt = scopy.asaas ? (scopy.asaas.status_financeiro || scopy.asaas.status_assinatura) : null;
+            const vSt = (scopy.vindi ? (scopy.vindi.status_financeiro || scopy.vindi.status_assinatura) : '').toLowerCase();
+            const aSt = (scopy.asaas ? (scopy.asaas.status_financeiro || scopy.asaas.status_assinatura) : '').toLowerCase();
             const _vCan = vSt === 'cancelado' || vSt === 'canceled';
             const _aCan = aSt === 'cancelado' || aSt === 'canceled';
             const _vAct = vSt && !_vCan;
@@ -3654,79 +3654,164 @@ function drawExecView(force) {
             return scopy;
         });
 
-    // Mapeamento rápido de e-mail e nome para vincular faturas a estudantes e cursos
+    // Mapeamento de Faturas pagas para identificar alunos pagantes reais
+    const vFaturas = (vindi.faturas_tabela || []);
+    const aFaturas = (asaas.faturas_tabela || []);
+
+    const paidEmails = new Set();
+    const paidNames = new Set();
+
+    vFaturas.forEach(f => {
+        const st = (f.status || '').toLowerCase();
+        if (st === 'pago' || st === 'paid') {
+            const em = (f.email || '').toString().toLowerCase().trim();
+            const nm = (f.aluno || '').toString().toLowerCase().trim();
+            if (em) paidEmails.add(em);
+            if (nm) paidNames.add(nm);
+        }
+    });
+
+    aFaturas.forEach(f => {
+        const st = (f.status || '').toLowerCase();
+        if (st === 'pago' || st === 'paid') {
+            const em = (f.email || '').toString().toLowerCase().trim();
+            const nm = (f.aluno || '').toString().toLowerCase().trim();
+            if (em) paidEmails.add(em);
+            if (nm) paidNames.add(nm);
+        }
+    });
+
+    // Classificação precisa das Matrículas em: Canceladas, Concluídas/Quitadas e Vigentes (Ativas)
+    const matriculasCanceladas = [];
+    const matriculasConcluidas = [];
+    const matriculasVigentes = [];
+    let totalAlunosPagantes = 0;
+
+    baseStudents.forEach(s => {
+        const em = (s.email || '').toString().toLowerCase().trim();
+        const nm = (s.nome || '').toString().toLowerCase().trim();
+
+        const hasPaid = paidEmails.has(em) || paidNames.has(nm);
+        if (hasPaid) totalAlunosPagantes++;
+
+        const vSt = (s.vindi ? (s.vindi.status_financeiro || s.vindi.status_assinatura) : '').toLowerCase();
+        const aSt = (s.asaas ? (s.asaas.status_financeiro || s.asaas.status_assinatura) : '').toLowerCase();
+
+        const isCancel = vSt === 'cancelado' || vSt === 'canceled' || aSt === 'cancelado' || aSt === 'canceled' || s.status === 'Cancelado';
+        const isConcluido = !isCancel && (vSt === 'quitado' || aSt === 'quitado' || s.status === 'Concluído' || s.status === 'Encerrado' || s.turma_encerrada === true);
+
+        if (isCancel) {
+            matriculasCanceladas.push(s);
+        } else if (isConcluido) {
+            matriculasConcluidas.push(s);
+        } else {
+            matriculasVigentes.push(s);
+        }
+    });
+
+    const totalMatriculas = baseStudents.length;
+    const totalVigentes = matriculasVigentes.length;
+    const totalConcluidas = matriculasConcluidas.length;
+    const totalCanceladas = matriculasCanceladas.length;
+
+    // Engajamento calculado ESTRITAMENTE sobre as Matrículas Vigentes (Regra de Negócio Grupo 5)
+    let countEngajados = 0;
+    let countEmRisco = 0;
+    let countAbandonou = 0;
+    let countNuncaAcessou = 0;
+
+    matriculasVigentes.forEach(s => {
+        const acessou = s.acessou;
+        const logins = s.logins || 0;
+        const dias_inativo = s.dias_inativo || 0;
+        const cadencia = s.cadencia || 0;
+        const dias_ativo = s.dias_ativo || 0;
+
+        if (!acessou || logins === 0) {
+            countNuncaAcessou++;
+        } else if (logins > 1 && dias_ativo > 0) {
+            if (dias_inativo > 30 || (dias_inativo > 14 && cadencia > 0 && dias_inativo > (cadencia * 2.5))) {
+                countAbandonou++;
+            } else if (cadencia > 0 && dias_inativo > (cadencia * 1.5 + 2)) {
+                countEmRisco++;
+            } else {
+                countEngajados++;
+            }
+        } else {
+            if (dias_inativo > 14) {
+                countAbandonou++;
+            } else if (dias_inativo > 7) {
+                countEmRisco++;
+            } else {
+                countEngajados++;
+            }
+        }
+    });
+
+    // Mapeamento por Curso (Especialidade)
+    const coursesMap = {};
     const emailToStudent = {};
     const nameToStudent = {};
+
     baseStudents.forEach(s => {
         const em = (s.email || '').toString().toLowerCase().trim();
         const nm = (s.nome || '').toString().toLowerCase().trim();
         if (em) emailToStudent[em] = s;
         if (nm) nameToStudent[nm] = s;
-    });
-
-    // Classificação de status de alunos
-    let countAtivos = 0;
-    let countEmRisco = 0;
-    let countAbandonou = 0;
-    let countNuncaAcessou = 0;
-    let countCancelados = 0;
-
-    const coursesMap = {};
-
-    baseStudents.forEach(s => {
-        let st = s.status;
-        if (!st) {
-            st = !s.acessou ? 'Nunca acessou' : (s.dias_inativo > 30 ? 'Abandonou' : 'Ativo');
-        }
 
         const c = s.curso || 'OUTROS / PLATAFORMA GERAL';
         if (!coursesMap[c]) {
-            coursesMap[c] = {
-                curso: c,
-                total: 0,
-                ativos: 0,
-                em_risco: 0,
-                abandono: 0,
-                nunca: 0,
-                cancelados: 0,
-                pago: 0,
-                atraso: 0,
-                proj: 0,
-                mrr: 0
-            };
+            coursesMap[c] = { curso: c, total: 0, vigentes: 0, ativos: 0, em_risco: 0, abandono: 0, nunca: 0, concluidos: 0, cancelados: 0, pago: 0, atraso: 0, proj: 0, mrr: 0 };
         }
         const cm = coursesMap[c];
         cm.total++;
 
-        if (st === 'Cancelado') {
-            countCancelados++;
+        const vSt = (s.vindi ? (s.vindi.status_financeiro || s.vindi.status_assinatura) : '').toLowerCase();
+        const aSt = (s.asaas ? (s.asaas.status_financeiro || s.asaas.status_assinatura) : '').toLowerCase();
+        const isCancel = vSt === 'cancelado' || vSt === 'canceled' || aSt === 'cancelado' || aSt === 'canceled' || s.status === 'Cancelado';
+        const isConcluido = !isCancel && (vSt === 'quitado' || aSt === 'quitado' || s.status === 'Concluído' || s.status === 'Encerrado' || s.turma_encerrada === true);
+
+        if (isCancel) {
             cm.cancelados++;
-        } else if (st === 'Ativo' || st.includes('Conclu')) {
-            countAtivos++;
-            cm.ativos++;
-        } else if (st === 'Em Risco') {
-            countEmRisco++;
-            cm.em_risco++;
-        } else if (st === 'Abandonou' || st === 'Inativo') {
-            countAbandonou++;
-            cm.abandono++;
-        } else if (st === 'Nunca acessou') {
-            countNuncaAcessou++;
-            cm.nunca++;
+        } else if (isConcluido) {
+            cm.concluidos++;
         } else {
-            countAtivos++;
-            cm.ativos++;
+            cm.vigentes++;
+            const acessou = s.acessou;
+            const logins = s.logins || 0;
+            const dias_inativo = s.dias_inativo || 0;
+            const cadencia = s.cadencia || 0;
+            const dias_ativo = s.dias_ativo || 0;
+
+            if (!acessou || logins === 0) {
+                cm.nunca++;
+            } else if (logins > 1 && dias_ativo > 0) {
+                if (dias_inativo > 30 || (dias_inativo > 14 && cadencia > 0 && dias_inativo > (cadencia * 2.5))) {
+                    cm.abandono++;
+                } else if (cadencia > 0 && dias_inativo > (cadencia * 1.5 + 2)) {
+                    cm.em_risco++;
+                } else {
+                    cm.ativos++;
+                }
+            } else {
+                if (dias_inativo > 14) {
+                    cm.abandono++;
+                } else if (dias_inativo > 7) {
+                    cm.em_risco++;
+                } else {
+                    cm.ativos++;
+                }
+            }
         }
 
-        // Soma MRR por curso para alunos que não estão cancelados
-        if (st !== 'Cancelado') {
+        // MRR e Projeção do Curso (apenas matrículas ativas/vigentes)
+        if (!isCancel && !isConcluido) {
             const vindiObj = s.vindi;
             const asaasObj = s.asaas;
             const vParcela = vindiObj ? (Number(vindiObj.valor_parcela) || 0) : 0;
             const aParcela = asaasObj ? (Number(asaasObj.valor_parcela) || Number(asaasObj.mrr) || 0) : 0;
             cm.mrr += (vParcela + aParcela);
 
-            // Faturas futuras do próprio aluno no Vindi (já calculadas e agendadas)
             if (vindiObj && Array.isArray(vindiObj.faturas)) {
                 vindiObj.faturas.forEach(f => {
                     if (f.status === 'futuro') {
@@ -3737,10 +3822,7 @@ function drawExecView(force) {
         }
     });
 
-    // Faturas globais (Vindi + Asaas) para cálculo de Pago, Atraso (Inadimplência) e Projeção adicional
-    const vFaturas = (vindi.faturas_tabela || []);
-    const aFaturas = (asaas.faturas_tabela || []);
-
+    // Faturas globais para cálculo de Pago, Atraso e Projeção adicional
     vFaturas.forEach(f => {
         const em = (f.email || '').toString().toLowerCase().trim();
         const nm = (f.aluno || '').toString().toLowerCase().trim();
@@ -3748,11 +3830,10 @@ function drawExecView(force) {
         const c = (stObj && stObj.curso) ? stObj.curso : 'OUTROS / PLATAFORMA GERAL';
 
         if (!coursesMap[c]) {
-            coursesMap[c] = { curso: c, total: 0, ativos: 0, em_risco: 0, abandono: 0, nunca: 0, cancelados: 0, pago: 0, atraso: 0, proj: 0, mrr: 0 };
+            coursesMap[c] = { curso: c, total: 0, vigentes: 0, ativos: 0, em_risco: 0, abandono: 0, nunca: 0, concluidos: 0, cancelados: 0, pago: 0, atraso: 0, proj: 0, mrr: 0 };
         }
-
         const val = Number(f.valor) || 0;
-        const st = f.status || '';
+        const st = (f.status || '').toLowerCase();
         if (st === 'pago' || st === 'paid') {
             coursesMap[c].pago += val;
         } else if (st === 'em_atraso') {
@@ -3767,11 +3848,10 @@ function drawExecView(force) {
         const c = (stObj && stObj.curso) ? stObj.curso : 'OUTROS / PLATAFORMA GERAL';
 
         if (!coursesMap[c]) {
-            coursesMap[c] = { curso: c, total: 0, ativos: 0, em_risco: 0, abandono: 0, nunca: 0, cancelados: 0, pago: 0, atraso: 0, proj: 0, mrr: 0 };
+            coursesMap[c] = { curso: c, total: 0, vigentes: 0, ativos: 0, em_risco: 0, abandono: 0, nunca: 0, concluidos: 0, cancelados: 0, pago: 0, atraso: 0, proj: 0, mrr: 0 };
         }
-
         const val = Number(f.valor) || 0;
-        const st = f.status || '';
+        const st = (f.status || '').toLowerCase();
         if (st === 'pago' || st === 'paid') {
             coursesMap[c].pago += val;
         } else if (st === 'em_atraso') {
@@ -3781,7 +3861,7 @@ function drawExecView(force) {
         }
     });
 
-    // Totalizadores Consolidados
+    // Totalizadores Consolidados Financeiros
     const vKpis = vindi.kpis || {};
     const aKpis = asaas.kpis || {};
 
@@ -3800,62 +3880,39 @@ function drawExecView(force) {
     const pctAtingimento = Math.min(100, (projecaoFechamentoMes / metaMensal) * 100);
     const gapMeta = Math.max(0, metaMensal - projecaoFechamentoMes);
 
-    // Funil
+    // Funil Comercial
     const fKpis = funil.kpis || {};
     const totalLeads = Number(fKpis.total) || 26566;
     const leadsQualificados = Number(fKpis.lead_qualificado) || 5638;
     const contatadosWA = Number(fKpis.wa_contatados) || 365;
-    const alunosPagantes = Number(fKpis.aluno) || 456;
 
-    const totalMatriculas = baseStudents.length;
-    const totalAtivas = totalMatriculas - countCancelados;
-    const taxaChurn = totalMatriculas > 0 ? ((countCancelados / totalMatriculas) * 100).toFixed(1) : '0';
-    const taxaRetencao = (100 - parseFloat(taxaChurn)).toFixed(1);
+    const taxaChurn = totalMatriculas > 0 ? ((totalCanceladas / totalMatriculas) * 100).toFixed(1) : '0';
+    const taxaRetencaoVigente = totalMatriculas > 0 ? (((totalMatriculas - totalCanceladas) / totalMatriculas) * 100).toFixed(1) : '100';
 
     const totalReproducoes = ev['ASSISTIU AULA'] || 0;
     const totalLogins = ev['LOGIN WEB'] || 0;
 
-    // Ordenar cursos por matrículas ativas e receita
-    const cursosList = Object.values(coursesMap).filter(c => c.total > 0 || c.pago > 0 || c.atraso > 0 || c.proj > 0).sort((a,b) => b.total - a.total);
+    // Ordenar cursos por matrículas vigentes e receita
+    const cursosList = Object.values(coursesMap).filter(c => c.total > 0 || c.pago > 0 || c.atraso > 0 || c.proj > 0).sort((a,b) => b.vigentes - a.vigentes || b.total - a.total);
 
-    // Helpers
-    const fM = val => (Number(val) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    const fN = val => (Number(val) || 0).toLocaleString('pt-BR');
-
-    // Montar HTML da Visão Executiva
     mount.innerHTML = `
-      <!-- HERO HEADER COM BOTÃO VER DASH COMPLETO -->
-      <div class="exec-hero">
-        <div>
-          <div class="exec-badge">COCKPIT ESTRATÉGICO CONSOLIDADO</div>
-          <h1 class="exec-hero-title">Cockpit Executivo InfectoCast</h1>
-          <p class="exec-hero-sub">Visão executiva unificada: <b>resultado → previsão → conversão → recorrência → retenção → risco</b>. O detalhamento completo de cada frente permanece disponível nas abas operacionais especializadas.</p>
-        </div>
-        <div>
-          <button class="btn-exec-cta" onclick="selectTab('home')">
-            <span>📊 Ver Dashboard Completo</span>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- GRUPO 1: RECEITA E PREVISIBILIDADE -->
+      <!-- GRUPO 1: RECEITA & PROJEÇÃO -->
       <div class="exec-sec">
         <div class="exec-sec-head">
           <div class="exec-sec-title-wrap">
             <div class="exec-sec-num">G1</div>
             <div>
-              <h3 class="exec-sec-title">GRUPO 1 — RECEITA &amp; PREVISIBILIDADE</h3>
-              <div class="exec-sec-sub">Visão executiva de faturamento acumulado, cadência recorrente (MRR) e atingimento de metas.</div>
+              <h3 class="exec-sec-title">GRUPO 1 — RECEITA &amp; PROJEÇÃO</h3>
+              <div class="exec-sec-sub">Consolidação financeira de faturamento realizado (Vindi + Asaas), receita recorrente mensal (MRR) e previsibilidade de caixa.</div>
             </div>
           </div>
-          <button class="btn-exec-link" onclick="selectTab('fin')">Ver Financeiro Detalhado →</button>
+          <button class="btn-exec-link" onclick="selectTab('fin')">Ver Detalhes Financeiros →</button>
         </div>
         <div class="exec-grid-4">
           <div class="exec-card">
             <div class="exec-card-top">
-              <span class="exec-card-label">Receita Realizada Total</span>
-              <span class="exec-pill pill-green">Consolidado</span>
+              <span class="exec-card-label">Receita Realizada (Total)</span>
+              <span class="exec-pill pill-green">Realizado</span>
             </div>
             <div class="exec-card-val" style="color:var(--emerald-d)">${fM(recRealizadaTotal)}</div>
             <div class="exec-card-sub">Vindi (${fM(vKpis.total_recebido)}) + Asaas (${fM(aKpis.total_recebido)})</div>
@@ -3863,20 +3920,20 @@ function drawExecView(force) {
 
           <div class="exec-card">
             <div class="exec-card-top">
-              <span class="exec-card-label">Receita Recorrente (MRR)</span>
-              <span class="exec-pill pill-blue">Mensal Ativo</span>
+              <span class="exec-card-label">MRR (Mensalidade Ativa)</span>
+              <span class="exec-pill pill-blue">Recorrente</span>
             </div>
-            <div class="exec-card-val" style="color:#0284c7">${fM(mrrConsolidado)}</div>
-            <div class="exec-card-sub">Base ativa recorrente (${fM(vKpis.mrr_ativo)} Vindi + ${fM(aKpis.mrr_ativo)} Asaas)</div>
+            <div class="exec-card-val" style="color:var(--brand)">${fM(mrrConsolidado)}</div>
+            <div class="exec-card-sub">Base ativa: Vindi (${fM(vKpis.mrr_ativo)}) + Asaas (${fM(aKpis.mrr_ativo)})</div>
           </div>
 
           <div class="exec-card">
             <div class="exec-card-top">
-              <span class="exec-card-label">Receita Mês Atual + Proj.</span>
-              <span class="exec-pill pill-amber">${pctAtingimento.toFixed(1)}% Meta</span>
+              <span class="exec-card-label">Projeção Próximos 30d</span>
+              <span class="exec-pill pill-blue">A Vencer</span>
             </div>
-            <div class="exec-card-val" style="color:var(--ink)">${fM(projecaoFechamentoMes)}</div>
-            <div class="exec-card-sub">Realizado: ${fM(recMesAtual)} · Gap para meta: ${fM(gapMeta)}</div>
+            <div class="exec-card-val" style="color:#0284c7">${fM(proj30d)}</div>
+            <div class="exec-card-sub">Faturas agendadas e parcelas a vencer no próximo mês</div>
           </div>
 
           <div class="exec-card">
@@ -3900,43 +3957,43 @@ function drawExecView(force) {
               <div class="exec-sec-sub">Volume de captação de leads, taxa de conversão comercial, ticket médio e eficiência de aquisição.</div>
             </div>
           </div>
-          <button class="btn-exec-link" onclick="selectTab('funil')">Ver Funil de Vendas →</button>
+          <button class="btn-exec-link" onclick="selectTab('funil')">Ver Funil Completo →</button>
         </div>
         <div class="exec-grid-4">
           <div class="exec-card">
             <div class="exec-card-top">
-              <span class="exec-card-label">Leads Gerados</span>
-              <span class="exec-pill pill-blue">CRM / RD</span>
+              <span class="exec-card-label">Leads Captados (CRM)</span>
+              <span class="exec-pill pill-blue">Topo do Funil</span>
             </div>
-            <div class="exec-card-val">${fN(totalLeads)}</div>
-            <div class="exec-card-sub">${fN(leadsQualificados)} leads qualificados (${((leadsQualificados/totalLeads)*100).toFixed(1)}%)</div>
+            <div class="exec-card-val" style="color:var(--ink)">${fN(totalLeads)}</div>
+            <div class="exec-card-sub">Base total de cadastros sincronizados do RD Station</div>
           </div>
 
           <div class="exec-card">
             <div class="exec-card-top">
-              <span class="exec-card-label">Matrículas Totais</span>
-              <span class="exec-pill pill-green">${totalAtivas} Ativas</span>
+              <span class="exec-card-label">Leads Qualificados</span>
+              <span class="exec-pill pill-blue">${((leadsQualificados/Math.max(1, totalLeads))*100).toFixed(1)}%</span>
             </div>
-            <div class="exec-card-val" style="color:var(--emerald-d)">${fN(totalMatriculas)}</div>
-            <div class="exec-card-sub">${fN(alunosPagantes)} alunos pagantes com transação confirmada</div>
+            <div class="exec-card-val" style="color:var(--brand)">${fN(leadsQualificados)}</div>
+            <div class="exec-card-sub">Interesse manifesto em cursos e pós-graduação</div>
           </div>
 
           <div class="exec-card">
             <div class="exec-card-top">
-              <span class="exec-card-label">Taxa de Conversão Geral</span>
+              <span class="exec-card-label">Taxa de Conversão Global</span>
               <span class="exec-pill pill-green">Lead → Aluno</span>
             </div>
-            <div class="exec-card-val" style="color:var(--ink)">${((totalMatriculas/Math.max(1, totalLeads))*100).toFixed(2)}%</div>
-            <div class="exec-card-sub">Conversão sobre leads qualificados: ${((totalMatriculas/Math.max(1, leadsQualificados))*100).toFixed(1)}%</div>
+            <div class="exec-card-val" style="color:var(--emerald-d)">${((totalMatriculas/Math.max(1, totalLeads))*100).toFixed(2)}%</div>
+            <div class="exec-card-sub">${fN(totalMatriculas)} matrículas geradas a partir de ${fN(totalLeads)} leads</div>
           </div>
 
           <div class="exec-card">
             <div class="exec-card-top">
-              <span class="exec-card-label">Ticket Médio Estimado</span>
-              <span class="exec-pill pill-amber">Contrato</span>
+              <span class="exec-card-label">Ticket Médio Anual</span>
+              <span class="exec-pill pill-blue">Por Matrícula</span>
             </div>
-            <div class="exec-card-val" style="color:var(--ink)">R$ 2.450,00</div>
-            <div class="exec-card-sub">CAC estimado: R$ 380,00 · LTV/CAC saudável &gt; 6x</div>
+            <div class="exec-card-val" style="color:var(--ink)">${fM(totalMatriculas > 0 ? (recRealizadaTotal + proj12m) / totalMatriculas : 0)}</div>
+            <div class="exec-card-sub">LTV médio contratual por aluno matriculado</div>
           </div>
         </div>
       </div>
@@ -3947,61 +4004,60 @@ function drawExecView(force) {
           <div class="exec-sec-title-wrap">
             <div class="exec-sec-num">G3</div>
             <div>
-              <h3 class="exec-sec-title">GRUPO 3 — FUNIL DE CONVERSÃO</h3>
-              <div class="exec-sec-sub">Passagem contínua entre as etapas do funil comercial e eficiência de fechamento.</div>
+              <h3 class="exec-sec-title">GRUPO 3 — FUNIL DE CONVERSÃO INTEGRADO</h3>
+              <div class="exec-sec-sub">Jornada de ponta a ponta: do tráfego e captação inicial até o aluno pagante confirmado nos gateways.</div>
             </div>
           </div>
-          <button class="btn-exec-link" onclick="selectTab('origem')">Ver Origem de Matrículas →</button>
         </div>
-        <div class="exec-funnel-bar">
-          <div class="exec-funnel-step">
-            <div class="exec-funnel-step-label">1. Leads Totais</div>
-            <div class="exec-funnel-step-val">${fN(totalLeads)}</div>
-            <div class="exec-funnel-step-sub">100% da base captada</div>
+        <div class="exec-funnel-steps">
+          <div class="exec-fstep">
+            <div class="exec-fstep-pill">1. Cadastros / Leads</div>
+            <div class="exec-fstep-val">${fN(totalLeads)}</div>
+            <div class="exec-fstep-desc">Captação RD Station</div>
+          </div>
+          <div class="exec-farrow">
+            <div class="exec-farrow-txt">${((leadsQualificados/Math.max(1, totalLeads))*100).toFixed(1)}%</div>
+            <div class="exec-farrow-symbol">→</div>
           </div>
 
-          <div class="exec-funnel-arrow">
-            <span class="exec-funnel-rate">${((leadsQualificados/totalLeads)*100).toFixed(1)}%</span>
-            <span>➔</span>
+          <div class="exec-fstep">
+            <div class="exec-fstep-pill">2. Qualificados</div>
+            <div class="exec-fstep-val">${fN(leadsQualificados)}</div>
+            <div class="exec-fstep-desc">Perfil com interesse</div>
+          </div>
+          <div class="exec-farrow">
+            <div class="exec-farrow-txt">${((contatadosWA/Math.max(1, leadsQualificados))*100).toFixed(1)}%</div>
+            <div class="exec-farrow-symbol">→</div>
           </div>
 
-          <div class="exec-funnel-step">
-            <div class="exec-funnel-step-label">2. Oportunidades (LQ)</div>
-            <div class="exec-funnel-step-val">${fN(leadsQualificados)}</div>
-            <div class="exec-funnel-step-sub">Critérios de qualificação</div>
+          <div class="exec-fstep">
+            <div class="exec-fstep-pill">3. Abordagem WhatsApp</div>
+            <div class="exec-fstep-val">${fN(contatadosWA)}</div>
+            <div class="exec-fstep-desc">Atendimento Z-API</div>
+          </div>
+          <div class="exec-farrow">
+            <div class="exec-farrow-txt">${((totalMatriculas/Math.max(1, totalLeads))*100).toFixed(1)}%</div>
+            <div class="exec-farrow-symbol">→</div>
           </div>
 
-          <div class="exec-funnel-arrow">
-            <span class="exec-funnel-rate">${((contatadosWA/leadsQualificados)*100).toFixed(1)}%</span>
-            <span>➔</span>
+          <div class="exec-fstep" style="border-color:var(--brand); background:rgba(30,58,138,0.03)">
+            <div class="exec-fstep-pill" style="color:var(--brand)">4. Matrículas Realizadas</div>
+            <div class="exec-fstep-val" style="color:var(--brand)">${fN(totalMatriculas)}</div>
+            <div class="exec-fstep-desc" style="font-weight:600; color:var(--ink)">
+              ${fN(totalVigentes)} ativas vigentes · ${fN(totalConcluidas)} concluídas · ${fN(totalCanceladas)} canceladas
+            </div>
+          </div>
+          <div class="exec-farrow">
+            <div class="exec-farrow-txt">${((totalAlunosPagantes/Math.max(1, totalMatriculas))*100).toFixed(1)}%</div>
+            <div class="exec-farrow-symbol">→</div>
           </div>
 
-          <div class="exec-funnel-step">
-            <div class="exec-funnel-step-label">3. Contatados WhatsApp</div>
-            <div class="exec-funnel-step-val">${fN(contatadosWA)}</div>
-            <div class="exec-funnel-step-sub">Abordagem ativa comercial</div>
-          </div>
-
-          <div class="exec-funnel-arrow">
-            <span class="exec-funnel-rate">${((totalMatriculas/contatadosWA)*100).toFixed(0)}%</span>
-            <span>➔</span>
-          </div>
-
-          <div class="exec-funnel-step step-highlight">
-            <div class="exec-funnel-step-label" style="color:var(--emerald-d)">4. Matrículas Realizadas</div>
-            <div class="exec-funnel-step-val" style="color:var(--emerald-d)">${fN(totalMatriculas)}</div>
-            <div class="exec-funnel-step-sub">${totalAtivas} ativas · ${countCancelados} canceladas</div>
-          </div>
-
-          <div class="exec-funnel-arrow">
-            <span class="exec-funnel-rate">${((alunosPagantes/totalMatriculas)*100).toFixed(1)}%</span>
-            <span>➔</span>
-          </div>
-
-          <div class="exec-funnel-step step-highlight">
-            <div class="exec-funnel-step-label" style="color:var(--emerald-d)">5. Alunos Pagantes</div>
-            <div class="exec-funnel-step-val" style="color:var(--emerald-d)">${fN(alunosPagantes)}</div>
-            <div class="exec-funnel-step-sub">Com fatura paga confirmada</div>
+          <div class="exec-fstep" style="border-color:var(--emerald-d); background:rgba(5,150,105,0.03)">
+            <div class="exec-fstep-pill" style="color:var(--emerald-d)">5. Alunos Pagantes</div>
+            <div class="exec-fstep-val" style="color:var(--emerald-d)">${fN(totalAlunosPagantes)}</div>
+            <div class="exec-fstep-desc" style="color:var(--muted)">
+              Com fatura paga confirmada (${((totalAlunosPagantes/Math.max(1, totalMatriculas))*100).toFixed(1)}% da base)
+            </div>
           </div>
         </div>
       </div>
@@ -4013,19 +4069,18 @@ function drawExecView(force) {
             <div class="exec-sec-num">G4</div>
             <div>
               <h3 class="exec-sec-title">GRUPO 4 — BASE &amp; RECEITA RECORRENTE</h3>
-              <div class="exec-sec-sub">Evolução de alunos matriculados ativos, retenção de carteira, inadimplência e adimplência.</div>
+              <div class="exec-sec-sub">Evolução de alunos matriculados ativos vigentes, retenção, taxa de churn e inadimplência da carteira recorrente.</div>
             </div>
           </div>
-          <button class="btn-exec-link" onclick="selectTab('prog')">Ver Lista de Alunos →</button>
         </div>
         <div class="exec-grid-4">
           <div class="exec-card">
             <div class="exec-card-top">
-              <span class="exec-card-label">Matrículas Ativas</span>
-              <span class="exec-pill pill-green">${taxaRetencao}% Retenção</span>
+              <span class="exec-card-label">Matrículas Ativas Vigentes</span>
+              <span class="exec-pill pill-green">${taxaRetencaoVigente}% Retenção</span>
             </div>
-            <div class="exec-card-val" style="color:var(--emerald-d)">${fN(totalAtivas)}</div>
-            <div class="exec-card-sub">De um total de ${fN(totalMatriculas)} contratos cadastrados</div>
+            <div class="exec-card-val" style="color:var(--emerald-d)">${fN(totalVigentes)}</div>
+            <div class="exec-card-sub">De um total de ${fN(totalMatriculas)} contratos (${fN(totalConcluidas)} concluídos · ${fN(totalCanceladas)} cancelados)</div>
           </div>
 
           <div class="exec-card">
@@ -4033,7 +4088,7 @@ function drawExecView(force) {
               <span class="exec-card-label">Cancelamentos (Churn)</span>
               <span class="exec-pill pill-red">${taxaChurn}% Churn</span>
             </div>
-            <div class="exec-card-val" style="color:#DC2626">${fN(countCancelados)}</div>
+            <div class="exec-card-val" style="color:#DC2626">${fN(totalCanceladas)}</div>
             <div class="exec-card-sub">Contratos rescindidos ou cancelados nas plataformas</div>
           </div>
 
@@ -4052,19 +4107,19 @@ function drawExecView(force) {
               <span class="exec-pill pill-green">Excelente</span>
             </div>
             <div class="exec-card-val" style="color:var(--emerald-d)">${taxaAdimplencia}%</div>
-            <div class="exec-card-sub">Índice de pagamento em dia na carteira ativa</div>
+            <div class="exec-card-sub">Índice de pagamento em dia na carteira ativa vigente</div>
           </div>
         </div>
       </div>
 
-      <!-- GRUPO 5: ENGAJAMENTO E RETENÇÃO -->
+      <!-- GRUPO 5: ENGAJAMENTO E RETENÇÃO (BASE ATIVA VIGENTE) -->
       <div class="exec-sec">
         <div class="exec-sec-head">
           <div class="exec-sec-title-wrap">
             <div class="exec-sec-num">G5</div>
             <div>
-              <h3 class="exec-sec-title">GRUPO 5 — ENGAJAMENTO &amp; RETENÇÃO</h3>
-              <div class="exec-sec-sub">Alunos ativos e engajados, monitoramento de risco e inatividade severa (abandono).</div>
+              <h3 class="exec-sec-title">GRUPO 5 — ENGAJAMENTO &amp; RETENÇÃO (BASE VIGENTE)</h3>
+              <div class="exec-sec-sub">Alunos ativos vigentes e engajados, monitoramento de risco e inatividade severa (abandono).</div>
             </div>
           </div>
           <button class="btn-exec-link" onclick="selectTab('ret')">Ver Matriz de Retenção →</button>
@@ -4073,25 +4128,25 @@ function drawExecView(force) {
           <div class="exec-card">
             <div class="exec-card-top">
               <span class="exec-card-label">Alunos Engajados</span>
-              <span class="exec-pill pill-green">${((countAtivos/Math.max(1, totalAtivas))*100).toFixed(1)}%</span>
+              <span class="exec-pill pill-green">${((countEngajados/Math.max(1, totalVigentes))*100).toFixed(1)}%</span>
             </div>
-            <div class="exec-card-val" style="color:var(--emerald-d)">${fN(countAtivos)}</div>
+            <div class="exec-card-val" style="color:var(--emerald-d)">${fN(countEngajados)}</div>
             <div class="exec-card-sub">Alunos ativos com aulas e frequência em dia</div>
           </div>
 
           <div class="exec-card">
             <div class="exec-card-top">
               <span class="exec-card-label">Alunos em Risco</span>
-              <span class="exec-pill pill-amber">${((countEmRisco/Math.max(1, totalAtivas))*100).toFixed(1)}%</span>
+              <span class="exec-pill pill-amber">${((countEmRisco/Math.max(1, totalVigentes))*100).toFixed(1)}%</span>
             </div>
             <div class="exec-card-val" style="color:#D97706">${fN(countEmRisco)}</div>
-            <div class="exec-card-sub">Quebra recente de cadência (alerta prioritário)</div>
+            <div class="exec-card-sub">Quebra recente de cadência na base vigente (alerta)</div>
           </div>
 
           <div class="exec-card">
             <div class="exec-card-top">
               <span class="exec-card-label">Abandono / Inativos</span>
-              <span class="exec-pill pill-red">${((countAbandonou/Math.max(1, totalAtivas))*100).toFixed(1)}%</span>
+              <span class="exec-pill pill-red">${((countAbandonou/Math.max(1, totalVigentes))*100).toFixed(1)}%</span>
             </div>
             <div class="exec-card-val" style="color:#DC2626">${fN(countAbandonou)}</div>
             <div class="exec-card-sub">Inatividade severa (&gt;14 ou &gt;30 dias sem acesso)</div>
@@ -4100,7 +4155,7 @@ function drawExecView(force) {
           <div class="exec-card">
             <div class="exec-card-top">
               <span class="exec-card-label">Nunca Acessaram</span>
-              <span class="exec-pill pill-red">${((countNuncaAcessou/Math.max(1, totalAtivas))*100).toFixed(1)}%</span>
+              <span class="exec-pill pill-red">${((countNuncaAcessou/Math.max(1, totalVigentes))*100).toFixed(1)}%</span>
             </div>
             <div class="exec-card-val" style="color:#DC2626">${fN(countNuncaAcessou)}</div>
             <div class="exec-card-sub">${fN(totalReproducoes)} reproduções de aulas · ${fN(totalLogins)} logins</div>
@@ -4115,7 +4170,7 @@ function drawExecView(force) {
             <div class="exec-sec-num">G6</div>
             <div>
               <h3 class="exec-sec-title">GRUPO 6 — VISÃO POR CURSO</h3>
-              <div class="exec-sec-sub">Desempenho por especialidade com alunos ativos, em risco, abandono, cancelamento, MRR, projeção e inadimplência.</div>
+              <div class="exec-sec-sub">Desempenho por especialidade com alunos vigentes, em risco, abandono, cancelamento, MRR, projeção e inadimplência.</div>
             </div>
           </div>
           <button class="btn-exec-link" onclick="selectTab('home')">Ver Panorama Completo →</button>
@@ -4125,7 +4180,8 @@ function drawExecView(force) {
             <thead>
               <tr style="border-bottom:2px solid var(--line); color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:0.04em">
                 <th style="padding:10px 12px">Especialidade / Curso</th>
-                <th style="padding:10px 8px; text-align:center">Ativos</th>
+                <th style="padding:10px 8px; text-align:center">Vigentes</th>
+                <th style="padding:10px 8px; text-align:center">Engajados</th>
                 <th style="padding:10px 8px; text-align:center">Em Risco</th>
                 <th style="padding:10px 8px; text-align:center">Abandono</th>
                 <th style="padding:10px 8px; text-align:center">Cancelados</th>
@@ -4147,6 +4203,9 @@ function drawExecView(force) {
                     <tr style="border-bottom:1px solid var(--line2); transition:background 0.15s" onmouseover="this.style.background='var(--paper)'" onmouseout="this.style.background=''">
                       <td style="padding:12px; font-weight:700; color:var(--ink)">
                         <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:300px" title="${c.curso}">${c.curso}</div>
+                      </td>
+                      <td style="padding:12px 8px; text-align:center">
+                        <span class="exec-pill pill-blue" style="font-weight:700">${c.vigentes}</span>
                       </td>
                       <td style="padding:12px 8px; text-align:center">
                         <span class="exec-pill pill-green" style="font-weight:700">${c.ativos}</span>
@@ -4188,15 +4247,15 @@ function drawExecView(force) {
             <div class="exec-alert-icon">⚠️</div>
             <div>
               <div class="exec-alert-title">Cobrança de Inadimplência (${qtdAtrasoTotal} faturas / ${fM(atrasoTotal)})</div>
-              <div class="exec-alert-desc">Existem R$ 206.707,15 pendentes em atraso entre Vindi e Asaas. Recomenda-se acionar régua de renegociação automatizada para os 170 títulos vencidos.</div>
+              <div class="exec-alert-desc">Existem faturas pendentes em atraso entre Vindi e Asaas. Recomenda-se acionar régua de renegociação automatizada para os títulos vencidos.</div>
             </div>
           </div>
 
           <div class="exec-alert alert-atencao">
             <div class="exec-alert-icon">🔔</div>
             <div>
-              <div class="exec-alert-title">Alunos em Risco &amp; Abandono (${fN(countEmRisco + countAbandonou)} alunos · ${(((countEmRisco + countAbandonou)/Math.max(1, totalAtivas))*100).toFixed(1)}%)</div>
-              <div class="exec-alert-desc">Identificados ${countEmRisco} alunos em risco iminente por quebra recente de cadência e ${countAbandonou} em inatividade severa. Recomenda-se ação pedagógica segmentada via WhatsApp.</div>
+              <div class="exec-alert-title">Alunos em Risco &amp; Abandono na Base Vigente (${fN(countEmRisco + countAbandonou)} alunos · ${(((countEmRisco + countAbandonou)/Math.max(1, totalVigentes))*100).toFixed(1)}%)</div>
+              <div class="exec-alert-desc">Identificados ${countEmRisco} alunos em risco iminente por quebra recente de cadência e ${countAbandonou} em inatividade severa entre os matriculados vigentes. Recomenda-se ação pedagógica segmentada via WhatsApp.</div>
             </div>
           </div>
 
