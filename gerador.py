@@ -1364,6 +1364,9 @@ def main():
         vindi_res = get_vindi_data(force_reload=False)
         vindi_map = vindi_res.get('data', {}) if isinstance(vindi_res, dict) and 'data' in vindi_res else vindi_res
         financeiro_data = vindi_res.get('financeiro', {}) if isinstance(vindi_res, dict) else {}
+        if isinstance(vindi_res, dict):
+            financeiro_data['subscriptions'] = vindi_res.get('subscriptions', [])
+            financeiro_data['data'] = vindi_res.get('data', {})
         
         # Link Vindi to existing students (matching by email + course first)
         for s in students:
@@ -1477,6 +1480,8 @@ def main():
         asaas_res = get_asaas_data(force_reload=True)
         asaas_map = asaas_res.get('data', {}) if isinstance(asaas_res, dict) else {}
         asaas_financeiro = asaas_res.get('financeiro', {}) if isinstance(asaas_res, dict) else {}
+        if isinstance(asaas_res, dict):
+            asaas_financeiro['data'] = asaas_res.get('data', {})
 
         # 1. Vincular aos estudantes existentes por e-mail (resolvido 100% pela API) ou ID
         for s in students:

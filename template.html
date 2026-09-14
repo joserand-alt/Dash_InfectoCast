@@ -3907,7 +3907,7 @@ function drawExecView(force) {
     });
 
     // 3. Assinaturas Vindi (MRR, A Vencer no Mês e Projeção 30d D+30 por Curso)
-    const vSubsList = (vindi.subscriptions || []);
+    const vSubsList = (vindi.subscriptions || (DATA && DATA.financeiro && DATA.financeiro.subscriptions) || []);
     vSubsList.forEach(sub => {
         if (sub.status_financeiro === 'adimplente') {
             const em = (sub.customer_email || '').toString().toLowerCase().trim();
