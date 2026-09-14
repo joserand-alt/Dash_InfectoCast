@@ -1,5 +1,5 @@
 {
-  "cached_at": "2026-09-14T10:16:14.095796",
+  "cached_at": "2026-09-14T10:38:20.650866",
   "total_matched": 807,
   "data": {
     "sara.grigna@gmail.com": {
@@ -236289,13 +236289,15 @@
       "qtd_em_atraso": 158,
       "mrr_ativo": 221982.43,
       "mrr_ativo_fmt": "R$ 221.982,43",
-      "projecao_30d": 123254.73,
-      "projecao_30d_fmt": "R$ 123.254,73",
+      "projecao_30d": 220594.43,
+      "projecao_30d_fmt": "R$ 220.594,43",
       "projecao_60d": 220594.43,
       "projecao_60d_fmt": "R$ 220.594,43",
       "projecao_12m": 2663789.16,
       "projecao_12m_fmt": "R$ 2.663.789,16",
-      "taxa_adimplencia": 96
+      "taxa_adimplencia": 96,
+      "a_vencer_mes_atual": 123254.73,
+      "a_vencer_mes_atual_fmt": "R$ 123.254,73"
     },
     "historico_mensal": [
       {

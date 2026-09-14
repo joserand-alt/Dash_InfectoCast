@@ -1,3 +1,5 @@
+from datetime import datetime, date, timedelta
+import calendar
 import re
 
 import os
@@ -505,44 +507,51 @@ def _process(customers, payments):
 
         projecao_mensal.append({"mes":ym,"label":f"{meses_pt.get(m,m)}/{y[2:]}","previsto":round(projecao_map[ym],2),"realizado":round(realizado,2)})
 
+    mrr = sum(p.get("previsto", 0) for p in projecao_mensal[:2])
 
+    # Calculo preciso Asaas: a vencer no mes vs projecao 30 dias (D+30)
+    today = now.date()
+    end_of_month = date(today.year, today.month, calendar.monthrange(today.year, today.month)[1])
+    d30_date = today + timedelta(days=30)
 
-    proj_30d = projecao_mensal[0]["previsto"] if projecao_mensal else 0.0
+    a_vencer_mes_atual = 0.0
+    proj_30d = 0.0
+
+    for p in payments:
+        if p.get("customer") not in paid_customer_ids or p.get("id") not in valid_payment_ids:
+            continue
+        if p.get("status") == "PENDING":
+            due_dt = _parse_date(p.get("dueDate") or "")
+            if due_dt:
+                val = float(p.get("value") or 0)
+                if today <= due_dt.date() <= end_of_month:
+                    a_vencer_mes_atual += val
+                if today <= due_dt.date() <= d30_date:
+                    proj_30d += val
+
+    if a_vencer_mes_atual == 0.0 and len(projecao_mensal) > 0:
+        a_vencer_mes_atual = projecao_mensal[0]['previsto']
+    if proj_30d == 0.0:
+        proj_30d = mrr
 
     total_fat = total_recebido + total_em_atraso
-
     taxa_adimp = round(total_recebido/total_fat*100) if total_fat>0 else 100
-
-    mrr = sum(p.get("previsto",0) for p in projecao_mensal[:2])
 
     def _fmt(v): return f"R$ {v:,.2f}".replace(",","X").replace(".",",").replace("X",".")
 
-
-
     financeiro_global = {
-
         "fonte": "Asaas",
-
         "kpis": {
-
             "total_recebido": round(total_recebido,2), "total_recebido_fmt": _fmt(total_recebido),
-
             "total_faturas_pagas": total_pagas,
-
             "recebido_mes_atual": round(recebido_mes,2), "recebido_mes_fmt": _fmt(recebido_mes),
-
+            "a_vencer_mes_atual": round(a_vencer_mes_atual,2), "a_vencer_mes_atual_fmt": _fmt(a_vencer_mes_atual),
             "total_em_atraso": round(total_em_atraso,2), "total_em_atraso_fmt": _fmt(total_em_atraso),
-
             "qtd_em_atraso": qtd_em_atraso,
-
             "mrr_ativo": round(mrr,2), "mrr_ativo_fmt": _fmt(mrr),
-
             "projecao_30d": round(proj_30d,2), "projecao_30d_fmt": _fmt(proj_30d),
-
             "taxa_adimplencia": taxa_adimp,
-
         },
-
         "historico_mensal": historico_mensal,
 
         "projecao_mensal": projecao_mensal,

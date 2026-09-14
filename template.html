@@ -3937,7 +3937,9 @@ function drawExecView(force) {
     const aKpis = asaas.kpis || {};
 
     const recRealizadaTotal = (Number(vKpis.total_recebido) || 0) + (Number(aKpis.total_recebido) || 0);
-    const recMesAtual = (Number(vKpis.recebido_mes_atual) || 0) + (Number(aKpis.recebido_mes_atual) || 0);
+    const recMesAtual = (Number(vKpis.recebido_mes_atual) || 0) + (Number(aKpis.recebido_mes_atual) || Number(aKpis.recebido_mes) || 0);
+    const aVencerMesVigente = (Number(vKpis.a_vencer_mes_atual) || Number(vKpis.projecao_mensal?.[0]?.previsto) || 0) + (Number(aKpis.a_vencer_mes_atual) || Number(aKpis.projecao_mensal?.[0]?.previsto) || 0);
+    const totalPrevistoMesVigente = recMesAtual + aVencerMesVigente;
     const mrrConsolidado = (Number(vKpis.mrr_ativo) || 0) + (Number(aKpis.mrr_ativo) || 0);
     const proj30d = (Number(vKpis.projecao_30d) || 0) + (Number(aKpis.projecao_30d) || 0);
     const proj12m = (Number(vKpis.projecao_12m) || 2663789.16);
@@ -4020,7 +4022,7 @@ function drawExecView(force) {
             </div>
             <div class="exec-card-val" style="color:var(--emerald-d)">${fM(totalPrevistoMesVigente)}</div>
             <div class="exec-card-sub">
-              <b>${fM(recMesAtual)}</b> realizado (${pctRealizadoMes}%) + <b>${fM(proj30d)}</b> a vencer em ${labelMesVigente}
+              <b>${fM(recMesAtual)}</b> realizado (${pctRealizadoMes}%) + <b>${fM(aVencerMesVigente)}</b> a vencer em ${labelMesVigente}
             </div>
           </div>
 
@@ -4061,10 +4063,10 @@ function drawExecView(force) {
           <div class="exec-card" style="background:rgba(2,132,199,0.02); border-left:3px solid #0284c7">
             <div class="exec-card-top">
               <span class="exec-card-label">Projeção 1 Mês (30 dias)</span>
-              <span class="exec-pill pill-blue">Ciclo Mensal</span>
+              <span class="exec-pill pill-blue">Próximos 30d (D+30)</span>
             </div>
-            <div class="exec-card-val" style="color:#0284c7">${fM(mrrConsolidado)}</div>
-            <div class="exec-card-sub">Faturamento projetado de 1 ciclo mensal completo da carteira ativa (MRR)</div>
+            <div class="exec-card-val" style="color:#0284c7">${fM(proj30d)}</div>
+            <div class="exec-card-sub">Faturas e parcelas agendadas para os próximos 30 dias corridos (D+30)</div>
           </div>
 
           <!-- CARD 6: PROJEÇÃO 3 MESES (TRIMESTRE) -->

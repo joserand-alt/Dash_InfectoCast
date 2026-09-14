@@ -1,3 +1,4 @@
+import calendar
 # -*- coding: utf-8 -*-
 """
 Vindi API Service
@@ -494,7 +495,37 @@ def get_vindi_data(force_reload=False):
             "previsto": round(projecao_mensal_map[ym], 2)
         })
 
-    proj_30d = projecao_mensal[0]['previsto'] if len(projecao_mensal) > 0 else mrr_ativo_total
+    # Calculo preciso: a vencer no mes vigente vs projecao 30 dias corridos (D+30)
+    today = now.date()
+    end_of_month = date(today.year, today.month, calendar.monthrange(today.year, today.month)[1])
+    d30_date = today + timedelta(days=30)
+
+    a_vencer_mes_atual = 0.0
+    proj_30d = 0.0
+
+    for sub_item in subscriptions_list:
+        if sub_item.get('status_financeiro') == 'adimplente':
+            price_val = float(sub_item.get('valor_parcela') or 0.0)
+            prox_fmt = sub_item.get('proximo_vencimento')
+            if prox_fmt:
+                try:
+                    p_dt = datetime.strptime(prox_fmt, '%d/%m/%Y').date()
+                    if today <= p_dt <= end_of_month:
+                        a_vencer_mes_atual += price_val
+                    if today <= p_dt <= d30_date:
+                        proj_30d += price_val
+                except:
+                    a_vencer_mes_atual += price_val
+                    proj_30d += price_val
+            else:
+                a_vencer_mes_atual += price_val
+                proj_30d += price_val
+
+    if a_vencer_mes_atual == 0.0 and len(projecao_mensal) > 0:
+        a_vencer_mes_atual = projecao_mensal[0]['previsto']
+    if proj_30d == 0.0:
+        proj_30d = mrr_ativo_total
+
     proj_60d = sum(p['previsto'] for p in projecao_mensal[:2]) if len(projecao_mensal) >= 2 else (mrr_ativo_total * 2)
     proj_12m = mrr_ativo_total * 12
     total_faturado = total_recebido + total_em_atraso
@@ -507,6 +538,8 @@ def get_vindi_data(force_reload=False):
             "total_faturas_pagas": total_faturas_pagas,
             "recebido_mes_atual": round(recebido_mes_atual, 2),
             "recebido_mes_atual_fmt": f"R$ {recebido_mes_atual:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+            "a_vencer_mes_atual": round(a_vencer_mes_atual, 2),
+            "a_vencer_mes_atual_fmt": f"R$ {a_vencer_mes_atual:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
             "total_em_atraso": round(total_em_atraso, 2),
             "total_em_atraso_fmt": f"R$ {total_em_atraso:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
             "qtd_em_atraso": qtd_em_atraso,
