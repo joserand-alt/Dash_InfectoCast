@@ -3794,16 +3794,11 @@ function computeUnifiedFinancialDataset(gatewayFilter) {
         });
     }
 
-    // 4. Clientes e Carnês Asaas
+    // 4. Clientes e Carnês Asaas (MRR e Projeções Futuras)
     if (!gatewayFilter || gatewayFilter === 'all' || gatewayFilter === 'asaas') {
-        Object.values(aData).forEach(stInfo => {
-            if (stInfo.status_financeiro === 'adimplente') {
-                const em = (stInfo.customer_email || stInfo.email || '').toString().toLowerCase().trim();
-                const cm = getCourse(stInfo.curso || emailToCourse[em]);
-                const price = Number(stInfo.valor_parcela || stInfo.mrr) || 0;
-                cm.mrr += price;
-            }
-        });
+        const asaasMrrGlobal = Number(asaas.kpis?.mrr_ativo) || 0;
+        const asaasCoursePending = {};
+        let asaasTotalPending = 0;
 
         aFaturas.forEach(f => {
             const st = (f.status || '').toLowerCase();
@@ -3818,10 +3813,25 @@ function computeUnifiedFinancialDataset(gatewayFilter) {
                     const diffMeses = (dObj.getFullYear() - hoje.getFullYear()) * 12 + (dObj.getMonth() - hoje.getMonth());
                     if (diffMeses >= 0 && diffMeses < 18) {
                         cm.projecao_18m_sim[diffMeses] += val;
+                        if (diffMeses === 0 || diffMeses === 1) {
+                            asaasCoursePending[cm.curso] = (asaasCoursePending[cm.curso] || 0) + val;
+                            asaasTotalPending += val;
+                        }
                     }
                 }
             }
         });
+
+        if (asaasTotalPending > 0 && asaasMrrGlobal > 0) {
+            Object.entries(asaasCoursePending).forEach(([cName, pVal]) => {
+                const cm = getCourse(cName);
+                const prop = pVal / asaasTotalPending;
+                cm.mrr += (asaasMrrGlobal * prop);
+            });
+        } else if (asaasMrrGlobal > 0) {
+            const cm = getCourse('PLATAFORMA GERAL');
+            cm.mrr += asaasMrrGlobal;
+        }
     }
 
     // Timeline de 18 meses futuros
@@ -4393,22 +4403,24 @@ function drawExecView(force) {
         globalProj12m += cm.proj_12m;
     });
 
-    // Totalizadores Consolidados Financeiros
+    // Totalizadores Consolidados Financeiros Unificados
     const vKpis = vindi.kpis || {};
     const aKpis = asaas.kpis || {};
+    const finUnifiedGlobal = computeUnifiedFinancialDataset('all');
+    const uKpis = finUnifiedGlobal.global.kpis || {};
 
-    const recRealizadaTotal = (Number(vKpis.total_recebido) || 0) + (Number(aKpis.total_recebido) || 0);
-    const recMesAtual = (Number(vKpis.recebido_mes_atual) || 0) + (Number(aKpis.recebido_mes_atual) || Number(aKpis.recebido_mes) || 0);
-    const aVencerMesVigente = (Number(vKpis.a_vencer_mes_atual) || Number(vKpis.projecao_mensal?.[0]?.previsto) || 0) + (Number(aKpis.a_vencer_mes_atual) || Number(aKpis.projecao_mensal?.[0]?.previsto) || 0);
-    const totalPrevistoMesVigente = recMesAtual + aVencerMesVigente;
-    const mrrConsolidado = (Number(vKpis.mrr_ativo) || 0) + (Number(aKpis.mrr_ativo) || 0);
-    const proj30d = (Number(vKpis.projecao_30d) || 0) + (Number(aKpis.projecao_30d) || 0);
-    const proj3mConsolidada = globalProj3m > 0 ? globalProj3m : mrrConsolidado * 3;
-    const proj6mConsolidada = globalProj6m > 0 ? globalProj6m : mrrConsolidado * 6;
-    const proj12m = globalProj12m > 0 ? globalProj12m : mrrConsolidado * 12;
-    const atrasoTotal = (Number(vKpis.total_em_atraso) || 0) + (Number(aKpis.total_em_atraso) || 0);
-    const qtdAtrasoTotal = (Number(vKpis.qtd_em_atraso) || 0) + (Number(aKpis.qtd_em_atraso) || 0);
-    const taxaAdimplencia = vKpis.taxa_adimplencia || 96;
+    const recRealizadaTotal = uKpis.total_recebido || 0;
+    const recMesAtual = uKpis.recebido_mes_atual || 0;
+    const aVencerMesVigente = uKpis.a_vencer_mes_atual || 0;
+    const totalPrevistoMesVigente = uKpis.previsto_mes_vigente || (recMesAtual + aVencerMesVigente);
+    const mrrConsolidado = uKpis.mrr_ativo || 0;
+    const proj30d = uKpis.projecao_30d || 0;
+    const proj3mConsolidada = uKpis.proj_3m || (mrrConsolidado * 3);
+    const proj6mConsolidada = uKpis.proj_6m || (mrrConsolidado * 6);
+    const proj12m = uKpis.proj_12m || (mrrConsolidado * 12);
+    const atrasoTotal = uKpis.total_em_atraso || 0;
+    const qtdAtrasoTotal = uKpis.qtd_em_atraso || 0;
+    const taxaAdimplencia = uKpis.taxa_adimplencia || 96;
 
     // Cálculo Dinâmico do Mês Vigente e Mês Anterior (MoM)
     const vHist = (vindi.historico_mensal || []);
