@@ -1092,104 +1092,6 @@ footer{padding:30px 0 40px;color:var(--muted2);font-size:11.5px;text-align:cente
   </section>
 
   <!-- PANEL 7: API LOGS -->
-  <section class="panel" id="p-apilogs">
-    <div class="sec-head">
-      <h2>Consultar Logs de Alunos via API InfectoCast Academy</h2>
-      <p>Consulte diretamente o histórico de ações e logs da InfectoCast Academy por <b>ID do Aluno</b> com suporte a filtro por intervalo de datas. Integração em tempo real via <code>https://academy.infectocast.com.br/api</code>.</p>
-    </div>
-
-    <!-- Filtros de Busca na API -->
-    <div class="card" style="margin-bottom: 20px; padding: 18px 20px;">
-      <form id="api-log-form" onsubmit="consultApiLogs(event)" style="display:flex; gap:14px; align-items:flex-end; flex-wrap:wrap">
-        <div>
-          <label style="display:block; font-size:10.5px; font-weight:700; color:var(--muted); margin-bottom:5px; text-transform:uppercase; letter-spacing:.05em">ID do Aluno</label>
-          <input type="text" id="api-aluno-id" value="100046" placeholder="Ex: 100046" style="padding:8px 12px; border:1px solid var(--line); border-radius:8px; font-family:var(--disp); font-size:13px; font-weight:600; min-width:140px; color:var(--ink)">
-        </div>
-        <div>
-          <label style="display:block; font-size:10.5px; font-weight:700; color:var(--muted); margin-bottom:5px; text-transform:uppercase; letter-spacing:.05em">Data Início (Query)</label>
-          <input type="date" id="api-date-start" style="padding:7px 12px; border:1px solid var(--line); border-radius:8px; font-family:var(--body); font-size:12.5px; color:var(--ink)">
-        </div>
-        <div>
-          <label style="display:block; font-size:10.5px; font-weight:700; color:var(--muted); margin-bottom:5px; text-transform:uppercase; letter-spacing:.05em">Data Fim (Query)</label>
-          <input type="date" id="api-date-end" style="padding:7px 12px; border:1px solid var(--line); border-radius:8px; font-family:var(--body); font-size:12.5px; color:var(--ink)">
-        </div>
-        <div>
-          <button type="submit" style="padding:9px 18px; background:var(--emerald); color:#fff; border:none; border-radius:8px; font-family:var(--disp); font-size:13px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(18,161,122,.25)">
-            <span>⚡</span> Consultar API
-          </button>
-        </div>
-        <div style="margin-left:auto; display:flex; gap:6px; flex-wrap:wrap">
-          <button type="button" onclick="setApiPreset('7d')" style="padding:6px 10px; background:var(--paper); border:1px solid var(--line); border-radius:6px; font-size:11px; font-family:var(--disp); font-weight:500; cursor:pointer">7 dias</button>
-          <button type="button" onclick="setApiPreset('30d')" style="padding:6px 10px; background:var(--paper); border:1px solid var(--line); border-radius:6px; font-size:11px; font-family:var(--disp); font-weight:500; cursor:pointer">30 dias</button>
-          <button type="button" onclick="setApiPreset('2026')" style="padding:6px 10px; background:var(--emerald-w); color:var(--emerald-d); border:1px solid #BFE3D8; border-radius:6px; font-size:11px; font-family:var(--disp); font-weight:600; cursor:pointer">Ano 2026</button>
-          <button type="button" onclick="setApiPreset('clear')" style="padding:6px 10px; background:var(--coral-w); color:var(--coral); border:1px solid #F8C8C8; border-radius:6px; font-size:11px; font-family:var(--disp); font-weight:600; cursor:pointer">Limpar Datas</button>
-        </div>
-      </form>
-    </div>
-
-    <!-- Header do Aluno retornado pela API -->
-    <div id="api-aluno-header" style="margin-bottom: 20px;"></div>
-
-    <!-- KPIs do Aluno da API -->
-    <div class="kpis" id="api-kpis" style="margin-bottom: 20px; grid-template-columns: repeat(4, 1fr);">
-      <div class="kpi">
-        <div class="k-lab"><i class="k-dot" style="background:var(--emerald)"></i>Total Registrado</div>
-        <div class="k-val" id="api-kpi-total" style="color:var(--emerald)">–</div>
-        <div class="k-sub">Eventos na API</div>
-      </div>
-      <div class="kpi">
-        <div class="k-lab"><i class="k-dot" style="background:var(--sky)"></i>Logins Web</div>
-        <div class="k-val" id="api-kpi-logins" style="color:var(--sky)">–</div>
-        <div class="k-sub">Acessos à plataforma</div>
-      </div>
-      <div class="kpi">
-        <div class="k-lab"><i class="k-dot" style="background:var(--violet)"></i>Downloads PDF</div>
-        <div class="k-val" id="api-kpi-downloads" style="color:var(--violet)">–</div>
-        <div class="k-sub">Materiais baixados</div>
-      </div>
-      <div class="kpi">
-        <div class="k-lab"><i class="k-dot" style="background:var(--amber)"></i>Última Atividade</div>
-        <div class="k-val" id="api-kpi-last" style="font-size:15px; margin-top:12px; color:var(--ink)">–</div>
-        <div class="k-sub">Data/hora mais recente</div>
-      </div>
-    </div>
-
-    <!-- Tabela de Logs da API -->
-    <div class="card" style="padding:0; overflow:hidden">
-      <div style="padding: 12px 18px; border-bottom: 1px solid var(--line); display:flex; justify-content:space-between; align-items:center; background:var(--paper); flex-wrap:wrap; gap:10px">
-        <div style="display:flex; gap:12px; align-items:center">
-          <b style="font-family:var(--disp); font-size:13.5px">Lista de Eventos da API</b>
-          <select id="api-event-filter" onchange="renderApiLogsTable()" style="padding:4px 10px; border-radius:6px; border:1px solid var(--line); font-size:11.5px; font-family:var(--body)">
-            <option value="ALL">Todos os Eventos</option>
-          </select>
-          <input type="text" id="api-text-filter" oninput="renderApiLogsTable()" placeholder="Buscar nos logs..." style="padding:4px 10px; border-radius:6px; border:1px solid var(--line); font-size:11.5px; font-family:var(--body); width:180px">
-        </div>
-        <div style="display:flex; gap:10px; align-items:center">
-          <span id="api-log-count" style="font-size:12px; color:var(--muted)">–</span>
-          <button type="button" onclick="exportApiLogsToCSV()" style="padding:5px 12px; background:#fff; border:1px solid var(--line); border-radius:6px; font-size:11.5px; font-family:var(--disp); font-weight:600; cursor:pointer">📄 Exportar CSV</button>
-        </div>
-      </div>
-      <div class="tbl-wrap" style="max-height: 520px; overflow-y:auto">
-        <table style="width:100%">
-          <thead>
-            <tr style="background:var(--paper)">
-              <th style="padding:10px 14px; font-size:11px; text-transform:uppercase; color:var(--muted); text-align:left">Data &amp; Hora</th>
-              <th style="padding:10px 14px; font-size:11px; text-transform:uppercase; color:var(--muted); text-align:left">Ação / Evento</th>
-              <th style="padding:10px 14px; font-size:11px; text-transform:uppercase; color:var(--muted); text-align:left">Item / Objeto Modificado</th>
-              <th style="padding:10px 14px; font-size:11px; text-transform:uppercase; color:var(--muted); text-align:left">Complemento</th>
-            </tr>
-          </thead>
-          <tbody id="api-log-tbody">
-            <tr>
-              <td colspan="4" style="padding:40px; text-align:center; color:var(--muted)">
-                Clique no botão <b>⚡ Consultar API</b> acima para buscar os logs do aluno.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
 
   <!-- PANEL: GESTÃO FINANCEIRA & FLUXO DE CAIXA -->
   <section class="panel" id="p-fin">
@@ -2542,25 +2444,31 @@ function selectTab(pId) {
     $$('.tab').forEach(t => t.classList.toggle('on', t.dataset.p === pId));
     $$('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + pId));
 
-    if (pId === 'exec') {
-        drawExecView(true);
+    // Exibe/oculta barra de KPIs do cabeçalho de acordo com a aba
+    if (pId === 'exec' || pId === 'home' || pId === 'fin' || pId === 'funil') {
         if ($('#kpis')) $('#kpis').style.display = 'none';
     } else {
         if ($('#kpis')) $('#kpis').style.display = 'grid';
     }
 
+    if (pId === 'exec') drawExecView(true);
     if (pId === 'home') drawHome(true);
-    if (pId === 'prog') renderRows();
-    if (pId === 'tl') drawTimeline(true);
+    if (pId === 'prog') {
+        buildHead();
+        statusChips();
+        renderRows();
+    }
     if (pId === 'mod') renderModules();
-    if (pId === 'origem') drawOrigem(true);
-    if (pId === 'fin') drawFinanceiro(true);
+    if (pId === 'ret') renderRetention();
+    if (pId === 'tl') drawTimeline(true);
     if (pId === 'funil') {
         drawFunil(true);
         if ($('.filters')) $('.filters').style.display = 'none';
     } else {
         if ($('.filters')) $('.filters').style.display = 'flex';
     }
+    if (pId === 'origem') drawOrigem(true);
+    if (pId === 'fin') drawFinanceiro(true);
 }
 window.selectTab = selectTab;
 window.switchTab = selectTab;
@@ -2773,31 +2681,50 @@ function drawTimeline(force){
 }
 
 // MODULE ENGAGEMENT
+function setModCourse(cName) {
+    FILTER.curso = cName;
+    const sel = $('#filter-curso');
+    if (sel) sel.value = cName;
+    renderModules();
+}
+
 function renderModules() {
-    const c = FILTER.curso;
+    let c = FILTER.curso;
     const view = $('#modcard');
-    if (c === 'all') {
-        view.innerHTML = '<div style="padding:20px; text-align:center; color:var(--muted)">Por favor, selecione um curso específico no filtro acima para ver os módulos.</div>';
-        return;
+    if (!view) return;
+
+    const curric = DATA.curriculum || {};
+    const availableCourses = Object.keys(curric).sort((a, b) => {
+        const aPos = a.startsWith('POS') || a.startsWith('PÓS');
+        const bPos = b.startsWith('POS') || b.startsWith('PÓS');
+        if (aPos && !bPos) return -1;
+        if (!aPos && bPos) return 1;
+        return a.localeCompare(b);
+    });
+
+    if (c === 'all' && availableCourses.length > 0) {
+        c = availableCourses[0];
     }
     
-    let mods = DATA.curriculum[c];
-    if (!mods) {
+    let mods = curric[c];
+    if (!mods || mods.length === 0) {
         view.innerHTML = '<div style="padding:20px; text-align:center; color:var(--muted)">Nenhum módulo encontrado para este curso.</div>';
         return;
     }
-    
-    // Calculate max completion for scaling bars
-    let maxIni = 1;
-    mods.forEach(m => {
-        m.aulas.forEach(a => {
-            const aNorm = a.nome ? a.nome.toString().trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : '';
-            let count = CURRENT_DATA.lesson_views[a.id] ? CURRENT_DATA.lesson_views[a.id].size : (CURRENT_DATA.lesson_views[aNorm] ? CURRENT_DATA.lesson_views[aNorm].size : 0);
-            if (count > maxIni) maxIni = count;
-        });
-    });
-    
-    view.innerHTML = mods.map(m => {
+
+    const coursePills = `
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid var(--line)">
+        ${availableCourses.map(cName => {
+            const isSel = (c === cName);
+            const bg = isSel ? 'var(--emerald)' : 'var(--card)';
+            const col = isSel ? '#fff' : 'var(--ink)';
+            const border = isSel ? '1px solid var(--emerald-d)' : '1px solid var(--line)';
+            return `<button type="button" onclick="setModCourse('${cName}')" style="padding:6px 12px; font-size:11px; font-weight:700; border-radius:20px; background:${bg}; color:${col}; border:${border}; cursor:pointer; transition:all 0.15s ease">${cName}</button>`;
+        }).join('')}
+      </div>
+    `;
+
+    view.innerHTML = coursePills + mods.map(m => {
         const fora = m.n_fora > 0 ? ` · <span style="color:var(--muted2)">${m.n_fora} fora do currículo</span>` : '';
         return `<div class="funnel-mod">
           <div class="fm-head"><div class="name">${m.modulo} <b>·</b> <span style="color:var(--muted);font-weight:400">${m.n_curric} aulas no currículo${fora}</span></div>
