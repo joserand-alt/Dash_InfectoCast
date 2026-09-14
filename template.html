@@ -3809,6 +3809,7 @@ function drawExecView(force) {
     const emailToCourse = {};
     const nameToCourse = {};
 
+    // 1. Mapear cursos e engajamento a partir dos estudantes
     baseStudents.forEach(s => {
         const em = (s.email || '').toString().toLowerCase().trim();
         const nm = (s.nome || '').toString().toLowerCase().trim();
@@ -3818,25 +3819,9 @@ function drawExecView(force) {
 
         if (!coursesMap[c]) {
             coursesMap[c] = {
-                curso: c,
-                total: 0,
-                vigentes: 0,
-                ativos: 0,
-                em_risco: 0,
-                abandono: 0,
-                nunca: 0,
-                concluidos: 0,
-                cancelados: 0,
-                pago_total: 0,
-                pago_mes_atual: 0,
-                proj_mes_atual: 0,
-                pago_mes_ant: 0,
-                atraso: 0,
-                mrr: 0,
-                proj_1m: 0,
-                proj_3m: 0,
-                proj_6m: 0,
-                proj_12m: 0
+                curso: c, total: 0, vigentes: 0, ativos: 0, em_risco: 0, abandono: 0, nunca: 0, concluidos: 0, cancelados: 0,
+                pago_total: 0, pago_mes_atual: 0, proj_mes_atual: 0, pago_mes_ant: 0, atraso: 0, mrr: 0,
+                proj_1m: 0, proj_3m: 0, proj_6m: 0, proj_12m: 0
             };
         }
         const cm = coursesMap[c];
@@ -3878,20 +3863,11 @@ function drawExecView(force) {
                     cm.ativos++;
                 }
             }
-
-            // MRR daquele curso
-            const vParcela = s.vindi ? (Number(s.vindi.valor_parcela) || 0) : 0;
-            const aParcela = s.asaas ? (Number(s.asaas.valor_parcela) || Number(s.asaas.mrr) || 0) : 0;
-            cm.mrr += (vParcela + aParcela);
         }
     });
 
-    // Faturas globais (Vindi + Asaas) para cálculo de Realizado Total, Realizado no Mês, Projetado no Mês, Mês Anterior e Atraso
-    [...vFaturas, ...aFaturas].forEach(f => {
-        const em = (f.email || '').toString().toLowerCase().trim();
-        const nm = (f.aluno || '').toString().toLowerCase().trim();
-        const c = emailToCourse[em] || nameToCourse[nm] || resolveCanonicalCourse(f.curso);
-
+    const getCm = (cName) => {
+        const c = resolveCanonicalCourse(cName) || 'PLATAFORMA GERAL';
         if (!coursesMap[c]) {
             coursesMap[c] = {
                 curso: c, total: 0, vigentes: 0, ativos: 0, em_risco: 0, abandono: 0, nunca: 0, concluidos: 0, cancelados: 0,
@@ -3899,34 +3875,83 @@ function drawExecView(force) {
                 proj_1m: 0, proj_3m: 0, proj_6m: 0, proj_12m: 0
             };
         }
-        const cm = coursesMap[c];
+        return coursesMap[c];
+    };
+
+    // 2. Faturas Realizadas e Atraso (Vindi + Asaas)
+    [...vFaturas, ...aFaturas].forEach(f => {
+        const em = (f.email || '').toString().toLowerCase().trim();
+        const nm = (f.aluno || '').toString().toLowerCase().trim();
+        const cName = f.curso || emailToCourse[em] || nameToCourse[nm] || 'PLATAFORMA GERAL';
+        const cm = getCm(cName);
+
         const val = Number(f.valor) || 0;
         const st = (f.status || '').toLowerCase();
-        const dt = (f.data || f.vencimento || '').toString();
+        const dtPag = (f.data_pagamento || f.data_pagamento_iso || f.data || '').toString();
+        const dtVenc = (f.vencimento || f.vencimento_iso || '').toString();
 
-        if (st === 'pago' || st === 'paid') {
+        if (st === 'pago' || st === 'paid' || st === 'received' || st === 'confirmed') {
             cm.pago_total += val;
-            if (dt.includes('09/2026') || dt.includes('2026-09') || dt.includes('/09/26')) {
+            if (dtPag.includes('09/2026') || dtPag.includes('2026-09') || dtPag.includes('/09/26')) {
                 cm.pago_mes_atual += val;
-            } else if (dt.includes('08/2026') || dt.includes('2026-08') || dt.includes('/08/26')) {
+            } else if (dtPag.includes('08/2026') || dtPag.includes('2026-08') || dtPag.includes('/08/26')) {
                 cm.pago_mes_ant += val;
             }
         } else if (st === 'em_atraso' || st === 'overdue') {
             cm.atraso += val;
-        } else if (st === 'futuro' || st === 'a_vencer' || st === 'pending') {
-            if (dt.includes('09/2026') || dt.includes('2026-09') || dt.includes('/09/26')) {
+        } else if (st === 'futuro' || st === 'a_vencer' || st === 'pending' || st === 'pendente') {
+            if (dtVenc.includes('09/2026') || dtVenc.includes('2026-09') || dtVenc.includes('/09/26')) {
                 cm.proj_mes_atual += val;
             }
         }
     });
 
-    // Calcular Projeções 1m, 3m, 6m, 12m e Crescimento MoM por Curso
+    // 3. Assinaturas Vindi (MRR, A Vencer no Mês e Projeção 30d D+30 por Curso)
+    const vSubsList = (vindi.subscriptions || []);
+    vSubsList.forEach(sub => {
+        if (sub.status_financeiro === 'adimplente') {
+            const em = (sub.customer_email || '').toString().toLowerCase().trim();
+            const cName = sub.curso || emailToCourse[em] || 'PLATAFORMA GERAL';
+            const cm = getCm(cName);
+            const price = Number(sub.valor_parcela) || 0;
+            cm.mrr += price;
+
+            const prox = (sub.proximo_vencimento || '').toString();
+            if (prox.includes('/09/2026') || prox.includes('/09/26') || prox.includes('2026-09')) {
+                cm.proj_mes_atual += price;
+                cm.proj_1m += price;
+            } else if (prox.includes('/10/2026') || prox.includes('/10/26') || prox.includes('2026-10')) {
+                // Próximos 30 dias pegam primeira quinzena de outubro
+                const dia = parseInt(prox.split('/')[0] || '0', 10);
+                if (dia <= 14) {
+                    cm.proj_1m += price;
+                }
+            } else if (!prox) {
+                cm.proj_mes_atual += price;
+                cm.proj_1m += price;
+            }
+        }
+    });
+
+    // 4. Clientes Asaas (MRR por Curso)
+    const aData = asaas.data || {};
+    Object.values(aData).forEach(stInfo => {
+        if (stInfo.status_financeiro === 'adimplente') {
+            const em = (stInfo.customer_email || stInfo.email || '').toString().toLowerCase().trim();
+            const cName = stInfo.curso || emailToCourse[em] || 'PLATAFORMA GERAL';
+            const cm = getCm(cName);
+            const price = Number(stInfo.valor_parcela || stInfo.mrr) || 0;
+            cm.mrr += price;
+        }
+    });
+
+    // 5. Totalizadores e Projeções Financeiras por Curso
     Object.values(coursesMap).forEach(cm => {
         cm.previsto_mes_vigente = cm.pago_mes_atual + cm.proj_mes_atual;
         const diff = cm.previsto_mes_vigente - cm.pago_mes_ant;
-        cm.crescimento_mom = cm.pago_mes_ant > 0 ? ((diff / cm.pago_mes_ant) * 100).toFixed(1) : (cm.previsto_mes_vigente > 0 ? '+100' : '0.0');
+        cm.crescimento_mom = cm.pago_mes_ant > 0 ? (((diff) / cm.pago_mes_ant) * 100).toFixed(1) : (cm.previsto_mes_vigente > 0 ? '+100' : '0.0');
         
-        cm.proj_1m = cm.mrr;
+        if (!cm.proj_1m) cm.proj_1m = cm.mrr;
         cm.proj_3m = cm.mrr * 3;
         cm.proj_6m = cm.mrr * 6;
         cm.proj_12m = cm.mrr * 12;
