@@ -674,7 +674,7 @@ footer{padding:30px 0 40px;color:var(--muted2);font-size:11.5px;text-align:cente
 
     <nav class="tabs" id="tabs">
     <button class="tab on" data-p="exec"><span class="num">★</span>Visão Executiva</button>
-    <button class="tab" data-p="curso" id="btn-tab-curso"><span class="num">🎯</span>Visão por Curso</button><span class="num">★</span>Visão Executiva</button>
+    <button class="tab" data-p="curso" id="btn-tab-curso"><span class="num">🎯</span>Visão por Curso</button>
     <button class="tab" data-p="home"><span class="num">0</span>Visão Geral</button>
     <button class="tab" data-p="prog"><span class="num">1</span>Progresso por aluno</button>
     <button class="tab" data-p="mod"><span class="num">2</span>Engajamento por módulo</button>
@@ -682,7 +682,7 @@ footer{padding:30px 0 40px;color:var(--muted2);font-size:11.5px;text-align:cente
     <button class="tab" data-p="tl"><span class="num">4</span>Linha temporal</button>
     <button class="tab" data-p="funil"><span class="num">5</span>Funil de Leads</button>
     <button class="tab" data-p="origem"><span class="num">6</span>Origem de Matrículas</button>
-    <button class="tab" data-p="fin" id="btn-tab-fin"><span class="num">💰</span>Financeiro &amp; Projeção</button>
+    <button class="tab" data-p="fin" id="btn-tab-fin"><span class="num">$</span>Financeiro &amp; Projeção</button>
   </nav>
 
     <!-- PANEL: VISÃO EXECUTIVA (COCKPIT ESTRATÉGICO) -->
@@ -6653,7 +6653,8 @@ function drawCursoView(courseName, force) {
 
     // 1. Dados Financeiros Unificados do Curso
     const unifiedFin = computeUnifiedFinancialDataset('all');
-    const cFin = unifiedFin.coursesMap[activeCourse] || {
+    const coursesData = (unifiedFin && (unifiedFin.courses || unifiedFin.coursesMap)) || {};
+    const cFin = coursesData[activeCourse] || {
         pago_total: 0,
         pago_mes_atual: 0,
         proj_mes_atual: 0,
@@ -6737,7 +6738,7 @@ function drawCursoView(courseName, force) {
     const mediaAulasPorAluno = totalMatriculas > 0 ? (totalAulasFeitas / totalMatriculas).toFixed(1) : '0.0';
 
     // Formatação de Valores
-    const fM = (n) => fmtMoney(n || 0);
+    const fM = (n) => 'R$ ' + (Number(n) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const fN = (n) => fmt(n || 0);
 
     // Helpers SVG para Gráficos
