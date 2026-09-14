@@ -3598,6 +3598,372 @@ function drawLiveHourlyChart(baseStudents, actionFilter) {
 // VISÃO EXECUTIVA - COCKPIT ESTRATÉGICO
 // ========================================================
 let _execDrawn = false;
+
+function isInvalidOrInternal(s) {
+    if (!s) return true;
+    const em = (s.email || '').toString().toLowerCase().trim();
+    const nm = (s.nome || '').toString().toLowerCase().trim();
+    const cr = (s.curso || '').toString().toUpperCase().trim();
+    if (cr.includes('NUTRIFY')) return true;
+    if (em.includes('@infectocast') || em.includes('@integralmedica') || em.includes('@nutrify') || em.includes('@vectorcomunica')) return true;
+    if (em.includes('teste') || nm.includes('teste')) return true;
+    if (em.includes('gcotta29') || em.includes('j.o.s.e.r.a.n.d@gmail.com') || em.includes('email@email.com')) return true;
+    return false;
+}
+
+function resolveCanonicalCourse(name) {
+    const n = (name || '').toString().toUpperCase().trim();
+    if (n.includes('CCIH') || n.includes('PREVENCAO') || n.includes('CONTROLE DE INFECCAO')) {
+        return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)';
+    }
+    if (n.includes('IMUNODEPRIMIDO')) {
+        return 'POS-GRADUACAO EM INFECTOLOGIA DO PACIENTE IMUNODEPRIMIDO';
+    }
+    if (n.includes('ORTOPED') || n.includes('MOLES')) {
+        return 'POS-GRADUACAO EM INFECCOES ORTOPEDICAS E DE PARTES MOLES';
+    }
+    if (n.includes('INFECTOPED') || n.includes('PEDIATR')) {
+        return 'POS-GRADUACAO EM INFECTOPEDIATRIA';
+    }
+    if (n.includes('MULTI-R') || n.includes('MULTIR') || n.includes('JORNADA')) {
+        return 'JORNADA MULTI-R';
+    }
+    if (n.includes('FUNGO') || n.includes('ANTIFUNGICO')) {
+        return 'DO FUNGO AO ANTIFUNGICO';
+    }
+    if (n.includes('SOS') || n.includes('ANTIBIOTICO') || n.includes('S.O.S')) {
+        return 'S.O.S ANTIBIOTICO';
+    }
+    if (n.includes('INFECTOXPERT')) {
+        return 'INFECTOXPERT';
+    }
+    return 'PLATAFORMA GERAL';
+}
+
+function computeUnifiedFinancialDataset(gatewayFilter) {
+    const rawStudents = ((CURRENT_DATA && CURRENT_DATA.students && CURRENT_DATA.students.length > 0) ? CURRENT_DATA.students : (DATA && DATA.students ? DATA.students : [])).filter(s => !isInvalidOrInternal(s));
+    const emailToCourse = {};
+    const nameToCourse = {};
+    rawStudents.forEach(s => {
+        const em = (s.email || '').toString().toLowerCase().trim();
+        const nm = (s.nome || '').toString().toLowerCase().trim();
+        const c = resolveCanonicalCourse(s.curso);
+        if (em) emailToCourse[em] = c;
+        if (nm) nameToCourse[nm] = c;
+    });
+
+    const vindi = (DATA && DATA.financeiro) ? DATA.financeiro : {};
+    const asaas = (DATA && DATA.financeiro_asaas) ? DATA.financeiro_asaas : {};
+
+    const vFaturas = (vindi && vindi.faturas_tabela) ? vindi.faturas_tabela : [];
+    const aFaturas = (asaas && asaas.faturas_tabela) ? asaas.faturas_tabela : [];
+    const vSubs = (vindi && vindi.subscriptions) ? vindi.subscriptions : [];
+    const aData = (asaas && asaas.data) ? asaas.data : {};
+
+    let faturasList = [];
+    if (!gatewayFilter || gatewayFilter === 'all') {
+        faturasList = [
+            ...vFaturas.map(f => ({ ...f, gateway: 'Vindi', curso: resolveCanonicalCourse(f.curso || emailToCourse[(f.email||'').toLowerCase()] || nameToCourse[(f.aluno||'').toLowerCase()]) })),
+            ...aFaturas.map(f => ({ ...f, gateway: 'Asaas', curso: resolveCanonicalCourse(f.curso || emailToCourse[(f.email||'').toLowerCase()] || nameToCourse[(f.aluno||'').toLowerCase()]) }))
+        ];
+    } else if (gatewayFilter === 'vindi') {
+        faturasList = vFaturas.map(f => ({ ...f, gateway: 'Vindi', curso: resolveCanonicalCourse(f.curso || emailToCourse[(f.email||'').toLowerCase()] || nameToCourse[(f.aluno||'').toLowerCase()]) }));
+    } else if (gatewayFilter === 'asaas') {
+        faturasList = aFaturas.map(f => ({ ...f, gateway: 'Asaas', curso: resolveCanonicalCourse(f.curso || emailToCourse[(f.email||'').toLowerCase()] || nameToCourse[(f.aluno||'').toLowerCase()]) }));
+    }
+
+    const coursesMap = {};
+    const getCourse = (cName) => {
+        const c = resolveCanonicalCourse(cName);
+        if (!coursesMap[c]) {
+            coursesMap[c] = {
+                curso: c,
+                alunos_vigentes: 0,
+                alunos_total: 0,
+                pago_total: 0,
+                pago_mes_atual: 0,
+                proj_mes_atual: 0,
+                pago_mes_ant: 0,
+                atraso: 0,
+                qtd_atraso: 0,
+                mrr: 0,
+                proj_1m: 0,
+                proj_3m: 0,
+                proj_6m: 0,
+                proj_12m: 0,
+                total_faturas_pagas: 0,
+                historico_map: {},
+                projecao_map: {},
+                atraso_map: {},
+                projecao_18m_sim: Array(18).fill(0),
+                faturas_tabela: []
+            };
+        }
+        return coursesMap[c];
+    };
+
+    // 1. Alunos e Matrículas Vigentes
+    rawStudents.forEach(s => {
+        const c = resolveCanonicalCourse(s.curso);
+        const cm = getCourse(c);
+        cm.alunos_total++;
+
+        const vSt = (s.vindi ? (s.vindi.status_financeiro || s.vindi.status_assinatura) : '').toLowerCase();
+        const aSt = (s.asaas ? (s.asaas.status_financeiro || s.asaas.status_assinatura) : '').toLowerCase();
+        const isCancel = vSt === 'cancelado' || vSt === 'canceled' || aSt === 'cancelado' || aSt === 'canceled' || s.status === 'Cancelado';
+        const isConcluido = !isCancel && (vSt === 'quitado' || aSt === 'quitado' || s.status === 'Concluído' || s.status === 'Encerrado' || s.turma_encerrada === true);
+
+        if (!isCancel && !isConcluido) {
+            cm.alunos_vigentes++;
+        }
+    });
+
+    // 2. Faturas Emitidas e Histórico
+    faturasList.forEach(f => {
+        const cm = getCourse(f.curso);
+        cm.faturas_tabela.push(f);
+        const val = Number(f.valor) || 0;
+        const st = (f.status || '').toLowerCase();
+        const dtPag = (f.data_pagamento || f.data_pagamento_iso || f.data || '').toString();
+        const dtVenc = (f.vencimento || f.vencimento_iso || '').toString();
+
+        const pYm = (f.data_pagamento_iso || dtPag).slice(0, 7);
+        const vYm = (f.vencimento_iso || dtVenc).slice(0, 7);
+
+        if (st === 'pago' || st === 'paid' || st === 'received' || st === 'confirmed') {
+            cm.pago_total += val;
+            cm.total_faturas_pagas++;
+            if (pYm) {
+                cm.historico_map[pYm] = (cm.historico_map[pYm] || 0) + val;
+            }
+            if (dtPag.includes('09/2026') || dtPag.includes('2026-09') || dtPag.includes('/09/26')) {
+                cm.pago_mes_atual += val;
+            } else if (dtPag.includes('08/2026') || dtPag.includes('2026-08') || dtPag.includes('/08/26')) {
+                cm.pago_mes_ant += val;
+            }
+        } else if (st === 'em_atraso' || st === 'overdue') {
+            cm.atraso += val;
+            cm.qtd_atraso++;
+            if (vYm) {
+                cm.atraso_map[vYm] = (cm.atraso_map[vYm] || 0) + val;
+            }
+        } else if (st === 'futuro' || st === 'a_vencer' || st === 'pending' || st === 'pendente') {
+            if (dtVenc.includes('09/2026') || dtVenc.includes('2026-09') || dtVenc.includes('/09/26')) {
+                cm.proj_mes_atual += val;
+            }
+        }
+    });
+
+    // 3. Assinaturas Vindi (MRR e Simulação Contratual de 18 Meses)
+    if (!gatewayFilter || gatewayFilter === 'all' || gatewayFilter === 'vindi') {
+        vSubs.forEach(sub => {
+            if (sub.status_financeiro === 'adimplente') {
+                const em = (sub.customer_email || '').toString().toLowerCase().trim();
+                const cm = getCourse(sub.curso || emailToCourse[em]);
+                const price = Number(sub.valor_parcela) || 0;
+                cm.mrr += price;
+
+                const prox = (sub.proximo_vencimento || '').toString();
+                if (prox.includes('/09/2026') || prox.includes('/09/26') || prox.includes('2026-09')) {
+                    cm.proj_mes_atual += price;
+                    cm.proj_1m += price;
+                } else if (prox.includes('/10/2026') || prox.includes('/10/26') || prox.includes('2026-10')) {
+                    const dia = parseInt(prox.split('/')[0] || '0', 10);
+                    if (dia <= 14) cm.proj_1m += price;
+                } else if (!prox) {
+                    cm.proj_mes_atual += price;
+                    cm.proj_1m += price;
+                }
+
+                // Simulação contratual de 18 meses com encerramento de turmas
+                const planoStr = (sub.plano || '').toString().toUpperCase();
+                let totalCycles = 18;
+                if (planoStr.includes('24')) totalCycles = 24;
+                else if (planoStr.includes('12') || planoStr.includes('ANUAL')) totalCycles = 12;
+                else if (planoStr.includes('6') || planoStr.includes('SEMESTRAL')) totalCycles = 6;
+
+                const faturasArr = sub.faturas || [];
+                const paidCount = faturasArr.filter(f => (f.status === 'paid' || f.status === 'pago')).length;
+                const remainingCycles = Math.max(0, totalCycles - paidCount);
+
+                for (let m = 0; m < 18; m++) {
+                    if (m < remainingCycles) {
+                        cm.projecao_18m_sim[m] += price;
+                    }
+                }
+            }
+        });
+    }
+
+    // 4. Clientes e Carnês Asaas
+    if (!gatewayFilter || gatewayFilter === 'all' || gatewayFilter === 'asaas') {
+        Object.values(aData).forEach(stInfo => {
+            if (stInfo.status_financeiro === 'adimplente') {
+                const em = (stInfo.customer_email || stInfo.email || '').toString().toLowerCase().trim();
+                const cm = getCourse(stInfo.curso || emailToCourse[em]);
+                const price = Number(stInfo.valor_parcela || stInfo.mrr) || 0;
+                cm.mrr += price;
+            }
+        });
+
+        aFaturas.forEach(f => {
+            const st = (f.status || '').toLowerCase();
+            if (st === 'pendente' || st === 'pending' || st === 'a_vencer') {
+                const em = (f.email || '').toString().toLowerCase().trim();
+                const cm = getCourse(f.curso || emailToCourse[em]);
+                const val = Number(f.valor) || 0;
+                const dtVenc = (f.vencimento || f.vencimento_iso || '').toString();
+                if (dtVenc) {
+                    const dObj = new Date(dtVenc.slice(0, 10));
+                    const hoje = new Date();
+                    const diffMeses = (dObj.getFullYear() - hoje.getFullYear()) * 12 + (dObj.getMonth() - hoje.getMonth());
+                    if (diffMeses >= 0 && diffMeses < 18) {
+                        cm.projecao_18m_sim[diffMeses] += val;
+                    }
+                }
+            }
+        });
+    }
+
+    // Timeline de 18 meses futuros
+    const futureMonths = [];
+    const baseDate = new Date(2026, 8, 1); // 2026-09
+    const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    for (let i = 0; i < 18; i++) {
+        const d = new Date(baseDate.getFullYear(), baseDate.getMonth() + i, 1);
+        const ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+        const lbl = mesesNomes[d.getMonth()] + '/' + String(d.getFullYear()).slice(2);
+        futureMonths.push({ mes: ym, label: lbl, idx: i });
+    }
+
+    // Finalizar cada curso
+    Object.values(coursesMap).forEach(cm => {
+        cm.previsto_mes_vigente = cm.pago_mes_atual + cm.proj_mes_atual;
+        const diff = cm.previsto_mes_vigente - cm.pago_mes_ant;
+        cm.crescimento_mom = cm.pago_mes_ant > 0 ? (((diff) / cm.pago_mes_ant) * 100).toFixed(1) : (cm.previsto_mes_vigente > 0 ? '+100' : '0.0');
+
+        const mArr = cm.projecao_18m_sim;
+        cm.proj_1m = mArr[0] > 0 ? mArr[0] : (cm.proj_1m || cm.mrr);
+        cm.proj_3m = mArr.slice(0, 3).reduce((a, b) => a + b, 0);
+        cm.proj_6m = mArr.slice(0, 6).reduce((a, b) => a + b, 0);
+        cm.proj_12m = mArr.slice(0, 12).reduce((a, b) => a + b, 0);
+
+        cm.historico_mensal = Object.keys(cm.historico_map).sort().map(ym => {
+            const [ano, m] = ym.split('-');
+            const lbl = (mesesNomes[parseInt(m, 10) - 1] || m) + '/' + ano.slice(2);
+            return { mes: ym, label: lbl, pago: cm.historico_map[ym] };
+        });
+
+        cm.projecao_mensal = futureMonths.map(fm => {
+            let val = mArr[fm.idx] || 0;
+            if (fm.idx === 0 && cm.proj_mes_atual > 0) {
+                val = cm.proj_mes_atual;
+            }
+            cm.projecao_map[fm.mes] = val;
+            return { mes: fm.mes, label: fm.label, previsto: val };
+        });
+
+        const baseAdimp = cm.pago_total + cm.atraso;
+        cm.taxa_adimplencia = baseAdimp > 0 ? Math.round((cm.pago_total / baseAdimp) * 100) : 100;
+
+        cm.kpis = {
+            total_recebido: cm.pago_total,
+            recebido_mes_atual: cm.pago_mes_atual,
+            a_vencer_mes_atual: cm.proj_mes_atual,
+            previsto_mes_vigente: cm.previsto_mes_vigente,
+            mrr_ativo: cm.mrr,
+            projecao_30d: cm.proj_1m,
+            proj_3m: cm.proj_3m,
+            proj_6m: cm.proj_6m,
+            proj_12m: cm.proj_12m,
+            total_em_atraso: cm.atraso,
+            qtd_em_atraso: cm.qtd_atraso,
+            total_faturas_pagas: cm.total_faturas_pagas,
+            taxa_adimplencia: cm.taxa_adimplencia
+        };
+    });
+
+    // Consolidação Global
+    const globalObj = {
+        curso: 'TODOS OS CURSOS (CONSOLIDADO)',
+        fonte: (!gatewayFilter || gatewayFilter === 'all') ? 'Consolidado (Vindi & Asaas)' : (gatewayFilter === 'vindi' ? 'Vindi' : 'Asaas'),
+        alunos_vigentes: 0,
+        alunos_total: 0,
+        pago_total: 0,
+        pago_mes_atual: 0,
+        proj_mes_atual: 0,
+        previsto_mes_vigente: 0,
+        pago_mes_ant: 0,
+        atraso: 0,
+        qtd_atraso: 0,
+        mrr: 0,
+        proj_1m: 0,
+        proj_3m: 0,
+        proj_6m: 0,
+        proj_12m: 0,
+        total_faturas_pagas: 0,
+        historico_mensal: [],
+        projecao_mensal: [],
+        faturas_tabela: faturasList
+    };
+
+    const gHistMap = {};
+    const gProjMap = {};
+
+    Object.values(coursesMap).forEach(cm => {
+        globalObj.alunos_vigentes += cm.alunos_vigentes;
+        globalObj.alunos_total += cm.alunos_total;
+        globalObj.pago_total += cm.pago_total;
+        globalObj.pago_mes_atual += cm.pago_mes_atual;
+        globalObj.proj_mes_atual += cm.proj_mes_atual;
+        globalObj.previsto_mes_vigente += cm.previsto_mes_vigente;
+        globalObj.pago_mes_ant += cm.pago_mes_ant;
+        globalObj.atraso += cm.atraso;
+        globalObj.qtd_atraso += cm.qtd_atraso;
+        globalObj.mrr += cm.mrr;
+        globalObj.proj_1m += cm.proj_1m;
+        globalObj.proj_3m += cm.proj_3m;
+        globalObj.proj_6m += cm.proj_6m;
+        globalObj.proj_12m += cm.proj_12m;
+        globalObj.total_faturas_pagas += cm.total_faturas_pagas;
+
+        cm.historico_mensal.forEach(h => {
+            if (!gHistMap[h.mes]) gHistMap[h.mes] = { mes: h.mes, label: h.label, pago: 0 };
+            gHistMap[h.mes].pago += h.pago;
+        });
+
+        cm.projecao_mensal.forEach(p => {
+            if (!gProjMap[p.mes]) gProjMap[p.mes] = { mes: p.mes, label: p.label, previsto: 0 };
+            gProjMap[p.mes].previsto += p.previsto;
+        });
+    });
+
+    globalObj.historico_mensal = Object.values(gHistMap).sort((a,b) => a.mes.localeCompare(b.mes));
+    globalObj.projecao_mensal = Object.values(gProjMap).sort((a,b) => a.mes.localeCompare(b.mes));
+
+    const gBaseAdimp = globalObj.pago_total + globalObj.atraso;
+    globalObj.taxa_adimplencia = gBaseAdimp > 0 ? Math.round((globalObj.pago_total / gBaseAdimp) * 100) : 100;
+
+    globalObj.kpis = {
+        total_recebido: globalObj.pago_total,
+        recebido_mes_atual: globalObj.pago_mes_atual,
+        a_vencer_mes_atual: globalObj.proj_mes_atual,
+        previsto_mes_vigente: globalObj.previsto_mes_vigente,
+        mrr_ativo: globalObj.mrr,
+        projecao_30d: globalObj.proj_1m,
+        proj_3m: globalObj.proj_3m,
+        proj_6m: globalObj.proj_6m,
+        proj_12m: globalObj.proj_12m,
+        total_em_atraso: globalObj.atraso,
+        qtd_em_atraso: globalObj.qtd_atraso,
+        total_faturas_pagas: globalObj.total_faturas_pagas,
+        taxa_adimplencia: globalObj.taxa_adimplencia
+    };
+
+    return { courses: coursesMap, global: globalObj };
+}
+
+
 function fM(val) {
     const n = Number(val) || 0;
     return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -5753,172 +6119,26 @@ function _resolveFinCourse(f) {
 }
 
 function _getFinData(src) {
-    const vindi = DATA.financeiro;
-    const asaas = DATA.financeiro_asaas;
-
-    const vfaturas = (vindi && vindi.faturas_tabela) ? vindi.faturas_tabela.map(f => { const c = _resolveFinCourse(f); return { ...f, gateway: 'Vindi', curso: c, _curso: c, _aluno: f.aluno, _email: f.email, _plano: f.plano }; }) : [];
-    const afaturas = (asaas && asaas.faturas_tabela) ? asaas.faturas_tabela.map(f => { const c = _resolveFinCourse(f); return { ...f, gateway: 'Asaas', curso: c, _curso: c, _aluno: f.aluno, _email: f.email, _plano: f.plano }; }) : [];
-
-    const activeCurso = (FILTER && FILTER.curso && FILTER.curso !== 'all') ? FILTER.curso : null;
+    const finUnified = computeUnifiedFinancialDataset(src);
+    const activeCurso = (FILTER && FILTER.curso && FILTER.curso !== 'all') ? resolveCanonicalCourse(FILTER.curso) : null;
 
     if (activeCurso) {
-        function buildCourseSpecificFin(faturas, label) {
-            const courseFaturas = faturas.filter(f => f.curso === activeCurso);
-            
-            let totRec = 0;
-            let totAtraso = 0;
-            let qtdAtraso = 0;
-            let fatPagas = 0;
-            let recMes = 0;
-            const now = new Date();
-            const currentYm = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
-
-            const histMap = {};
-            const projMap = {};
-
-            courseFaturas.forEach(f => {
-                const val = Number(f.valor) || 0;
-                const pIso = f.data_pagamento_iso || f.data_pagamento || '';
-                const vIso = f.vencimento_iso || f.vencimento || '';
-                
-                if (f.status === 'paid' || f.status === 'pago') {
-                    totRec += val;
-                    fatPagas++;
-                    const refYm = pIso.slice(0, 7) || vIso.slice(0, 7);
-                    if (refYm) {
-                        if (!histMap[refYm]) histMap[refYm] = { mes: refYm, label: refYm, pago: 0 };
-                        histMap[refYm].pago += val;
-                    }
-                    if (refYm === currentYm) recMes += val;
-                } else if (f.status === 'em_atraso') {
-                    totAtraso += val;
-                    qtdAtraso++;
-                } else if (f.status === 'futuro' || f.status === 'a_vencer' || f.status === 'pending') {
-                    const refYm = vIso.slice(0, 7);
-                    if (refYm) {
-                        if (!projMap[refYm]) projMap[refYm] = { mes: refYm, label: refYm, previsto: 0 };
-                        projMap[refYm].previsto += val;
-                    }
-                }
-            });
-
-            const baseAdimp = totRec + totAtraso;
-            const taxaAdimp = baseAdimp > 0 ? Math.round((totRec / baseAdimp) * 100) : 100;
-            const historico_mensal = Object.values(histMap).sort((a,b) => a.mes.localeCompare(b.mes));
-            const projecao_mensal = Object.values(projMap).sort((a,b) => a.mes.localeCompare(b.mes));
-            // Mapear faturas e assinaturas ativas do curso específico
-            const vSubsList = (vindi.subscriptions || (DATA && DATA.financeiro && DATA.financeiro.subscriptions) || []);
-            const courseSubs = vSubsList.filter(sub => {
-                const c = resolveCanonicalCourse(sub.curso || (DATA && DATA.students && DATA.students.find(s=>s.email===sub.customer_email)?.curso) || '');
-                return c === activeCurso && sub.status_financeiro === 'adimplente';
-            });
-            const courseMrrVindi = courseSubs.reduce((acc, sub) => acc + (Number(sub.valor_parcela) || 0), 0);
-
-            let courseMrrAsaas = 0;
-            Object.values(asaas.data || {}).forEach(stInfo => {
-                const c = resolveCanonicalCourse(stInfo.curso || '');
-                if (c === activeCurso && stInfo.status_financeiro === 'adimplente') {
-                    courseMrrAsaas += (Number(stInfo.valor_parcela || stInfo.mrr) || 0);
-                }
-            });
-            const mrr = (courseMrrVindi + courseMrrAsaas) > 0 ? (courseMrrVindi + courseMrrAsaas) : (projecao_mensal.length > 0 ? projecao_mensal[0].previsto : 0);
-            const proj30 = mrr;
-
-            return {
-                fonte: `${label} · ${activeCurso}`,
-                kpis: {
-                    total_recebido: totRec,
-                    recebido_mes_atual: recMes,
-                    total_em_atraso: totAtraso,
-                    qtd_em_atraso: qtdAtraso,
-                    mrr_ativo: mrr,
-                    projecao_30d: proj30,
-                    total_faturas_pagas: fatPagas,
-                    taxa_adimplencia: taxaAdimp
-                },
-                historico_mensal: historico_mensal,
-                projecao_mensal: projecao_mensal,
-                faturas_tabela: courseFaturas
-            };
-        }
-
-        if (src === 'vindi') return buildCourseSpecificFin(vfaturas, 'Vindi');
-        if (src === 'asaas') return buildCourseSpecificFin(afaturas, 'Asaas');
-        return buildCourseSpecificFin([...vfaturas, ...afaturas], 'Consolidado');
+        const cData = finUnified.courses[activeCurso] || {
+            curso: activeCurso,
+            fonte: `${src === 'vindi' ? 'Vindi' : (src === 'asaas' ? 'Asaas' : 'Consolidado')} · ${activeCurso}`,
+            kpis: { total_recebido: 0, recebido_mes_atual: 0, a_vencer_mes_atual: 0, previsto_mes_vigente: 0, mrr_ativo: 0, projecao_30d: 0, total_em_atraso: 0, qtd_em_atraso: 0, total_faturas_pagas: 0, taxa_adimplencia: 100 },
+            historico_mensal: [],
+            projecao_mensal: [],
+            faturas_tabela: []
+        };
+        return {
+            ...cData,
+            fonte: `${src === 'vindi' ? 'Vindi' : (src === 'asaas' ? 'Asaas' : 'Consolidado')} · ${activeCurso}`,
+            faturas_tabela: cData.faturas_tabela || []
+        };
     }
 
-    // Sem filtro de curso: usa os totais consolidados completos
-    if (src === 'vindi') {
-        if (!vindi) return null;
-        return { ...vindi, faturas_tabela: vfaturas };
-    }
-    if (src === 'asaas') {
-        if (!asaas) return null;
-        return { ...asaas, faturas_tabela: afaturas };
-    }
-
-    // CONSOLIDADO (src === 'all')
-    if (!vindi && !asaas) return null;
-    if (!vindi) return { ...asaas, faturas_tabela: afaturas };
-    if (!asaas) return { ...vindi, faturas_tabela: vfaturas };
-
-    const vk = vindi.kpis || {};
-    const ak = asaas.kpis || {};
-
-    const totRec = (vk.total_recebido || 0) + (ak.total_recebido || 0);
-    const recMes = (vk.recebido_mes_atual || 0) + (ak.recebido_mes_atual || 0);
-    const totAtraso = (vk.total_em_atraso || 0) + (ak.total_em_atraso || 0);
-    const qtdAtraso = (vk.qtd_em_atraso || 0) + (ak.qtd_em_atraso || 0);
-    const mrr = (vk.mrr_ativo || 0) + (ak.mrr_ativo || 0);
-    const proj30 = (vk.projecao_30d || 0) + (ak.projecao_30d || 0);
-    const fatPagas = (vk.total_faturas_pagas || 0) + (ak.total_faturas_pagas || 0);
-    const baseAdimp = totRec + totAtraso;
-    const taxaAdimp = baseAdimp > 0 ? Math.round((totRec / baseAdimp) * 100) : 100;
-
-    const histMap = {};
-    (vindi.historico_mensal || []).forEach(h => {
-        if (!histMap[h.mes]) histMap[h.mes] = { mes: h.mes, label: h.label, pago: 0 };
-        histMap[h.mes].pago += (h.pago || 0);
-    });
-    (asaas.historico_mensal || []).forEach(h => {
-        if (!histMap[h.mes]) histMap[h.mes] = { mes: h.mes, label: h.label, pago: 0 };
-        histMap[h.mes].pago += (h.pago || 0);
-    });
-    const historico_mensal = Object.values(histMap).sort((a,b) => a.mes.localeCompare(b.mes));
-
-    const projMap = {};
-    (vindi.projecao_mensal || []).forEach(p => {
-        if (!projMap[p.mes]) projMap[p.mes] = { mes: p.mes, label: p.label, previsto: 0 };
-        projMap[p.mes].previsto += (p.previsto || 0);
-    });
-    (asaas.projecao_mensal || []).forEach(p => {
-        if (!projMap[p.mes]) projMap[p.mes] = { mes: p.mes, label: p.label, previsto: 0 };
-        projMap[p.mes].previsto += (p.previsto || 0);
-    });
-    const projecao_mensal = Object.values(projMap).sort((a,b) => a.mes.localeCompare(b.mes));
-
-    const faturas_tabela = [...vfaturas, ...afaturas].sort((a,b) => {
-        const da = a.vencimento_iso || a.data_pagamento_iso || '';
-        const db = b.vencimento_iso || b.data_pagamento_iso || '';
-        return db.localeCompare(da);
-    });
-
-    return {
-        fonte: 'Consolidado (Vindi & Asaas)',
-        kpis: {
-            total_recebido: totRec,
-            recebido_mes_atual: recMes,
-            total_em_atraso: totAtraso,
-            qtd_em_atraso: qtdAtraso,
-            mrr_ativo: mrr,
-            projecao_30d: proj30,
-            total_faturas_pagas: fatPagas,
-            taxa_adimplencia: taxaAdimp
-        },
-        historico_mensal: historico_mensal,
-        projecao_mensal: projecao_mensal,
-        faturas_tabela: faturas_tabela
-    };
+    return finUnified.global;
 }
 
 let _cachedFinObj = null;
@@ -5948,58 +6168,27 @@ function _renderFinKpiCards() {
             const isAct = _finActiveKpi === d.key;
             const borderStyle = isAct ? `2px solid ${d.color}` : '1px solid var(--line)';
             const bgStyle = isAct ? 'background:rgba(255,255,255,0.95); box-shadow:0 4px 16px rgba(0,0,0,0.08); transform:scale(1.02)' : 'background:var(--card); box-shadow:0 2px 8px rgba(0,0,0,0.03)';
-            const activeBadge = isAct ? `<span style="font-size:9.5px; font-weight:800; padding:1px 6px; border-radius:10px; background:${d.color}; color:#fff; margin-left:auto">● Ativo</span>` : '';
             return `
-            <div onclick="_finClickKpi('${d.key}')" style="${bgStyle}; border:${borderStyle}; border-radius:12px; padding:16px 18px; cursor:pointer; transition:all .2s; position:relative" title="Clique para filtrar as faturas">
-                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px">
+            <div class="kpi-card" onclick="_finClickKpi('${d.key}')" style="${bgStyle}; border:${borderStyle}; border-radius:12px; padding:16px 18px; cursor:pointer; transition:all .2s ease; position:relative">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start">
+                    <span style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px">${d.label}</span>
                     <span style="font-size:18px">${d.icon}</span>
-                    <span style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)">${d.label}</span>
-                    ${activeBadge}
                 </div>
-                <div style="font-family:var(--disp); font-size:24px; font-weight:700; color:${d.color}; line-height:1.1; letter-spacing:-.02em">${d.value}</div>
-                <div style="font-size:11px; color:var(--muted2); margin-top:4px">${d.sub}</div>
+                <div style="font-size:20px; font-weight:800; color:var(--ink); margin:8px 0 4px">${d.value}</div>
+                <div style="font-size:11px; color:var(--muted2)">${d.sub}</div>
+                ${isAct ? `<div style="position:absolute; bottom:6px; right:10px; font-size:9.5px; font-weight:700; color:${d.color}">● Filtro Ativo</div>` : ''}
             </div>`;
         }).join('');
     }
 }
 
-function drawFinanceiro(force) {
-    if (_finDrawn && !force) return;
-    _finDrawn = true;
-
-    const activeCurso = (FILTER && FILTER.curso && FILTER.curso !== 'all') ? FILTER.curso : null;
-    const badgeFiltro = $('#fin-curso-filtro-badge');
-    if (badgeFiltro) {
-        if (activeCurso) {
-            badgeFiltro.style.display = 'inline-block';
-            badgeFiltro.textContent = `Curso ativo: ${activeCurso}`;
-        } else {
-            badgeFiltro.style.display = 'none';
-        }
+function _finToggleMonthFilter(mes) {
+    if (_finSelectedMonth === mes) {
+        _finSelectedMonth = null;
+    } else {
+        _finSelectedMonth = mes;
     }
-
-    const fin = _getFinData(_finSource);
-    if (!fin) {
-        $('#fin-kpis-grid').innerHTML = '<div style="padding:24px; color:var(--muted); font-size:13px; text-align:center">Dados financeiros não disponíveis para o filtro selecionado.</div>';
-        return;
-    }
-    _cachedFinObj = fin;
-
-    // Renderiza os cards de KPI clicáveis
-    _renderFinKpiCards();
-
-    // --- Gráfico de barras ---
-    _drawFinChart(fin);
-
-    // --- Tabela de Composição da Receita por Curso ---
-    _renderFinCursosTable(fin);
-
-    // --- Montar todas as faturas para a tabela global ---
-    _allFinFaturas = (fin.faturas_tabela || []);
-
-    _updateFinChips();
-    _updateFinViewButtons();
-    renderFinTable();
+    drawFinanceiro(true);
 }
 
 function _drawFinChart(fin) {
@@ -6125,6 +6314,7 @@ function _renderFinCursosTable(fin) {
     const subTxt = $('#fin-curso-sub');
     if (!tbody) return;
 
+    const finUnified = computeUnifiedFinancialDataset(_finSource);
     const labelsMap = {};
     [...(fin.historico_mensal||[]), ...(fin.projecao_mensal||[])].forEach(x => { if (x.mes && x.label) labelsMap[x.mes] = x.label; });
 
@@ -6137,53 +6327,41 @@ function _renderFinCursosTable(fin) {
         if (subTxt) subTxt.textContent = 'Distribuição de faturamento realizado, previsão futura e inadimplência por especialidade acadêmica.';
     }
 
-    // Agrupar por curso
-    const byCourse = {};
-    const studentsList = DATA.students || [];
+    const rows = [];
+    const coursesList = Object.values(finUnified.courses);
 
-    // Contagem de alunos com financeiro considerado (ao menos 1 pagamento) por curso
-    studentsList.filter(s => s.vindi || s.asaas).forEach(s => {
-        const c = s.curso || 'PLATAFORMA GERAL';
-        if (!byCourse[c]) {
-            byCourse[c] = { curso: c, alunos: 0, pago: 0, previsto: 0, atraso: 0 };
-        }
-        byCourse[c].alunos++;
-    });
+    coursesList.forEach(cm => {
+        let pago = 0;
+        let previsto = 0;
+        let atraso = 0;
+        let alunos = cm.alunos_vigentes;
 
-    // Faturas a considerar
-    const faturas = fin.faturas_tabela || [];
-    faturas.forEach(f => {
-        const c = f.curso || 'PLATAFORMA GERAL';
-        if (!byCourse[c]) {
-            byCourse[c] = { curso: c, alunos: 0, pago: 0, previsto: 0, atraso: 0 };
+        if (_finSelectedMonth) {
+            pago = cm.historico_map[_finSelectedMonth] || 0;
+            previsto = cm.projecao_map[_finSelectedMonth] || 0;
+            atraso = cm.atraso_map[_finSelectedMonth] || 0;
+        } else {
+            pago = cm.pago_total;
+            previsto = cm.proj_mes_atual;
+            atraso = cm.atraso;
         }
 
-        const pIso = f.data_pagamento_iso || f.data_pagamento || '';
-        const vIso = f.vencimento_iso || f.vencimento || '';
-        const refYm = (f.status === 'paid' || f.status === 'pago') ? (pIso.slice(0, 7) || vIso.slice(0, 7)) : vIso.slice(0, 7);
-
-        // Se o usuário clicou em um mês específico no gráfico, filtra estritamente por esse mês!
-        if (_finSelectedMonth && refYm !== _finSelectedMonth) {
-            return;
-        }
-
-        const val = Number(f.valor) || 0;
-        const st = f.status || '';
-
-        if (st === 'paid' || st === 'pago') {
-            byCourse[c].pago += val;
-        } else if (st === 'em_atraso') {
-            byCourse[c].atraso += val;
-        } else if (st === 'futuro' || st === 'a_vencer' || st === 'pending') {
-            byCourse[c].previsto += val;
+        if (pago > 0 || previsto > 0 || atraso > 0 || alunos > 0) {
+            rows.push({
+                curso: cm.curso,
+                alunos: alunos,
+                pago: pago,
+                previsto: previsto,
+                atraso: atraso,
+                volume: pago + previsto
+            });
         }
     });
 
-    const rows = Object.values(byCourse).filter(r => r.pago > 0 || r.previsto > 0 || r.atraso > 0 || r.alunos > 0);
-    const totalVolume = rows.reduce((acc, r) => acc + r.pago + r.previsto, 0);
+    const totalVolume = rows.reduce((acc, r) => acc + r.volume, 0);
 
     // Ordena pelo volume total
-    rows.sort((a, b) => (b.pago + b.previsto) - (a.pago + a.previsto));
+    rows.sort((a, b) => b.volume - a.volume);
 
     const fmt = v => 'R$ ' + (Number(v)||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
 
@@ -6193,8 +6371,7 @@ function _renderFinCursosTable(fin) {
     }
 
     tbody.innerHTML = rows.map((r, idx) => {
-        const vol = r.pago + r.previsto;
-        const pct = totalVolume > 0 ? ((vol / totalVolume) * 100).toFixed(1) : '0.0';
+        const pct = totalVolume > 0 ? ((r.volume / totalVolume) * 100).toFixed(1) : '0.0';
         return `<tr style="border-bottom:1px solid var(--line2); transition:background .15s" onmouseover="this.style.background='var(--paper)'" onmouseout="this.style.background=''">
             <td style="padding:10px 8px; font-weight:700; color:var(--ink)">
                 <div style="display:flex; align-items:center; gap:6px">
@@ -6217,6 +6394,7 @@ function _renderFinCursosTable(fin) {
         </tr>`;
     }).join('');
 }
+
 
 function renderFinTable() {
     const thead = $('#fin-table-thead');
