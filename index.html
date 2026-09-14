@@ -3960,7 +3960,6 @@ function drawExecView(force) {
     aHist.forEach(h => { if (h.mes === mesAnteriorKey) aRealizadoAnt = (Number(h.pago) || 0); });
 
     const totalMesAnterior = vRealizadoAnt + aRealizadoAnt;
-    const totalPrevistoMesVigente = recMesAtual + proj30d;
     const pctRealizadoMes = totalPrevistoMesVigente > 0 ? ((recMesAtual / totalPrevistoMesVigente) * 100).toFixed(1) : '0';
     
     // Crescimento MoM (Previsto do Mês Vigente vs Realizado Fechado do Mês Anterior)
