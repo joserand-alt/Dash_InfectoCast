@@ -3926,7 +3926,7 @@ function drawExecView(force) {
         const diff = cm.previsto_mes_vigente - cm.pago_mes_ant;
         cm.crescimento_mom = cm.pago_mes_ant > 0 ? ((diff / cm.pago_mes_ant) * 100).toFixed(1) : (cm.previsto_mes_vigente > 0 ? '+100' : '0.0');
         
-        cm.proj_1m = cm.proj_mes_atual > 0 ? cm.proj_mes_atual : (cm.mrr * 0.9);
+        cm.proj_1m = cm.mrr;
         cm.proj_3m = cm.mrr * 3;
         cm.proj_6m = cm.mrr * 6;
         cm.proj_12m = cm.mrr * 12;
@@ -4020,7 +4020,7 @@ function drawExecView(force) {
             </div>
             <div class="exec-card-val" style="color:var(--emerald-d)">${fM(totalPrevistoMesVigente)}</div>
             <div class="exec-card-sub">
-              <b>${fM(recMesAtual)}</b> realizado (${pctRealizadoMes}%) + <b>${fM(proj30d)}</b> a vencer
+              <b>${fM(recMesAtual)}</b> realizado (${pctRealizadoMes}%) + <b>${fM(proj30d)}</b> a vencer em ${labelMesVigente}
             </div>
           </div>
 
@@ -4061,10 +4061,10 @@ function drawExecView(force) {
           <div class="exec-card" style="background:rgba(2,132,199,0.02); border-left:3px solid #0284c7">
             <div class="exec-card-top">
               <span class="exec-card-label">Projeção 1 Mês (30 dias)</span>
-              <span class="exec-pill pill-blue">A Vencer (30d)</span>
+              <span class="exec-pill pill-blue">Ciclo Mensal</span>
             </div>
-            <div class="exec-card-val" style="color:#0284c7">${fM(proj30d)}</div>
-            <div class="exec-card-sub">Faturas agendadas com vencimento nos próximos 30 dias</div>
+            <div class="exec-card-val" style="color:#0284c7">${fM(mrrConsolidado)}</div>
+            <div class="exec-card-sub">Faturamento projetado de 1 ciclo mensal completo da carteira ativa (MRR)</div>
           </div>
 
           <!-- CARD 6: PROJEÇÃO 3 MESES (TRIMESTRE) -->
