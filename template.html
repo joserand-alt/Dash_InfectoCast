@@ -3721,21 +3721,49 @@ function computeUnifiedFinancialDataset(gatewayFilter) {
         });
     }
 
-    // 4. Clientes e Carnês Asaas (MRR e Projeções Futuras)
+    // 4. Clientes e Carnês/Cartões Asaas (MRR e Projeções Futuras)
     if (!gatewayFilter || gatewayFilter === 'all' || gatewayFilter === 'asaas') {
         const asaasMrrGlobal = Number(asaas.kpis?.mrr_ativo) || 0;
         const asaasCoursePending = {};
         let asaasTotalPending = 0;
 
+        function _parseDateSafe(dtStr) {
+            if (!dtStr) return null;
+            const s = dtStr.toString().trim();
+            if (s.includes('/')) {
+                const p = s.split('/');
+                if (p.length === 3) {
+                    const day = parseInt(p[0], 10);
+                    const month = parseInt(p[1], 10) - 1;
+                    const year = parseInt(p[2].length === 2 ? '20' + p[2] : p[2], 10);
+                    return new Date(year, month, day);
+                }
+            } else if (s.includes('-')) {
+                const p = s.slice(0, 10).split('-');
+                if (p.length === 3) {
+                    const year = parseInt(p[0], 10);
+                    const month = parseInt(p[1], 10) - 1;
+                    const day = parseInt(p[2], 10);
+                    return new Date(year, month, day);
+                }
+            }
+            const d = new Date(s);
+            return isNaN(d.getTime()) ? null : d;
+        }
+
         aFaturas.forEach(f => {
             const st = (f.status || '').toLowerCase();
-            if (st === 'pendente' || st === 'pending' || st === 'a_vencer') {
+            const isPendingOrFuture = (
+                st === 'pendente' || st === 'pending' || st === 'a_vencer' || 
+                st === 'futuro' || st === 'confirmed' || st === 'a vencer'
+            );
+            if (isPendingOrFuture) {
                 const em = (f.email || '').toString().toLowerCase().trim();
-                const cm = getCourse(f.curso || emailToCourse[em]);
+                const cm = getCourse(f.curso || emailToCourse[em] || nameToCourse[(f.aluno||'').toLowerCase()]);
                 const val = Number(f.valor) || 0;
                 const dtVenc = (f.vencimento || f.vencimento_iso || '').toString();
-                if (dtVenc) {
-                    const dObj = new Date(dtVenc.slice(0, 10));
+                const dObj = _parseDateSafe(dtVenc);
+                if (dObj) {
                     const hoje = new Date();
                     const diffMeses = (dObj.getFullYear() - hoje.getFullYear()) * 12 + (dObj.getMonth() - hoje.getMonth());
                     if (diffMeses >= 0 && diffMeses < 18) {
