@@ -1,4 +1,4 @@
-﻿import pandas as pd
+import pandas as pd
 import json
 import datetime
 import math
@@ -214,8 +214,36 @@ def main():
         if 'S.O.S' in name or 'ANTIBIOTICO' in name: return 'SOS'
         return name
     
-    # Integração com logs e alunos da Cativa Digital
-    df_log['Plataforma'] = 'Academy'
+    # 1. Integração com logs em tempo real da API InfectoCast Academy
+    academy_cache_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'academy_logs_cache.json')
+    academy_api_logs = []
+    if os.path.exists(academy_cache_path):
+        try:
+            with open(academy_cache_path, 'r', encoding='utf-8') as f:
+                acad_data = json.load(f)
+                for item in acad_data:
+                    academy_api_logs.append({
+                        'Data log': pd.to_datetime(item.get('Data log'), errors='coerce'),
+                        'Nome aluno': str(item.get('Nome aluno', '')).strip(),
+                        'E-mail': str(item.get('E-mail', '')).lower().strip(),
+                        'Ação / Local': item.get('Ação / Local', 'AÇÃO'),
+                        'ID Item': item.get('ID Item', ''),
+                        'Desc. Item': item.get('Desc. Item', ''),
+                        'Modulo': item.get('Modulo', 'Geral'),
+                        'Curso': item.get('Curso', 'PLATAFORMA GERAL'),
+                        'Plataforma': 'Academy'
+                    })
+            print(f"[ACADEMY API] Carregados {len(academy_api_logs)} logs em tempo real do Academy.")
+        except Exception as e:
+            print(f"[ACADEMY API] Erro lendo cache de logs: {e}")
+
+    if academy_api_logs:
+        df_acad_api = pd.DataFrame(academy_api_logs)
+        df_log = pd.concat([df_log, df_acad_api], ignore_index=True)
+
+    df_log['Plataforma'] = df_log['Plataforma'].fillna('Academy')
+
+    # 2. Integração com logs e alunos em tempo real da Cativa Digital
     import cativa_api
     cativa_data = cativa_api.fetch_all_cativa_data(force_refresh=False)
     cativa_users_meta = cativa_data.get('users_metadata', {})
@@ -244,11 +272,33 @@ def main():
                     'Plataforma': 'Cativa'
                 })
 
+    # Adicionar acessos/logins da Cativa de users_metadata
+    for em, meta in cativa_users_meta.items():
+        last_log = meta.get('last_login_at')
+        if last_log:
+            dt_val = pd.to_datetime(last_log[:19], errors='coerce')
+            first_n = meta.get('first_name') or ''
+            last_n = meta.get('last_name') or ''
+            full_n = f"{first_n} {last_n}".strip() or em
+            cativa_logs.append({
+                'Data log': dt_val,
+                'Nome aluno': full_n,
+                'E-mail': em.lower().strip(),
+                'Ação / Local': 'LOGIN WEB',
+                'ID Item': 'Ambiente de Aprendizagem Cativa',
+                'Desc. Item': 'Acesso Web à Plataforma Cativa',
+                'Modulo': 'Geral',
+                'Curso': 'PLATAFORMA GERAL',
+                'Plataforma': 'Cativa'
+            })
+
     df_cativa_logs = pd.DataFrame(cativa_logs)
-    print(f"Total de {len(df_cativa_logs)} registros de logs carregados via API Cativa Digital.")
+    print(f"Total de {len(df_cativa_logs)} registros de logs (aulas + logins) carregados da Cativa Digital.")
     df_log = pd.concat([df_log, df_cativa_logs], ignore_index=True)
-    if not df_log['Data log'].dropna().empty:
-        hoje = df_log['Data log'].max().date() + datetime.timedelta(days=1)
+    
+    # Garantir ordenação temporal e data de hoje oficial
+    df_log = df_log.dropna(subset=['Data log']).sort_values('Data log')
+    hoje = datetime.date.today()
 
     print("Montando grade curricular a partir dos logs da API...")
     
