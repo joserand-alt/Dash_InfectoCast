@@ -1271,23 +1271,24 @@ function initFilters() {
     const curric = (DATA && DATA.curriculum) ? DATA.curriculum : {};
 
     stList.forEach(s => {
-        if(s.curso && s.curso !== 'Sem Curso' && curric) Object.keys(curric).forEach(c => cursos.add(c));
+        if(s.curso && s.curso !== 'Sem Curso') cursos.add(s.curso);
         if(s.nome || s.email) alunos.add((s.nome || 'Aluno') + " (" + (s.email || '') + ")");
     });
-    
+    if (curric) Object.keys(curric).forEach(c => { if(c && c !== 'Sem Curso') cursos.add(c); });
+
     const selCurso = $('#filter-curso');
-    const sortedCourses = Object.keys(curric).sort((a, b) => {
-        const aPos = a.startsWith('POS') || a.startsWith('PÓS');
-        const bPos = b.startsWith('POS') || b.startsWith('PÓS');
+    const sortedCourses = Array.from(cursos).sort((a, b) => {
+        const aPos = a.startsWith('POS') || a.startsWith('PÓS') || a.startsWith('P?S');
+        const bPos = b.startsWith('POS') || b.startsWith('PÓS') || b.startsWith('P?S');
         if (aPos && !bPos) return -1;
         if (!aPos && bPos) return 1;
         return a.localeCompare(b);
     });
     if (selCurso) selCurso.innerHTML = '<option value="all">Todos os Cursos</option>' + sortedCourses.map(c => `<option value="${c}">${c}</option>`).join('');
-    
+
     const selAluno = $('#filter-aluno');
-    if (selAluno) selAluno.innerHTML = '<option value="all">Todos os Alunos</option>' + Array.from(alunos).map(a => `<option value="${a}">${a}</option>`).join('');
-    
+    if (selAluno) selAluno.innerHTML = '<option value="all">Todos os Alunos</option>' + Array.from(alunos).sort().map(a => `<option value="${a}">${a}</option>`).join('');
+
     if (selCurso) selCurso.onchange = e => { FILTER.curso = e.target.value; applyFilters(); };
     if (selAluno) selAluno.onchange = e => { FILTER.aluno = e.target.value; applyFilters(); };
     if ($('#filter-date-start')) $('#filter-date-start').onchange = e => { FILTER.start = e.target.value; applyFilters(); };
@@ -2706,11 +2707,21 @@ function renderModules() {
         c = availableCourses[0];
     }
     
-    let mods = curric[c];
+        let mods = curric[c];
     if (!mods || mods.length === 0) {
         view.innerHTML = '<div style="padding:20px; text-align:center; color:var(--muted)">Nenhum módulo encontrado para este curso.</div>';
         return;
     }
+
+    let maxIni = 1;
+    mods.forEach(m => {
+        (m.aulas || []).forEach(a => {
+            const aNorm = a.nome ? a.nome.toString().trim().toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '') : '';
+            const views = (CURRENT_DATA?.lesson_views?.[a.id]?.size) || (CURRENT_DATA?.lesson_views?.[aNorm]?.size) || 0;
+            if (views > maxIni) maxIni = views;
+        });
+    });
+    if (maxIni <= 0) maxIni = 1;
 
     const coursePills = `
       <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid var(--line)">
@@ -6580,6 +6591,22 @@ function renderFinTable() {
         </tr>`;
     }).join('');
 }
+
+// ==========================================
+// INICIALIZAÇÃO AUTOMÁTICA DO DASHBOARD
+// ==========================================
+function initDashboard() {
+    initFilters();
+    applyFilters();
+    selectTab('exec');
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDashboard);
+} else {
+    initDashboard();
+}
+
 </script>
 <style>
 @keyframes spin { 100% { transform: rotate(360deg); } }
