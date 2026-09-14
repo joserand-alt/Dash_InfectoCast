@@ -236394,7 +236394,87 @@
       {
         "mes": "2026-10",
         "label": "Out/26",
-        "previsto": 97339.7
+        "previsto": 154132.43
+      },
+      {
+        "mes": "2026-11",
+        "label": "Nov/26",
+        "previsto": 137227.63
+      },
+      {
+        "mes": "2026-12",
+        "label": "Dez/26",
+        "previsto": 127816.08
+      },
+      {
+        "mes": "2027-01",
+        "label": "Jan/27",
+        "previsto": 123382.08
+      },
+      {
+        "mes": "2027-02",
+        "label": "Fev/27",
+        "previsto": 104891.63
+      },
+      {
+        "mes": "2027-03",
+        "label": "Mar/27",
+        "previsto": 95218.78
+      },
+      {
+        "mes": "2027-04",
+        "label": "Abr/27",
+        "previsto": 91456.78
+      },
+      {
+        "mes": "2027-05",
+        "label": "Mai/27",
+        "previsto": 74941.33
+      },
+      {
+        "mes": "2027-06",
+        "label": "Jun/27",
+        "previsto": 65596.53
+      },
+      {
+        "mes": "2027-07",
+        "label": "Jul/27",
+        "previsto": 62821.53
+      },
+      {
+        "mes": "2027-08",
+        "label": "Ago/27",
+        "previsto": 54834.78
+      },
+      {
+        "mes": "2027-09",
+        "label": "Set/27",
+        "previsto": 35452.38
+      },
+      {
+        "mes": "2027-10",
+        "label": "Out/27",
+        "previsto": 22197.88
+      },
+      {
+        "mes": "2027-11",
+        "label": "Nov/27",
+        "previsto": 9915.08
+      },
+      {
+        "mes": "2027-12",
+        "label": "Dez/27",
+        "previsto": 7139.08
+      },
+      {
+        "mes": "2028-01",
+        "label": "Jan/28",
+        "previsto": 7139.08
+      },
+      {
+        "mes": "2028-02",
+        "label": "Fev/28",
+        "previsto": 3308.15
       }
     ],
     "faturas_tabela": [
