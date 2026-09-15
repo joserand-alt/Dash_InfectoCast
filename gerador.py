@@ -38,7 +38,7 @@ def fetch_logs_from_api(students_df=None):
         email = str(row['E-mail']).strip()
         nome = str(row['Aluno']).strip()
         url = f'https://academy.infectocast.com.br/api/alunos/{id_aluno}/log'
-        req = urllib.request.Request(url, headers={'Authorization': f'Bearer {token}', 'Accept': 'application/json'})
+        req = urllib.request.Request(url, headers={'Authorization': f'Bearer {token}', 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0'})
         logs_list = []
         try:
             with urllib.request.urlopen(req, timeout=12) as resp:
@@ -224,7 +224,32 @@ def main():
     # 1. Integração com logs em tempo real da API InfectoCast Academy
     academy_cache_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'academy_logs_cache.json')
     academy_api_logs = []
-    if os.path.exists(academy_cache_path):
+    
+    inscricoes_path = r'C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\Inscrições.xlsx'
+    if os.path.exists(inscricoes_path):
+        try:
+            df_insc = pd.read_excel(inscricoes_path)
+            df_acad_live = fetch_logs_from_api(df_insc)
+            if not df_acad_live.empty:
+                for _, row in df_acad_live.iterrows():
+                    academy_api_logs.append({
+                        'Data log': pd.to_datetime(row['Data log'], errors='coerce'),
+                        'Nome aluno': str(row.get('Nome aluno', '')).strip(),
+                        'E-mail': str(row.get('E-mail', '')).lower().strip(),
+                        'Ação / Local': row.get('Ação / Local', 'AÇÃO'),
+                        'ID Item': row.get('ID Item', ''),
+                        'Desc. Item': row.get('Desc. Item', ''),
+                        'Modulo': 'Geral',
+                        'Curso': 'PLATAFORMA GERAL',
+                        'Plataforma': 'Academy'
+                    })
+                with open(academy_cache_path, 'w', encoding='utf-8') as f:
+                    json.dump(df_acad_live.to_dict(orient='records'), f, default=str, ensure_ascii=False)
+                print(f"[ACADEMY API] Consultados {len(academy_api_logs)} logs ao vivo diretamente da API InfectoCast Academy.")
+        except Exception as e:
+            print(f"[ACADEMY API] Erro ao consultar API ao vivo: {e}")
+
+    if not academy_api_logs and os.path.exists(academy_cache_path):
         try:
             with open(academy_cache_path, 'r', encoding='utf-8') as f:
                 acad_data = json.load(f)
@@ -240,7 +265,7 @@ def main():
                         'Curso': item.get('Curso', 'PLATAFORMA GERAL'),
                         'Plataforma': 'Academy'
                     })
-            print(f"[ACADEMY API] Carregados {len(academy_api_logs)} logs em tempo real do Academy.")
+            print(f"[ACADEMY API] Carregados {len(academy_api_logs)} logs de backup do cache local.")
         except Exception as e:
             print(f"[ACADEMY API] Erro lendo cache de logs: {e}")
 
@@ -250,9 +275,9 @@ def main():
 
     df_log['Plataforma'] = df_log['Plataforma'].fillna('Academy')
 
-    # 2. Integração com logs e alunos em tempo real da Cativa Digital
+    # 2. Integração com logs e alunos em tempo real da Cativa Digital (forçando consulta ao vivo da API)
     import cativa_api
-    cativa_data = cativa_api.fetch_all_cativa_data(force_refresh=False)
+    cativa_data = cativa_api.fetch_all_cativa_data(force_refresh=True)
     cativa_users_meta = cativa_data.get('users_metadata', {})
     cativa_students = cativa_data.get('students', [])
     cativa_logs = []
@@ -265,6 +290,8 @@ def main():
             for l in c.get('lessons', []):
                 dt_s = l.get('watchedAt', '')[:19]
                 dt_val = pd.to_datetime(dt_s, errors='coerce')
+                if pd.notnull(dt_val):
+                    dt_val = dt_val - pd.Timedelta(hours=3) # Cativa API retorna em UTC, converter para Horario de Brasilia (UTC-3)
                 lesson_name = str(l.get('lessonName', '')).strip()
                 mod_name = str(l.get('moduleName', '')).strip() or 'Geral'
                 cativa_logs.append({
@@ -284,6 +311,8 @@ def main():
         last_log = meta.get('last_login_at')
         if last_log:
             dt_val = pd.to_datetime(last_log[:19], errors='coerce')
+            if pd.notnull(dt_val):
+                dt_val = dt_val - pd.Timedelta(hours=3) # Cativa API retorna em UTC, converter para Horario de Brasilia (UTC-3)
             first_n = meta.get('first_name') or ''
             last_n = meta.get('last_name') or ''
             full_n = f"{first_n} {last_n}".strip() or em
@@ -803,6 +832,8 @@ def main():
         created_at = u_meta.get('created_at', '')
         
         dt_insc = pd.to_datetime(created_at[:19], errors='coerce') if created_at else None
+        if pd.notnull(dt_insc):
+            dt_insc = dt_insc - pd.Timedelta(hours=3) # Cativa API retorna em UTC, converter para Horario de Brasilia (UTC-3)
         
         courses = s.get('courses', [])
         if not courses:
@@ -815,7 +846,7 @@ def main():
                 continue
             processed_student_keys.add(key)
             
-            logs = df_log[(df_log['E-mail'] == email) & (df_log['Curso'] == c_canon)]
+            logs = df_log[(df_log['E-mail'] == email) & ((df_log['Curso'] == c_canon) | (df_log['Curso'] == 'PLATAFORMA GERAL'))]
             if logs.empty:
                 logs = df_log[df_log['E-mail'] == email]
                 
@@ -875,8 +906,11 @@ def main():
                     
                 last_event_key = None
                 for _, r in logs.sort_values('Data log', ascending=False).iterrows():
-                    acao = "ASSISTIU AULA"
-                    cat = "concluiu"
+                    raw_acao = str(r.iloc[3] if len(r) > 3 else "ASSISTIU AULA").upper()
+
+                    acao = "LOGIN WEB (Cativa)" if "LOGIN" in raw_acao else "ASSISTIU AULA"
+
+                    cat = "login" if "LOGIN" in raw_acao else "concluiu"
                     item_name = str(r['ID Item']).strip()
                     mod_name = str(r.get('Modulo', '')).strip()
                     d_str = r['Data log'].strftime("%d/%m/%Y %H:%M") if pd.notna(r['Data log']) else ""
@@ -1493,6 +1527,8 @@ def main():
                     last_login_s = c_meta.get('last_login_at')
                     if last_login_s:
                         dt_c_login = pd.to_datetime(last_login_s[:19], errors='coerce')
+                        if pd.notnull(dt_c_login):
+                            dt_c_login = dt_c_login - pd.Timedelta(hours=3) # Cativa API retorna em UTC, converter para Horario de Brasilia (UTC-3)
                         if pd.notna(dt_c_login):
                             st_acessou = True
                             st_events.append({

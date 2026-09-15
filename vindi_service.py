@@ -559,6 +559,8 @@ def get_vindi_data(force_reload=False):
     proj_3m_vindi = sum(p['previsto'] for p in projecao_mensal[:3])
     proj_6m_vindi = sum(p['previsto'] for p in projecao_mensal[:6])
     proj_12m_vindi = sum(p['previsto'] for p in projecao_mensal[:12])
+    proj_60d = sum(p['previsto'] for p in projecao_mensal[:2])
+    proj_12m = proj_12m_vindi
     total_faturado = total_recebido + total_em_atraso
     taxa_adimp = round((total_recebido / total_faturado * 100)) if total_faturado > 0 else 100
 
