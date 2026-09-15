@@ -3373,32 +3373,22 @@ function drawLiveMonitor(baseStudents, isAutoTick) {
     allEvts.sort((a,b) => a.dt.getTime() - b.dt.getTime());
     const maxDt = allEvts[allEvts.length - 1].dt;
     
-    // TEMPO REAL OU ÂNCORA DA BASE:
-    // Se houver atividade dentro das últimas 24h a partir do momento atual (now), opera em modo TEMPO REAL.
-    // Se a base estiver defasada há mais de 24h ou for um snapshot estático, ancoramos a janela na última
-    // atividade registrada (maxDt), evitando que a tela fique zerada por falta de nova sincronização.
+    // TEMPO REAL ESTRITO: Respeita rigorosamente o horário atual do relógio (now)
     const now = new Date();
-    const t24hReal = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const hasRealTime24h = allEvts.some(e => e.dt >= t24hReal && e.dt <= now);
+    const t60m = new Date(now.getTime() - 60 * 60 * 1000);
+    const t24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-    const isRealTime = hasRealTime24h;
-    const refDate = isRealTime ? now : maxDt;
-
-    const t60m = new Date(refDate.getTime() - 60 * 60 * 1000);
-    const t24h = new Date(refDate.getTime() - 24 * 60 * 60 * 1000);
-
-    const evts60m = allEvts.filter(e => e.dt >= t60m && e.dt <= refDate).sort((a,b) => b.dt.getTime() - a.dt.getTime());
-    const evts24h = allEvts.filter(e => e.dt >= t24h && e.dt <= refDate);
+    const evts60m = allEvts.filter(e => e.dt >= t60m && e.dt <= now).sort((a,b) => b.dt.getTime() - a.dt.getTime());
+    const evts24h = allEvts.filter(e => e.dt >= t24h && e.dt <= now);
 
     const uniqueStudents60m = new Set(evts60m.map(e => (e.email || '').toLowerCase().trim()).filter(Boolean));
     const uniqueStudents24h = new Set(evts24h.map(e => (e.email || '').toLowerCase().trim()).filter(Boolean));
 
     const pad = n => n < 10 ? '0' + n : n;
     const startTime60mFmt = `${pad(t60m.getHours())}:${pad(t60m.getMinutes())}`;
-    const refTimeFmt = `${pad(refDate.getHours())}:${pad(refDate.getMinutes())}`;
+    const nowTimeFmt = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
     const maxTimeHourFmt = `${pad(maxDt.getHours())}:${pad(maxDt.getMinutes())}`;
     const maxDateFmt = `${pad(maxDt.getDate())}/${pad(maxDt.getMonth()+1)}/${maxDt.getFullYear()}`;
-    const refDateFmt = isRealTime ? 'Hoje' : `${pad(refDate.getDate())}/${pad(refDate.getMonth()+1)}`;
 
     // Calcular tempo desde o último registro na base
     const diffMs = Math.max(0, now.getTime() - maxDt.getTime());
@@ -3406,17 +3396,13 @@ function drawLiveMonitor(baseStudents, isAutoTick) {
     const diffMins = Math.floor((diffMs % (3600 * 1000)) / 60000);
     const tempoAtras = diffHours > 0 ? `há ${diffHours}h ${diffMins}min` : `há ${diffMins} min`;
 
-    const badgeModo = isRealTime 
-        ? '<span style="background:rgba(16,185,129,0.15); color:var(--emerald-d); font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; border:1px solid rgba(16,185,129,0.3)">● TEMPO REAL</span>'
-        : `<span style="background:rgba(224,145,47,0.15); color:var(--amber); font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; border:1px solid rgba(224,145,47,0.3)" title="Última sincronização há mais de 24h. Exibindo última janela ativa gravada na base.">⏱ BASE: ${tempoAtras}</span>`;
-
     // Atualizar labels de referência no cabeçalho
     const refTimeEl = document.getElementById('live-ref-time');
     if (refTimeEl) {
-        refTimeEl.innerHTML = `Último registro na base: <b style="color:var(--ink)">${maxDateFmt} às ${maxTimeHourFmt}</b> (${tempoAtras}) · ${badgeModo}`;
+        refTimeEl.innerHTML = `Último registro na base: <b style="color:var(--ink)">${maxDateFmt} às ${maxTimeHourFmt}</b> (${tempoAtras})`;
     }
 
-    // Mini KPIs
+    // Mini KPIs (estritamente baseados nas janelas de tempo reais)
     const miniKpisEl = document.getElementById('home-live-mini-kpis');
     if (miniKpisEl) {
         miniKpisEl.innerHTML = `
@@ -3445,7 +3431,7 @@ function drawLiveMonitor(baseStudents, isAutoTick) {
     const liveWindowLabel = document.getElementById('live-window-label');
     
     if (liveCountBadge) liveCountBadge.textContent = `${evts60m.length} evento${evts60m.length !== 1 ? 's' : ''}`;
-    if (liveWindowLabel) liveWindowLabel.innerHTML = `Janela: <b>${startTime60mFmt} às ${refTimeFmt}</b> (${refDateFmt})`;
+    if (liveWindowLabel) liveWindowLabel.innerHTML = `Janela: <b>${startTime60mFmt} às ${nowTimeFmt}</b> (Hoje)`;
 
     if (feedListEl) {
         if (evts60m.length === 0) {
@@ -3453,16 +3439,14 @@ function drawLiveMonitor(baseStudents, isAutoTick) {
               <div style="text-align:center; padding:45px 15px; color:var(--muted)">
                 <div style="font-size:26px; margin-bottom:8px">☕</div>
                 <div style="font-size:13px; font-weight:700; color:var(--ink)">Nenhuma atividade nos últimos 60 minutos</div>
-                <div style="font-size:11px; margin-top:4px; color:var(--muted)">Sem logs recebidos entre ${startTime60mFmt} e ${refTimeFmt}.</div>
-                <div style="margin-top:10px; font-size:10.5px; color:var(--muted2)">O feed será atualizado automaticamente com novas ações.</div>
+                <div style="font-size:11px; margin-top:4px; color:var(--muted)">Sem logs recebidos nas APIs entre ${startTime60mFmt} e ${nowTimeFmt}.</div>
+                <div style="margin-top:10px; font-size:10.5px; color:var(--muted2)">O feed será atualizado automaticamente caso surjam novas ações.</div>
               </div>
             `;
         } else {
             feedListEl.innerHTML = evts60m.map(e => {
-                const diffMinsAgo = Math.max(0, Math.round((refDate.getTime() - e.dt.getTime()) / 60000));
-                const timeAgo = isRealTime
-                    ? (diffMinsAgo === 0 ? 'agora mesmo' : `há ${diffMinsAgo} min`)
-                    : (diffMinsAgo === 0 ? 'no fechamento' : `há ${diffMinsAgo} min (base)`);
+                const diffMinsAgo = Math.max(0, Math.round((now.getTime() - e.dt.getTime()) / 60000));
+                const timeAgo = diffMinsAgo === 0 ? 'agora mesmo' : `há ${diffMinsAgo} min`;
                 const timeHour = `${pad(e.dt.getHours())}:${pad(e.dt.getMinutes())}`;
                 const eventDate = `${pad(e.dt.getDate())}/${pad(e.dt.getMonth()+1)}`;
 
@@ -3556,16 +3540,9 @@ function drawLiveHourlyChart(baseStudents, actionFilter) {
         return;
     }
 
-    allEvts.sort((a,b) => a.dt.getTime() - b.dt.getTime());
-    const maxDt = allEvts[allEvts.length - 1].dt;
-
-    // Janela de 24 horas: usa o relógio real se houver eventos nas últimas 24h, ou a âncora maxDt se defasado
+    // Janela real estrita de 24 horas terminando na hora atual do relógio
     const now = new Date();
-    const t24hReal = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const hasRealTime24h = allEvts.some(e => e.dt >= t24hReal && e.dt <= now);
-    const anchor = hasRealTime24h ? now : maxDt;
-
-    const currentHourStart = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate(), anchor.getHours(), 0, 0, 0);
+    const currentHourStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0, 0);
     const t24hStart = new Date(currentHourStart.getTime() - 23 * 3600 * 1000);
     const t24hEnd = new Date(currentHourStart.getTime() + 3600 * 1000);
 
@@ -3634,9 +3611,7 @@ function drawLiveHourlyChart(baseStudents, actionFilter) {
     }
 
     if (rangeLabel) {
-        const dStartFmt = `${pad(t24hStart.getDate())}/${pad(t24hStart.getMonth()+1)}`;
-        const dEndFmt = `${pad(anchor.getDate())}/${pad(anchor.getMonth()+1)}`;
-        rangeLabel.textContent = `Janela das 24h: ${dStartFmt} ${pad(t24hStart.getHours())}:00 às ${dEndFmt} ${pad(anchor.getHours())}:${pad(anchor.getMinutes())}`;
+        rangeLabel.textContent = `Janela das 24h: ${pad(t24hStart.getDate())}/${pad(t24hStart.getMonth()+1)} ${pad(t24hStart.getHours())}:00 às ${pad(now.getDate())}/${pad(now.getMonth()+1)} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
     }
     if (totalLabel) {
         totalLabel.innerHTML = `Volume no filtro: <b style="color:var(--ink)">${filteredTotal} ações</b>`;
