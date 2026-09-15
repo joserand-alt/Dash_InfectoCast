@@ -642,34 +642,61 @@ footer{padding:30px 0 40px;color:var(--muted2);font-size:11.5px;text-align:cente
         <div class="sub" id="hd-sub" style="color:#A9BCC5; font-size:12.5px; margin-top:2px;"></div>
       </div>
     </div>
-    <div class="hd-meta" style="text-align:left; display:flex; gap: 12px; align-items:flex-end; flex-wrap:wrap">
-      <div>
-         <div style="margin-bottom:4px; font-size:11px; opacity:0.8">Curso</div>
-         <select id="filter-curso" style="padding:7px; border-radius:6px; border:none; color:var(--ink); font-family:var(--body); min-width:140px"></select>
       </div>
-      <div>
-         <div style="margin-bottom:4px; font-size:11px; opacity:0.8">Aluno</div>
-         <select id="filter-aluno" style="padding:7px; border-radius:6px; border:none; color:var(--ink); font-family:var(--body); min-width:200px"></select>
-      </div>
-      <div style="margin-left: 8px;">
-         <button onclick="triggerUpdate()" id="btn-atualizar" style="padding:7px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.2); background:transparent; color:white; font-family:var(--body); cursor:pointer; font-weight:500; display:flex; align-items:center; gap:6px; transition:0.2s">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
-            Atualizar Dados
-         </button>
-      </div>
-      <div>
-         <div style="margin-bottom:4px; font-size:11px; opacity:0.8">Período (Início)</div>
-         <input type="date" id="filter-date-start" style="padding:6px; border-radius:6px; border:none; color:var(--ink); font-family:var(--body)">
-      </div>
-      <div>
-         <div style="margin-bottom:4px; font-size:11px; opacity:0.8">Período (Fim)</div>
-         <input type="date" id="filter-date-end" style="padding:6px; border-radius:6px; border:none; color:var(--ink); font-family:var(--body)">
-      </div>
-    </div>
-  </div>
 </header>
 
 <div class="wrap">
+  <!-- BARRA DE FILTROS GERAIS RESPONSIVA E UNIFICADA -->
+  <div class="global-filter-bar" style="background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 20px; margin:20px 0 24px 0; box-shadow:0 2px 8px rgba(0,0,0,0.04); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+    <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; flex:1; min-width:300px;">
+      
+      <!-- Filtro Curso -->
+      <div style="display:flex; flex-direction:column; gap:5px; min-width:260px; flex:1.2;">
+        <label for="filter-curso" style="font-size:10.5px; font-weight:800; letter-spacing:0.6px; color:var(--muted); text-transform:uppercase; display:flex; align-items:center; gap:6px;">
+          <span style="font-size:13px;">🎓</span> CURSO / ESPECIALIDADE
+        </label>
+        <select id="filter-curso" style="width:100%; padding:9px 12px; font-size:12.5px; font-weight:700; border-radius:8px; border:1px solid var(--line); background:var(--paper); color:var(--ink); font-family:var(--body); cursor:pointer; outline:none; transition:all 0.15s ease;">
+          <option value="all">Todos os Cursos (Consolidado)</option>
+        </select>
+      </div>
+
+      <!-- Filtro Data Início -->
+      <div style="display:flex; flex-direction:column; gap:5px; min-width:145px; flex:0.8;">
+        <label for="filter-date-start" style="font-size:10.5px; font-weight:800; letter-spacing:0.6px; color:var(--muted); text-transform:uppercase; display:flex; align-items:center; gap:6px;">
+          <span style="font-size:13px;">📅</span> PERÍODO INÍCIO
+        </label>
+        <input type="date" id="filter-date-start" style="width:100%; padding:8px 10px; font-size:12px; font-weight:600; border-radius:8px; border:1px solid var(--line); background:var(--paper); color:var(--ink); font-family:var(--body); cursor:pointer; outline:none; transition:all 0.15s ease;">
+      </div>
+
+      <!-- Filtro Data Fim -->
+      <div style="display:flex; flex-direction:column; gap:5px; min-width:145px; flex:0.8;">
+        <label for="filter-date-end" style="font-size:10.5px; font-weight:800; letter-spacing:0.6px; color:var(--muted); text-transform:uppercase; display:flex; align-items:center; gap:6px;">
+          <span style="font-size:13px;">📅</span> PERÍODO FIM
+        </label>
+        <input type="date" id="filter-date-end" style="width:100%; padding:8px 10px; font-size:12px; font-weight:600; border-radius:8px; border:1px solid var(--line); background:var(--paper); color:var(--ink); font-family:var(--body); cursor:pointer; outline:none; transition:all 0.15s ease;">
+      </div>
+
+      <!-- Botão Limpar Filtros -->
+      <div style="display:flex; align-items:flex-end; padding-top:19px;">
+        <button type="button" onclick="resetGlobalFilters()" id="btn-reset-filters" style="padding:8px 14px; font-size:11.5px; font-weight:700; border-radius:8px; border:1px solid var(--line); background:var(--paper); color:var(--muted); cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s ease;" title="Limpar período e voltar para todos os cursos">
+          <span style="font-size:12px;">✕</span> Limpar Filtros
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Botão Atualizar Dados -->
+    <div style="display:flex; align-items:center; padding-top:19px;">
+      <button onclick="triggerUpdate()" id="btn-atualizar" style="padding:9px 18px; border-radius:8px; border:1px solid rgba(2,132,199,0.3); background:var(--brand); color:#FFFFFF; font-family:var(--body); font-size:12.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:7px; transition:all 0.2s ease; box-shadow:0 2px 6px rgba(2,132,199,0.25);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
+        </svg>
+        Atualizar Dados
+      </button>
+    </div>
+
+  </div>
+
   <div class="kpis" id="kpis"></div>
 
     <nav class="tabs" id="tabs">
@@ -1270,17 +1297,60 @@ const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 const fmt = n => new Intl.NumberFormat('pt-BR').format(n);
 
+// Funcoes do Filtro Geral Global Unificado
+window.resetGlobalFilters = function() {
+    FILTER.curso = 'all';
+    FILTER.aluno = 'all';
+    FILTER.start = '';
+    FILTER.end = '';
+    const selCurso = document.getElementById('filter-curso');
+    if (selCurso) selCurso.value = 'all';
+    const selStart = document.getElementById('filter-date-start');
+    if (selStart) selStart.value = '';
+    const selEnd = document.getElementById('filter-date-end');
+    if (selEnd) selEnd.value = '';
+    applyFilters();
+};
+
+window.setCursoView = function(cName) {
+    const cCanonical = (typeof resolveCanonicalCourse === 'function') ? resolveCanonicalCourse(cName) : cName;
+    CURRENT_SELECTED_COURSE = cCanonical;
+    FILTER.curso = cCanonical;
+    const sel = document.getElementById('filter-curso');
+    if (sel) {
+        for (let i = 0; i < sel.options.length; i++) {
+            const optVal = (typeof resolveCanonicalCourse === 'function') ? resolveCanonicalCourse(sel.options[i].value) : sel.options[i].value;
+            if (optVal === cCanonical || sel.options[i].value === cName) {
+                sel.selectedIndex = i;
+                break;
+            }
+        }
+    }
+    applyFilters();
+    if (typeof drawCursoView === 'function') {
+        drawCursoView(cCanonical, true);
+    }
+};
+
 function initFilters() {
     const cursos = new Set();
-    const alunos = new Set();
     const stList = (DATA && DATA.students) ? DATA.students : [];
     const curric = (DATA && DATA.curriculum) ? DATA.curriculum : {};
 
     stList.forEach(s => {
-        if(s.curso && s.curso !== 'Sem Curso') cursos.add(s.curso);
-        if(s.nome || s.email) alunos.add((s.nome || 'Aluno') + " (" + (s.email || '') + ")");
+        if(s.curso && s.curso !== 'Sem Curso') {
+            const cName = (typeof resolveCanonicalCourse === 'function') ? resolveCanonicalCourse(s.curso) : s.curso;
+            cursos.add(cName);
+        }
     });
-    if (curric) Object.keys(curric).forEach(c => { if(c && c !== 'Sem Curso') cursos.add(c); });
+    if (curric) {
+        Object.keys(curric).forEach(c => { 
+            if(c && c !== 'Sem Curso') {
+                const cName = (typeof resolveCanonicalCourse === 'function') ? resolveCanonicalCourse(c) : c;
+                cursos.add(cName);
+            }
+        });
+    }
 
     const selCurso = $('#filter-curso');
     const sortedCourses = Array.from(cursos).sort((a, b) => {
@@ -1290,13 +1360,28 @@ function initFilters() {
         if (!aPos && bPos) return 1;
         return a.localeCompare(b);
     });
-    if (selCurso) selCurso.innerHTML = '<option value="all">Todos os Cursos</option>' + sortedCourses.map(c => `<option value="${c}">${c}</option>`).join('');
+    if (selCurso) {
+        selCurso.innerHTML = '<option value="all">Todos os Cursos (Consolidado)</option>' + sortedCourses.map(c => `<option value="${c}">${c}</option>`).join('');
+        if (FILTER.curso && FILTER.curso !== 'all') {
+            selCurso.value = FILTER.curso;
+        }
+    }
 
     const selAluno = $('#filter-aluno');
-    if (selAluno) selAluno.innerHTML = '<option value="all">Todos os Alunos</option>' + Array.from(alunos).sort().map(a => `<option value="${a}">${a}</option>`).join('');
+    if (selAluno) {
+        selAluno.innerHTML = '<option value="all">Todos os Alunos</option>';
+    }
 
-    if (selCurso) selCurso.onchange = e => { FILTER.curso = e.target.value; applyFilters(); };
-    if (selAluno) selAluno.onchange = e => { FILTER.aluno = e.target.value; applyFilters(); };
+    if (selCurso) {
+        selCurso.onchange = e => { 
+            FILTER.curso = e.target.value; 
+            if (FILTER.curso !== 'all') {
+                CURRENT_SELECTED_COURSE = (typeof resolveCanonicalCourse === 'function') ? resolveCanonicalCourse(FILTER.curso) : FILTER.curso;
+            }
+            applyFilters(); 
+        };
+    }
+
     if ($('#filter-date-start')) $('#filter-date-start').onchange = e => { FILTER.start = e.target.value; applyFilters(); };
     if ($('#filter-date-end')) $('#filter-date-end').onchange = e => { FILTER.end = e.target.value; applyFilters(); };
 }
@@ -1516,16 +1601,23 @@ const STATUS = {
 };
 
 function renderAll() {
-    buildHead();
-    drawExecView(true);
-    drawHome(true);
-    statusChips();
-    renderRows();
-    renderRetention();
-    drawTimeline(true);
-    renderModules();
-    drawOrigem(true);
-    drawFinanceiro(true);
+  buildHead();
+  drawExecView(true);
+  drawHome(true);
+  statusChips();
+  renderRows();
+  renderRetention();
+  drawTimeline(true);
+  renderModules();
+  drawOrigem(true);
+  drawFinanceiro(true);
+  if (typeof drawCursoView === 'function') {
+      const active = (FILTER && FILTER.curso && FILTER.curso !== 'all') ? resolveCanonicalCourse(FILTER.curso) : CURRENT_SELECTED_COURSE;
+      drawCursoView(active, true);
+  }
+  if (typeof drawFunil === 'function') {
+      drawFunil(true);
+  }
 }
 
 function renderRetention() {
