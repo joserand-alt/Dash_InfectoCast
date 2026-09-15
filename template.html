@@ -2452,7 +2452,7 @@ function selectTab(pId) {
     $$('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + pId));
 
     // Exibe/oculta barra de KPIs do cabeçalho de acordo com a aba
-    if (pId === 'exec' || pId === 'home' || pId === 'fin' || pId === 'funil') {
+    if (pId === 'exec' || pId === 'curso' || pId === 'home' || pId === 'fin' || pId === 'funil') {
         if ($('#kpis')) $('#kpis').style.display = 'none';
     } else {
         if ($('#kpis')) $('#kpis').style.display = 'grid';
@@ -6604,14 +6604,13 @@ function renderFinTable() {
 
 // =========================================================================
 // ABA DEDICADA: VISÃO POR CURSO (COCKPIT 360° - MATRÍCULAS, ENGAJAMENTO & FINANÇAS)
-// =========================================================================
+// ==========================================
+// VISÃO POR CURSO (COCKPIT 360° DO CURSO)
+// ==========================================
 let CURRENT_SELECTED_COURSE = '';
 
 function setCursoView(cName) {
     CURRENT_SELECTED_COURSE = cName;
-    FILTER.curso = cName;
-    const sel = document.getElementById('filter-curso');
-    if (sel) sel.value = cName;
     drawCursoView(cName, true);
 }
 window.setCursoView = setCursoView;
@@ -6620,15 +6619,148 @@ function drawCursoView(courseName, force) {
     const mount = document.getElementById('curso-content-mount');
     if (!mount) return;
 
-    const allStudents = (DATA && DATA.students) ? DATA.students.filter(s => !isInvalidOrInternal(s)) : [];
-    const curric = (DATA && DATA.curriculum) ? DATA.curriculum : {};
-    
-    // Lista canônica de cursos
-    const cursosSet = new Set();
-    allStudents.forEach(s => { if (s.curso && s.curso !== 'Sem Curso') cursosSet.add(s.curso); });
-    Object.keys(curric).forEach(c => { if (c && c !== 'Sem Curso') cursosSet.add(c); });
+    // Regra de exclusão de testes e contas internas
+    const isInvalidOrInternal = s => {
+        const em = (s.email || '').toString().toLowerCase().trim();
+        const nm = (s.nome || '').toString().toLowerCase().trim();
+        const cr = (s.curso || '').toString().toUpperCase().trim();
+        if (cr.includes('NUTRIFY')) return true;
+        if (em.includes('@infectocast') || em.includes('@integralmedica') || em.includes('@nutrify') || em.includes('@vectorcomunica')) return true;
+        if (em.includes('teste') || nm.includes('teste')) return true;
+        if (em.includes('gcotta29') || em.includes('j.o.s.e.r.a.n.d@gmail.com') || em.includes('email@email.com')) return true;
+        return false;
+    };
 
-    const availableCourses = Array.from(cursosSet).sort((a, b) => {
+    const resolveCanonicalCourse = name => {
+        const n = (name || '').toString().toUpperCase().trim();
+        if (n.includes('CCIH') || n.includes('PREVENCAO') || n.includes('CONTROLE DE INFECCAO')) {
+            return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)';
+        }
+        if (n.includes('IMUNODEPRIMIDO')) {
+            return 'POS-GRADUACAO EM INFECTOLOGIA DO PACIENTE IMUNODEPRIMIDO';
+        }
+        if (n.includes('ORTOPED') || n.includes('MOLES')) {
+            return 'POS-GRADUACAO EM INFECCOES ORTOPEDICAS E DE PARTES MOLES';
+        }
+        if (n.includes('INFECTOPED') || n.includes('PEDIATR')) {
+            return 'POS-GRADUACAO EM INFECTOPEDIATRIA';
+        }
+        if (n.includes('MULTI-R') || n.includes('MULTIR') || n.includes('JORNADA')) {
+            return 'JORNADA MULTI-R';
+        }
+        if (n.includes('FUNGO') || n.includes('ANTIFUNGICO')) {
+            return 'DO FUNGO AO ANTIFUNGICO';
+        }
+        if (n.includes('SOS') || n.includes('ANTIBIOTICO') || n.includes('S.O.S')) {
+            return 'S.O.S ANTIBIOTICO';
+        }
+        if (n.includes('INFECTOXPERT')) {
+            return 'INFECTOXPERT';
+        }
+        return 'PLATAFORMA GERAL';
+    };
+
+    // 1. Enriquecimento Robusto da Base Completa de Alunos (538 alunos não-internos)
+    const rawStudents = (DATA && DATA.students) ? DATA.students.filter(s => !isInvalidOrInternal(s)) : [];
+    const curric = (DATA && DATA.curriculum) ? DATA.curriculum : {};
+
+    const allEnrichedStudents = rawStudents.map(s => {
+        const scopy = { ...s };
+        scopy.canonical_curso = resolveCanonicalCourse(s.curso);
+
+        // Aulas concluídas e assistidas
+        let s_lessons_done = new Set();
+        if (s.events && Array.isArray(s.events)) {
+            s.events.forEach(e => {
+                if (e.acao === 'ASSISTIU AULA') {
+                    if (e.item_id) s_lessons_done.add(String(e.item_id));
+                    if (e.item) {
+                        const nKey = e.item.toString().trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                        s_lessons_done.add(nKey);
+                    }
+                }
+            });
+        }
+        scopy.aulas_feitas = s_lessons_done.size > 0 ? s_lessons_done.size : (s.aulas_concluidas || s.aulas_iniciadas || 0);
+
+        // Progresso curricular
+        scopy.mods_concluidos = 0;
+        scopy.total_mods = 0;
+        scopy.pct_mods = 0;
+
+        const curricKey = curric[s.curso] ? s.curso : (curric[scopy.canonical_curso] ? scopy.canonical_curso : null);
+        if (curricKey && curric[curricKey]) {
+            let mods = curric[curricKey];
+            scopy.total_mods = mods.length;
+            let concluidos = 0;
+            let total_aulas_curric = 0;
+            let aulas_feitas_curric = 0;
+            mods.forEach(m => {
+                let done = 0;
+                total_aulas_curric += (m.n_curric || 0);
+                (m.aulas || []).forEach(a => {
+                    const aNorm = a.nome ? a.nome.toString().trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : '';
+                    if (a.curriculo && (s_lessons_done.has(String(a.id)) || s_lessons_done.has(aNorm))) done++;
+                });
+                aulas_feitas_curric += done;
+                if (m.n_curric > 0 && done >= m.n_curric) concluidos++;
+            });
+            scopy.mods_concluidos = concluidos;
+            scopy.total_aulas_curric = total_aulas_curric;
+            scopy.aulas_feitas_curric = aulas_feitas_curric;
+            scopy.pct_mods = scopy.total_mods > 0 ? Math.round(concluidos / scopy.total_mods * 100) : 0;
+        }
+
+        // Determinação de Status Pedagógico
+        if (!scopy.acessou) {
+            scopy.status = 'Nunca acessou';
+        } else if (scopy.total_mods > 0 && scopy.mods_concluidos >= scopy.total_mods) {
+            scopy.status = 'Concluído';
+        } else if (scopy.aulas_feitas === 0) {
+            scopy.status = 'Apenas Login';
+        } else {
+            if (scopy.logins > 1 && scopy.dias_ativo > 0) {
+                if (scopy.dias_inativo > 30 || (scopy.dias_inativo > 14 && scopy.dias_inativo > (scopy.cadencia * 2.5))) {
+                    scopy.status = 'Abandonou';
+                } else if (scopy.dias_inativo > (scopy.cadencia * 1.5 + 2)) {
+                    scopy.status = 'Em Risco';
+                } else {
+                    scopy.status = 'Ativo';
+                }
+            } else {
+                if (scopy.dias_inativo > 14) {
+                    scopy.status = 'Abandonou';
+                } else if (scopy.dias_inativo > 7) {
+                    scopy.status = 'Em Risco';
+                } else {
+                    scopy.status = 'Ativo';
+                }
+            }
+        }
+
+        // Validação com Gateways Financeiros
+        const vSt = (scopy.vindi ? (scopy.vindi.status_financeiro || scopy.vindi.status_assinatura) : '').toLowerCase();
+        const aSt = (scopy.asaas ? (scopy.asaas.status_financeiro || scopy.asaas.status_assinatura) : '').toLowerCase();
+        const vindiCanceled = vSt === 'cancelado' || vSt === 'canceled';
+        const asaasCanceled = aSt === 'cancelado' || aSt === 'canceled';
+        const vindiActive = vSt === 'active' || vSt === 'ativo';
+        const asaasActive = aSt === 'active' || aSt === 'ativo' || aSt === 'received' || aSt === 'confirmed';
+
+        if ((vindiCanceled || asaasCanceled) && !vindiActive && !asaasActive) {
+            scopy.status = 'Cancelado';
+        }
+
+        return scopy;
+    });
+
+    // 2. Montar lista canônica consolidada de cursos (Pills)
+    const canonicalSet = new Set();
+    allEnrichedStudents.forEach(s => canonicalSet.add(s.canonical_curso));
+    Object.keys(curric).forEach(c => {
+        if (c && c !== 'Sem Curso') canonicalSet.add(resolveCanonicalCourse(c));
+    });
+
+    const availableCourses = Array.from(canonicalSet).sort((a, b) => {
         const aPos = a.startsWith('POS') || a.startsWith('PÓS') || a.startsWith('P?S');
         const bPos = b.startsWith('POS') || b.startsWith('PÓS') || b.startsWith('P?S');
         if (aPos && !bPos) return -1;
@@ -6641,17 +6773,17 @@ function drawCursoView(courseName, force) {
         return;
     }
 
-    let activeCourse = courseName || CURRENT_SELECTED_COURSE || FILTER.curso;
-    if (!activeCourse || activeCourse === 'all' || !availableCourses.includes(activeCourse)) {
+    let activeCourse = courseName || CURRENT_SELECTED_COURSE || (FILTER && FILTER.curso !== 'all' ? resolveCanonicalCourse(FILTER.curso) : '');
+    if (!activeCourse || !availableCourses.includes(activeCourse)) {
         activeCourse = availableCourses[0];
     }
     CURRENT_SELECTED_COURSE = activeCourse;
 
-    // Alunos deste curso
-    const cStudents = allStudents.filter(s => s.curso === activeCourse);
+    // 3. Alunos do Curso Ativo
+    const cStudents = allEnrichedStudents.filter(s => s.canonical_curso === activeCourse);
     const totalMatriculas = cStudents.length;
 
-    // 1. Dados Financeiros Unificados do Curso
+    // 4. Dados Financeiros Unificados do Curso
     const unifiedFin = computeUnifiedFinancialDataset('all');
     const coursesData = (unifiedFin && (unifiedFin.courses || unifiedFin.coursesMap)) || {};
     const cFin = coursesData[activeCourse] || {
@@ -6673,8 +6805,8 @@ function drawCursoView(courseName, force) {
         faturas_tabela: []
     };
 
-    // 2. Indicadores de Matrícula (30d, 30d anteriores, evolução mensal)
-    const refDate = new Date(2026, 8, 14); // 14/09/2026
+    // 5. Indicadores de Matrícula (Totais, 30d recentes, 30d anteriores, evolução mensal)
+    const refDate = new Date(2026, 8, 15); // Data base de referência do fechamento
     let matriculas30d = 0;
     let matriculas30dAnt = 0;
     const enrollMonthlyMap = {};
@@ -6722,7 +6854,7 @@ function drawCursoView(courseName, force) {
         growthEnrollText = '0 matrículas 30d';
     }
 
-    // 3. Saúde & Engajamento do Curso
+    // 6. Saúde, Engajamento & Retenção da Turma
     const vigentes = cStudents.filter(s => s.status !== 'Cancelado' && s.status !== 'Concluído' && !s.turma_encerrada);
     const countVigentes = vigentes.length;
     const countAtivos = vigentes.filter(s => s.status === 'Ativo').length;
@@ -6733,13 +6865,7 @@ function drawCursoView(courseName, force) {
     const countConcluidos = cStudents.filter(s => s.status === 'Concluído' || s.turma_encerrada).length;
 
     const totalAulasFeitas = cStudents.reduce((acc, s) => acc + (s.aulas_feitas || 0), 0);
-    const totalLogins = cStudents.reduce((acc, s) => acc + (s.logins || 0), 0);
-    const totalMateriais = cStudents.reduce((acc, s) => acc + (s.materiais || 0), 0);
     const mediaAulasPorAluno = totalMatriculas > 0 ? (totalAulasFeitas / totalMatriculas).toFixed(1) : '0.0';
-
-    // Formatação de Valores
-    const fM = (n) => 'R$ ' + (Number(n) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const fN = (n) => fmt(n || 0);
 
     // Helpers SVG para Gráficos
     // A. Gráfico de Matrículas por Mês
@@ -6796,7 +6922,7 @@ function drawCursoView(courseName, force) {
     let finSvg = '';
     if (allFinItems.length > 0) {
         const maxVal = Math.max(1, ...allFinItems.map(x => x.val));
-        const W = 620, H = 180, pad = { l: 48, r: 16, t: 24, b: 32 };
+        const W = 620, H = 180, pad = { l: 56, r: 16, t: 24, b: 32 };
         const chartW = W - pad.l - pad.r;
         const chartH = H - pad.t - pad.b;
         const barW = Math.max(12, Math.min(26, Math.floor(chartW / allFinItems.length) - 4));
@@ -6818,33 +6944,52 @@ function drawCursoView(courseName, force) {
             const x = pad.l + (idx * step) + (step - barW) / 2;
             const y = pad.t + chartH - h;
             const isReal = item.tipo === 'realizado';
-            const color = isReal ? 'var(--emerald)' : '#4f46e5';
+            const barFill = isReal ? 'var(--brand)' : 'var(--purple, #7c3aed)';
+            const opacity = isReal ? '0.88' : '0.65';
+            const dash = isReal ? '' : 'stroke="#7c3aed" stroke-dasharray="2,2" stroke-width="1"';
 
-            bars += `<rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="3" fill="${color}" opacity="${isReal ? '0.85' : '0.75'}">
-                <title>${item.label} (${isReal ? 'Realizado' : 'Projetado'}): ${fM(item.val)}</title>
+            bars += `<rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="3" fill="${barFill}" opacity="${opacity}" ${dash}>
+                <title>${item.label} (${item.tipo.toUpperCase()}): ${fM(item.val)}</title>
             </rect>`;
             if (item.val > 0) {
-                bars += `<text x="${x + barW/2}" y="${Math.max(pad.t + 12, y - 5)}" font-size="8.5" font-weight="700" fill="${color}" text-anchor="middle">${(item.val >= 1000 ? (item.val/1000).toFixed(1) + 'k' : item.val.toFixed(0))}</text>`;
+                bars += `<text x="${x + barW/2}" y="${Math.max(pad.t + 10, y - 4)}" font-size="8.5" font-weight="700" fill="var(--ink)" text-anchor="middle">${Math.round(item.val/1000) > 0 ? (item.val/1000).toFixed(1)+'k' : item.val.toFixed(0)}</text>`;
             }
-            labels += `<text x="${x + barW/2}" y="${H - 10}" font-size="8.5" fill="var(--muted)" text-anchor="middle">${item.label}</text>`;
+            labels += `<text x="${x + barW/2}" y="${H - 10}" font-size="9" fill="var(--muted)" text-anchor="middle">${item.label || item.mes}</text>`;
         });
 
         finSvg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="overflow:visible">${grid}${bars}${labels}</svg>`;
     } else {
-        finSvg = '<div style="padding:40px; text-align:center; color:var(--muted)">Sem registros financeiros para este curso.</div>';
+        finSvg = '<div style="padding:40px; text-align:center; color:var(--muted)">Sem movimentações financeiras registradas para este curso.</div>';
     }
 
-    // HTML Assembly
+    // Helper para status badge do aluno
+    const getStatusChip = (st) => {
+        const map = {
+            'Ativo': { bg: 'rgba(16, 185, 129, 0.12)', col: '#047857', border: 'rgba(16, 185, 129, 0.3)' },
+            'Atenção': { bg: 'rgba(245, 158, 11, 0.12)', col: '#b45309', border: 'rgba(245, 158, 11, 0.3)' },
+            'Em Risco': { bg: 'rgba(239, 68, 68, 0.12)', col: '#b91c1c', border: 'rgba(239, 68, 68, 0.3)' },
+            'Abandonou': { bg: 'rgba(107, 114, 128, 0.15)', col: '#374151', border: 'rgba(107, 114, 128, 0.3)' },
+            'Inativo': { bg: 'rgba(107, 114, 128, 0.15)', col: '#374151', border: 'rgba(107, 114, 128, 0.3)' },
+            'Cancelado': { bg: 'rgba(220, 38, 38, 0.15)', col: '#991b1b', border: 'rgba(220, 38, 38, 0.3)' },
+            'Concluído': { bg: 'rgba(14, 165, 233, 0.12)', col: '#0284c7', border: 'rgba(14, 165, 233, 0.3)' },
+            'Apenas Login': { bg: 'rgba(217, 119, 6, 0.12)', col: '#92400e', border: 'rgba(217, 119, 6, 0.3)' },
+            'Nunca acessou': { bg: 'rgba(156, 163, 175, 0.15)', col: '#4b5563', border: 'rgba(156, 163, 175, 0.3)' }
+        };
+        const cfg = map[st] || { bg: 'var(--paper)', col: 'var(--ink)', border: 'var(--line)' };
+        return `<span style="background:${cfg.bg}; color:${cfg.col}; border:1px solid ${cfg.border}; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:12px; display:inline-block;">${st}</span>`;
+    };
+
+    // Montagem do Cockpit Completo
     mount.innerHTML = `
       <!-- SELETOR DE CURSOS (PILLS) -->
       <div style="background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 20px; margin-bottom:24px; box-shadow:0 1px 3px rgba(0,0,0,0.03)">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
           <div>
             <h2 style="font-size:18px; font-weight:800; color:var(--ink); margin:0;">Cockpit por Especialidade: <span style="color:var(--brand)">${activeCourse}</span></h2>
-            <div style="font-size:12px; color:var(--muted); margin-top:2px;">Selecione um curso abaixo para auditar indicadores de matrículas, engajamento e projeção financeira.</div>
+            <div style="font-size:12px; color:var(--muted); margin-top:2px;">Selecione um curso abaixo para auditar indicadores de matrículas, engajamento e projeção financeira consolidada.</div>
           </div>
           <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px">Base:</span>
+            <span style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px">Base Vigente do Curso:</span>
             <span class="badge" style="background:var(--brand-w); color:var(--brand); font-weight:700; font-size:12px; padding:4px 10px; border:1px solid rgba(2,132,199,0.3)">${fN(totalMatriculas)} Alunos Matriculados</span>
           </div>
         </div>
@@ -6854,8 +6999,8 @@ function drawCursoView(courseName, force) {
               const bg = isSel ? 'var(--brand)' : 'var(--paper)';
               const col = isSel ? '#fff' : 'var(--ink)';
               const border = isSel ? '1px solid var(--brand)' : '1px solid var(--line)';
-              const count = allStudents.filter(s => s.curso === cName).length;
-              return `<button type="button" onclick="setCursoView('${cName.replace(/'/g, "\'")}')" style="padding:6px 14px; font-size:11.5px; font-weight:700; border-radius:20px; background:${bg}; color:${col}; border:${border}; cursor:pointer; transition:all 0.15s ease; display:inline-flex; align-items:center; gap:6px;">
+              const count = allEnrichedStudents.filter(s => s.canonical_curso === cName).length;
+              return `<button type="button" onclick="setCursoView('${cName.replace(/'/g, "\\'")}')" style="padding:6px 14px; font-size:11.5px; font-weight:700; border-radius:20px; background:${bg}; color:${col}; border:${border}; cursor:pointer; transition:all 0.15s ease; display:inline-flex; align-items:center; gap:6px;">
                 ${cName} <span style="background:${isSel ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.06)'}; padding:1px 6px; border-radius:10px; font-size:10px;">${count}</span>
               </button>`;
           }).join('')}
@@ -6869,7 +7014,7 @@ function drawCursoView(courseName, force) {
             <div class="exec-sec-num" style="background:var(--brand); color:#fff">M1</div>
             <div>
               <h3 class="exec-sec-title">AQUISIÇÃO &amp; RITMO DE MATRÍCULAS</h3>
-              <div class="exec-sec-sub">Novas entradas recentes (30d vs 30d anteriores) e evolução mensal histórica de novos alunos.</div>
+              <div class="exec-sec-sub">Carteira histórica acumulada, entradas recentes (30d vs 30d anteriores) e evolução mensal de novos alunos.</div>
             </div>
           </div>
         </div>
@@ -6928,7 +7073,7 @@ function drawCursoView(courseName, force) {
             <div class="exec-sec-num" style="background:var(--emerald); color:#fff">M2</div>
             <div>
               <h3 class="exec-sec-title">SAÚDE, ENGAJAMENTO &amp; RETENÇÃO DA TURMA</h3>
-              <div class="exec-sec-sub">Status de acompanhamento pedagógico sobre a base vigente e métricas de consumo de aulas.</div>
+              <div class="exec-sec-sub">Status pedagógico da base vigente e métricas de consumo de aulas.</div>
             </div>
           </div>
           <button class="btn-exec-link" onclick="selectTab('prog')">Ver Alunos no Progresso →</button>
@@ -6950,143 +7095,138 @@ function drawCursoView(courseName, force) {
               <span class="exec-pill pill-green">${countVigentes > 0 ? Math.round((countAtivos/countVigentes)*100) : 0}% da base</span>
             </div>
             <div class="exec-card-val" style="color:var(--emerald-d)">${fN(countAtivos)}</div>
-            <div class="exec-card-sub">Acessando no ritmo esperado e assistindo às aulas</div>
+            <div class="exec-card-sub">Acessando no ritmo esperado da especialidade</div>
           </div>
 
           <div class="exec-card">
             <div class="exec-card-top">
-              <span class="exec-card-label">Alunos em Risco / Alerta</span>
-              <span class="exec-pill pill-amber">Atenção</span>
+              <span class="exec-card-label">Em Risco / Atenção</span>
+              <span class="exec-pill ${countEmRisco > 0 ? 'pill-red' : 'pill-gray'}">${countVigentes > 0 ? Math.round((countEmRisco/countVigentes)*100) : 0}% da base</span>
             </div>
-            <div class="exec-card-val" style="color:#D97706">${fN(countEmRisco)}</div>
-            <div class="exec-card-sub">Quebra recente de cadência na rotina de estudos</div>
+            <div class="exec-card-val" style="color:${countEmRisco > 0 ? '#DC2626' : 'var(--ink)'}">${fN(countEmRisco)}</div>
+            <div class="exec-card-sub">Inatividade prolongada ou queda na cadência</div>
           </div>
 
           <div class="exec-card">
             <div class="exec-card-top">
-              <span class="exec-card-label">Abandono / Nunca Acessaram</span>
-              <span class="exec-pill pill-red">Crítico</span>
+              <span class="exec-card-label">Inativos / Abandonaram</span>
+              <span class="exec-pill ${countAbandonou > 0 ? 'pill-red' : 'pill-gray'}">${countVigentes > 0 ? Math.round((countAbandonou/countVigentes)*100) : 0}% da base</span>
             </div>
-            <div class="exec-card-val" style="color:#DC2626">${fN(countAbandonou + countNunca)}</div>
-            <div class="exec-card-sub">${countAbandonou} inativos (>14d) + ${countNunca} sem nenhum acesso</div>
+            <div class="exec-card-val" style="color:${countAbandonou > 0 ? '#DC2626' : 'var(--ink)'}">${fN(countAbandonou)}</div>
+            <div class="exec-card-sub">Mais de 30 dias sem acesso (${countNunca} nunca acessaram)</div>
           </div>
         </div>
 
-        <div class="exec-grid-3">
-          <div class="exec-card">
-            <div class="exec-card-top">
-              <span class="exec-card-label">Total de Reproduções / Aulas</span>
+        <div style="background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div style="display:flex; gap:20px; align-items:center; flex-wrap:wrap;">
+            <div>
+              <span style="font-size:11px; color:var(--muted); text-transform:uppercase; font-weight:700">Média de Aulas por Aluno:</span>
+              <span style="font-size:14px; font-weight:800; color:var(--ink); margin-left:6px">${mediaAulasPorAluno} aulas</span>
             </div>
-            <div class="exec-card-val" style="color:var(--ink)">${fN(totalAulasFeitas)}</div>
-            <div class="exec-card-sub">Aulas concluídas acumuladas pelos alunos</div>
-          </div>
-
-          <div class="exec-card">
-            <div class="exec-card-top">
-              <span class="exec-card-label">Média de Aulas por Aluno</span>
+            <div>
+              <span style="font-size:11px; color:var(--muted); text-transform:uppercase; font-weight:700">Total de Aulas Concluídas:</span>
+              <span style="font-size:14px; font-weight:800; color:var(--brand); margin-left:6px">${fN(totalAulasFeitas)} aulas</span>
             </div>
-            <div class="exec-card-val" style="color:var(--brand)">${mediaAulasPorAluno}</div>
-            <div class="exec-card-sub">Intensidade média de consumo do conteúdo</div>
-          </div>
-
-          <div class="exec-card">
-            <div class="exec-card-top">
-              <span class="exec-card-label">Total de Logins na Plataforma</span>
+            <div>
+              <span style="font-size:11px; color:var(--muted); text-transform:uppercase; font-weight:700">Taxa de Conclusão de Curso:</span>
+              <span style="font-size:14px; font-weight:800; color:var(--emerald-d); margin-left:6px">${totalMatriculas > 0 ? ((countConcluidos / totalMatriculas)*100).toFixed(1) : 0}%</span>
             </div>
-            <div class="exec-card-val" style="color:var(--ink)">${fN(totalLogins)}</div>
-            <div class="exec-card-sub">Sessões autenticadas na área de membros</div>
           </div>
+          <button class="btn-exec-link" onclick="FILTER.curso = '${activeCourse.replace(/'/g, "\\'")}'; applyFilters(); selectTab('prog');" style="font-size:11.5px; padding:4px 10px;">Filtrar Alunos deste Curso no Progresso ➔</button>
         </div>
       </div>
 
-      <!-- SEÇÃO 3: VISÃO FINANCEIRA & PROJEÇÕES DO CURSO -->
+      <!-- SEÇÃO 3: DESEMPENHO FINANCEIRO DO CURSO -->
       <div class="exec-sec" style="margin-bottom:24px;">
         <div class="exec-sec-head">
           <div class="exec-sec-title-wrap">
-            <div class="exec-sec-num" style="background:#7c3aed; color:#fff">M3</div>
+            <div class="exec-sec-num" style="background:#7c3aed; color:#fff">$</div>
             <div>
-              <h3 class="exec-sec-title">VISÃO FINANCEIRA, MRR &amp; PROJEÇÕES DO CURSO</h3>
-              <div class="exec-sec-sub">Arrecadação realizada, receita recorrente ativa, inadimplência e curva contratual de 12 meses.</div>
+              <h3 class="exec-sec-title">DESEMPENHO FINANCEIRO &amp; PROJEÇÃO DO CURSO</h3>
+              <div class="exec-sec-sub">Receitas realizadas, previsibilidade contratual, MRR e projeções futuras consolidadas (Vindi + Asaas).</div>
             </div>
           </div>
-          <button class="btn-exec-link" onclick="selectTab('fin')">Ver Financeiro Geral →</button>
+          <button class="btn-exec-link" onclick="selectTab('fin')">Abrir Financeiro Geral →</button>
         </div>
 
         <div class="exec-grid-4" style="margin-bottom:16px;">
           <div class="exec-card">
             <div class="exec-card-top">
-              <span class="exec-card-label">Receita Realizada (Total)</span>
-              <span class="exec-pill pill-green">Caixa Liquidado</span>
+              <span class="exec-card-label">Receita Realizada Total</span>
+              <span class="exec-pill pill-green">Acumulado</span>
             </div>
             <div class="exec-card-val" style="color:var(--emerald-d)">${fM(cFin.pago_total)}</div>
-            <div class="exec-card-sub">Total histórico já recebido (Vindi + Asaas)</div>
+            <div class="exec-card-sub">${cFin.total_faturas_pagas || (cFin.faturas_tabela || []).filter(f=>f.pago).length} pagamentos processados</div>
           </div>
 
           <div class="exec-card">
             <div class="exec-card-top">
-              <span class="exec-card-label">Previsto Mês Vigente (Set/26)</span>
-              <span class="exec-pill pill-blue">Real + A Vencer</span>
+              <span class="exec-card-label">Mês Atual (Pago / Previsto)</span>
+              <span class="exec-pill pill-blue">Setembro/26</span>
             </div>
-            <div class="exec-card-val" style="color:var(--brand)">${fM(cFin.previsto_mes_vigente)}</div>
-            <div class="exec-card-sub">Realizado (${fM(cFin.pago_mes_atual)}) + A Vencer (${fM(cFin.proj_mes_atual)})</div>
+            <div class="exec-card-val" style="color:var(--brand)">${fM(cFin.pago_mes_atual)}</div>
+            <div class="exec-card-sub">Previsto mês: ${fM(cFin.previsto_mes_vigente || cFin.proj_mes_atual)} (a vencer: ${fM(cFin.proj_mes_atual)})</div>
           </div>
 
           <div class="exec-card">
             <div class="exec-card-top">
-              <span class="exec-card-label">MRR Ativo (Mensalidade)</span>
-              <span class="exec-pill pill-purple">Recorrente</span>
+              <span class="exec-card-label">MRR Ativo do Curso</span>
+              <span class="exec-pill pill-purple">Recorrência</span>
             </div>
             <div class="exec-card-val" style="color:#7c3aed">${fM(cFin.mrr)}</div>
-            <div class="exec-card-sub">Receita média mensal contratada da carteira ativa</div>
+            <div class="exec-card-sub">Receita Mensal Recorrente ativa deste curso</div>
           </div>
 
           <div class="exec-card">
             <div class="exec-card-top">
-              <span class="exec-card-label">Inadimplência em Aberto</span>
-              <span class="exec-pill ${cFin.atraso > 0 ? 'pill-red' : 'pill-green'}">${cFin.taxa_adimplencia}% Adimplente</span>
+              <span class="exec-card-label">Taxa de Adimplência</span>
+              <span class="exec-pill ${cFin.taxa_adimplencia >= 90 ? 'pill-green' : 'pill-red'}">${cFin.taxa_adimplencia || 100}%</span>
             </div>
-            <div class="exec-card-val" style="color:${cFin.atraso > 0 ? '#DC2626' : 'var(--emerald-d)'}">${fM(cFin.atraso)}</div>
-            <div class="exec-card-sub">${cFin.qtd_atraso} títulos em atraso aguardando cobrança</div>
+            <div class="exec-card-val" style="color:var(--ink)">${cFin.taxa_adimplencia || 100}%</div>
+            <div class="exec-card-sub">${fM(cFin.atraso)} em atraso (${cFin.qtd_atraso || 0} faturas)</div>
           </div>
         </div>
 
+        <!-- Projeções e Gráfico SVG -->
         <div style="display:grid; grid-template-columns: 360px 1fr; gap:16px; align-items:stretch;">
-          <!-- Cards de Projeção Contratual -->
           <div style="display:flex; flex-direction:column; gap:12px;">
             <div class="exec-card" style="flex:1;">
               <div class="exec-card-top">
-                <span class="exec-card-label">Projeção 3 Meses (Trimestre)</span>
-                <span class="exec-pill pill-blue">Out, Nov, Dez/26</span>
+                <span class="exec-card-label">Projeção 3 Meses (Contratada)</span>
+                <span class="exec-pill pill-purple">3M Futuro</span>
               </div>
-              <div class="exec-card-val" style="color:#0284c7">${fM(cFin.proj_3m)}</div>
-              <div class="exec-card-sub">Repasses e mensalidades contratadas para os próximos 90 dias</div>
+              <div class="exec-card-val" style="color:#7c3aed">${fM(cFin.proj_3m)}</div>
+              <div class="exec-card-sub">Recebíveis parcelados e mensalidades dos próximos 90 dias</div>
             </div>
 
             <div class="exec-card" style="flex:1;">
               <div class="exec-card-top">
-                <span class="exec-card-label">Projeção 6 Meses (Semestre)</span>
-                <span class="exec-pill pill-purple">Próximos 180d</span>
+                <span class="exec-card-label">Projeção 6 Meses</span>
+                <span class="exec-pill pill-purple">6M Futuro</span>
               </div>
               <div class="exec-card-val" style="color:#7c3aed">${fM(cFin.proj_6m)}</div>
-              <div class="exec-card-sub">Receita contratada garantida em cartão e carnês</div>
+              <div class="exec-card-sub">Previsibilidade de faturamento para os próximos 180 dias</div>
             </div>
 
             <div class="exec-card" style="flex:1;">
               <div class="exec-card-top">
-                <span class="exec-card-label">Projeção Carteira (12 Meses)</span>
-                <span class="exec-pill pill-green">Ciclo Contratual</span>
+                <span class="exec-card-label">Projeção 12 Meses (LTV Futuro)</span>
+                <span class="exec-pill pill-purple">12M Futuro</span>
               </div>
-              <div class="exec-card-val" style="color:var(--emerald-d)">${fM(cFin.proj_12m)}</div>
-              <div class="exec-card-sub">Saldo total a receber até o encerramento dos contratos ativos</div>
+              <div class="exec-card-val" style="color:#7c3aed">${fM(cFin.proj_12m)}</div>
+              <div class="exec-card-sub">Previsibilidade contratual anualizada para este curso</div>
             </div>
           </div>
 
-          <!-- Gráfico Financeiro Mês a Mês -->
           <div class="exec-card" style="display:flex; flex-direction:column; justify-content:space-between;">
             <div class="exec-card-top" style="margin-bottom:12px;">
               <div>
-                <span class="exec-card-label" style="font-size:13px; font-weight:700; color:var(--ink)">Arrecadação Realizada &amp; Curva de Projeção</span>
-                <div style="font-size:11px; color:var(--muted)"><span style="color:var(--emerald)">■ Realizado Histórico</span> &nbsp;|&nbsp; <span style="color:#4f46e5">■ Projeção de Parcelas Futuras</span></div>
+                <span class="exec-card-label" style="font-size:13px; font-weight:700; color:var(--ink)">Evolução Financeira: Realizado vs Previsto</span>
+                <div style="font-size:11px; color:var(--muted)">Histórico recente de repasses realizados e projeção dos próximos meses</div>
+              </div>
+              <div style="display:flex; gap:12px; font-size:11px; align-items:center;">
+                <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; border-radius:2px; background:var(--brand); display:inline-block"></span> Realizado</span>
+                <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; border-radius:2px; background:#7c3aed; display:inline-block"></span> Previsto</span>
               </div>
             </div>
             <div style="width:100%; min-height:180px;">
@@ -7097,48 +7237,71 @@ function drawCursoView(courseName, force) {
       </div>
 
       <!-- SEÇÃO 4: ALUNOS MATRICULADOS NESTE CURSO -->
-      <div class="exec-sec">
+      <div class="exec-sec" style="margin-bottom:24px;">
         <div class="exec-sec-head">
           <div class="exec-sec-title-wrap">
-            <div class="exec-sec-num" style="background:var(--ink); color:#fff">M4</div>
+            <div class="exec-sec-num" style="background:var(--ink); color:#fff">👥</div>
             <div>
-              <h3 class="exec-sec-title">ALUNOS MATRICULADOS NO CURSO (${fN(totalMatriculas)})</h3>
-              <div class="exec-sec-sub">Relação completa de contatos, status de pagamento e engajamento. Clique em qualquer aluno para ver o histórico individual.</div>
+              <h3 class="exec-sec-title">ALUNOS MATRICULADOS NESTE CURSO</h3>
+              <div class="exec-sec-sub">Listagem de alunos vinculados a esta especialidade com status de engajamento pedagógico e financeiro.</div>
             </div>
           </div>
+          <span class="badge" style="background:var(--paper); color:var(--ink); font-weight:700">${cStudents.length} Alunos Listados</span>
         </div>
 
-        <div class="tbl-wrap" style="background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden;">
-          <table style="width:100%; border-collapse:collapse;">
-            <thead>
-              <tr style="background:var(--paper); border-bottom:1px solid var(--line); font-size:11px; text-transform:uppercase; color:var(--muted); letter-spacing:0.5px">
-                <th style="padding:10px 12px; text-align:left">Aluno / E-mail</th>
-                <th style="padding:10px 12px; text-align:left">Status Pedagógico</th>
-                <th style="padding:10px 12px; text-align:left">Status Financeiro</th>
-                <th style="padding:10px 12px; text-align:right">Aulas Feitas</th>
-                <th style="padding:10px 12px; text-align:right">Logins</th>
-                <th style="padding:10px 12px; text-align:left">Último Acesso</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${cStudents.slice(0, 100).map(s => {
-                  const st = STATUS[s.status] || { cls: 'b-login' };
-                  const na = !s.acessou;
-                  const ultimo = na ? '<span style="color:var(--muted2)">—</span>' : (s.last_fmt || '—');
-                  return `<tr class="clickable" onclick="openModal('${s.email}', '${(s.curso||'').replace(/'/g, "\'")}')" style="border-bottom:1px solid var(--line2); cursor:pointer; transition:background 0.15s" onmouseover="this.style.background='var(--paper)'" onmouseout="this.style.background=''">
-                    <td style="padding:10px 12px;">
-                      <div style="font-weight:600; font-size:12.5px; color:var(--ink)">${s.nome || 'Aluno'} ${getPlatBadge(s.plataforma)}</div>
-                      <div style="font-size:11px; color:var(--muted)">${s.email}</div>
-                    </td>
-                    <td style="padding:10px 12px;"><span class="badge ${st.cls}"><span class="b-dot"></span>${s.status}</span></td>
-                    <td style="padding:10px 12px;">${getFinBadge(s)}</td>
-                    <td style="padding:10px 12px; text-align:right; font-weight:700; font-size:12px">${na ? '0' : (s.aulas_feitas || 0)}</td>
-                    <td style="padding:10px 12px; text-align:right; font-size:12px">${s.logins || 0}</td>
-                    <td style="padding:10px 12px; font-size:11.5px; color:var(--muted)">${ultimo}</td>
-                  </tr>`;
-              }).join('')}
-            </tbody>
-          </table>
+        <div style="background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden;">
+          <div style="max-height:480px; overflow-y:auto;">
+            <table style="width:100%; border-collapse:collapse; text-align:left; font-size:12px;">
+              <thead style="background:var(--paper); position:sticky; top:0; z-index:1; border-bottom:1px solid var(--line);">
+                <tr>
+                  <th style="padding:10px 14px; font-weight:700; color:var(--muted)">ALUNO</th>
+                  <th style="padding:10px 14px; font-weight:700; color:var(--muted)">STATUS</th>
+                  <th style="padding:10px 14px; font-weight:700; color:var(--muted)">MATRÍCULA</th>
+                  <th style="padding:10px 14px; font-weight:700; color:var(--muted)">AULAS FEITAS</th>
+                  <th style="padding:10px 14px; font-weight:700; color:var(--muted)">PROGRESSO</th>
+                  <th style="padding:10px 14px; font-weight:700; color:var(--muted)">ÚLTIMO ACESSO</th>
+                  <th style="padding:10px 14px; font-weight:700; color:var(--muted); text-align:right">AÇÃO</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${cStudents.map(s => {
+                    const pct = s.pct_mods || 0;
+                    const lastTxt = s.last_fmt ? (s.last_fmt + (s.dias_inativo != null ? ` (${s.dias_inativo}d)` : '')) : (s.acessou ? 'Acessou' : 'Nunca');
+                    return `<tr style="border-bottom:1px solid var(--line); transition:background 0.1s;" onmouseover="this.style.background='var(--paper)'" onmouseout="this.style.background='transparent'">
+                      <td style="padding:10px 14px;">
+                        <div style="font-weight:700; color:var(--ink)">${s.nome || 'Sem Nome'}</div>
+                        <div style="font-size:11px; color:var(--muted)">${s.email || '-'}</div>
+                      </td>
+                      <td style="padding:10px 14px;">
+                        ${getStatusChip(s.status)}
+                      </td>
+                      <td style="padding:10px 14px; color:var(--ink)">
+                        ${s.data_insc || s.data_inscricao || s.inscricao || '-'}
+                      </td>
+                      <td style="padding:10px 14px; font-weight:700; color:var(--ink)">
+                        ${s.aulas_feitas || 0} aulas
+                      </td>
+                      <td style="padding:10px 14px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <div style="flex:1; height:6px; background:var(--line); border-radius:3px; overflow:hidden; min-width:60px;">
+                            <div style="width:${pct}%; height:100%; background:var(--brand); border-radius:3px;"></div>
+                          </div>
+                          <span style="font-size:11px; font-weight:700; color:var(--ink)">${pct}%</span>
+                        </div>
+                      </td>
+                      <td style="padding:10px 14px; font-size:11.5px; color:var(--muted)">
+                        ${lastTxt}
+                      </td>
+                      <td style="padding:10px 14px; text-align:right;">
+                        <button type="button" onclick="FILTER.aluno='${(s.nome + " (" + s.email + ")").replace(/'/g, "\\'")}'; applyFilters(); selectTab('prog');" style="padding:4px 8px; font-size:11px; font-weight:700; border-radius:6px; background:var(--paper); border:1px solid var(--line); color:var(--brand); cursor:pointer;">
+                          Ver Detalhes ➔
+                        </button>
+                      </td>
+                    </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
           ${cStudents.length > 100 ? `<div style="padding:12px; text-align:center; color:var(--muted); font-size:11.5px; background:var(--paper)">Exibindo 100 de ${totalMatriculas} alunos. Acesse a aba <b>Progresso por Aluno</b> para ver a lista completa com filtros.</div>` : ''}
         </div>
       </div>
