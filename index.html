@@ -6638,6 +6638,21 @@ function setCursoView(cName) {
 }
 window.setCursoView = setCursoView;
 
+window.CURSO_TABLE_SORT = window.CURSO_TABLE_SORT || { col: 'aulas_feitas', asc: false };
+
+window.sortCursoTable = function(col) {
+    if (!window.CURSO_TABLE_SORT) window.CURSO_TABLE_SORT = { col: 'aulas_feitas', asc: false };
+    if (window.CURSO_TABLE_SORT.col === col) {
+        window.CURSO_TABLE_SORT.asc = !window.CURSO_TABLE_SORT.asc;
+    } else {
+        window.CURSO_TABLE_SORT.col = col;
+        window.CURSO_TABLE_SORT.asc = (col === 'nome' || col === 'status');
+    }
+    if (typeof drawCursoView === 'function') {
+        drawCursoView(CURRENT_SELECTED_COURSE, true);
+    }
+};
+
 function drawCursoView(courseName, force) {
     const mount = document.getElementById('curso-content-mount');
     if (!mount) return;
@@ -6732,6 +6747,17 @@ function drawCursoView(courseName, force) {
             scopy.total_aulas_curric = total_aulas_curric;
             scopy.aulas_feitas_curric = aulas_feitas_curric;
             scopy.pct_mods = scopy.total_mods > 0 ? Math.round(concluidos / scopy.total_mods * 100) : 0;
+        }
+
+        // Progresso percentual geral do aluno no curso
+        if (scopy.total_aulas_curric > 0 && scopy.aulas_feitas_curric > 0) {
+            scopy.progresso_pct = Math.round((scopy.aulas_feitas_curric / scopy.total_aulas_curric) * 100);
+        } else if (scopy.pct_mods > 0) {
+            scopy.progresso_pct = Math.round(scopy.pct_mods);
+        } else if (scopy.aulas_feitas > 0 && scopy.total_aulas_curric > 0) {
+            scopy.progresso_pct = Math.min(100, Math.round((scopy.aulas_feitas / scopy.total_aulas_curric) * 100));
+        } else {
+            scopy.progresso_pct = 0;
         }
 
         // Determinação de Status Pedagógico
@@ -7000,6 +7026,45 @@ function drawCursoView(courseName, force) {
         };
         const cfg = map[st] || { bg: 'var(--paper)', col: 'var(--ink)', border: 'var(--line)' };
         return `<span style="background:${cfg.bg}; color:${cfg.col}; border:1px solid ${cfg.border}; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:12px; display:inline-block;">${st}</span>`;
+    };
+
+    // Ordenacao interativa da tabela de alunos por coluna
+    const curSort = window.CURSO_TABLE_SORT || { col: 'aulas_feitas', asc: false };
+    const sortedStudents = [...cStudents].sort((a, b) => {
+        const asc = curSort.asc ? 1 : -1;
+        if (curSort.col === 'nome') {
+            return asc * (a.nome || '').localeCompare(b.nome || '');
+        }
+        if (curSort.col === 'status') {
+            return asc * (a.status || '').localeCompare(b.status || '');
+        }
+        if (curSort.col === 'matricula') {
+            const dtA = a.data_insc || a.data_inscricao || a.inscricao || '';
+            const dtB = b.data_insc || b.data_inscricao || b.inscricao || '';
+            return asc * dtA.localeCompare(dtB);
+        }
+        if (curSort.col === 'aulas_feitas') {
+            return asc * ((a.aulas_feitas || 0) - (b.aulas_feitas || 0));
+        }
+        if (curSort.col === 'progresso') {
+            return asc * ((a.progresso_pct || 0) - (b.progresso_pct || 0));
+        }
+        if (curSort.col === 'ultimo_acesso') {
+            const dA = a.dias_inativo != null ? a.dias_inativo : (a.acessou ? 999 : 9999);
+            const dB = b.dias_inativo != null ? b.dias_inativo : (b.acessou ? 999 : 9999);
+            return asc * (dA - dB);
+        }
+        return 0;
+    });
+
+    const renderTh = (colKey, label, align) => {
+        const isCur = curSort.col === colKey;
+        const icon = isCur ? (curSort.asc ? ' &#9650;' : ' &#9660;') : ' <span style="opacity:0.35; font-size:10px;">&#8645;</span>';
+        const color = isCur ? 'var(--brand)' : 'var(--muted)';
+        const al = align || 'left';
+        return `<th onclick="sortCursoTable('${colKey}')" style="padding:10px 14px; font-weight:700; color:${color}; cursor:pointer; user-select:none; text-align:${al}; transition:color 0.15s;" title="Clique para ordenar por ${label}">
+          ${label} ${icon}
+        </th>`;
     };
 
     // Montagem do Cockpit Completo
@@ -7277,18 +7342,18 @@ function drawCursoView(courseName, force) {
             <table style="width:100%; border-collapse:collapse; text-align:left; font-size:12px;">
               <thead style="background:var(--paper); position:sticky; top:0; z-index:1; border-bottom:1px solid var(--line);">
                 <tr>
-                  <th style="padding:10px 14px; font-weight:700; color:var(--muted)">ALUNO</th>
-                  <th style="padding:10px 14px; font-weight:700; color:var(--muted)">STATUS</th>
-                  <th style="padding:10px 14px; font-weight:700; color:var(--muted)">MATRÍCULA</th>
-                  <th style="padding:10px 14px; font-weight:700; color:var(--muted)">AULAS FEITAS</th>
-                  <th style="padding:10px 14px; font-weight:700; color:var(--muted)">PROGRESSO</th>
-                  <th style="padding:10px 14px; font-weight:700; color:var(--muted)">ÚLTIMO ACESSO</th>
+                  ${renderTh('nome', 'ALUNO')}
+                  ${renderTh('status', 'STATUS')}
+                  ${renderTh('matricula', 'MATRÍCULA')}
+                  ${renderTh('aulas_feitas', 'AULAS FEITAS')}
+                  ${renderTh('progresso', 'PROGRESSO')}
+                  ${renderTh('ultimo_acesso', 'ÚLTIMO ACESSO')}
                   <th style="padding:10px 14px; font-weight:700; color:var(--muted); text-align:right">AÇÃO</th>
                 </tr>
               </thead>
               <tbody>
-                ${cStudents.map(s => {
-                    const pct = s.pct_mods || 0;
+                ${sortedStudents.map(s => {
+                    const pct = s.progresso_pct || 0;
                     const lastTxt = s.last_fmt ? (s.last_fmt + (s.dias_inativo != null ? ` (${s.dias_inativo}d)` : '')) : (s.acessou ? 'Acessou' : 'Nunca');
                     return `<tr style="border-bottom:1px solid var(--line); transition:background 0.1s;" onmouseover="this.style.background='var(--paper)'" onmouseout="this.style.background='transparent'">
                       <td style="padding:10px 14px;">
@@ -7311,13 +7376,14 @@ function drawCursoView(courseName, force) {
                           </div>
                           <span style="font-size:11px; font-weight:700; color:var(--ink)">${pct}%</span>
                         </div>
+                        ${s.total_aulas_curric > 0 ? `<div style="font-size:10px; color:var(--muted); margin-top:2px;">${s.aulas_feitas_curric || 0}/${s.total_aulas_curric} aulas</div>` : ''}
                       </td>
                       <td style="padding:10px 14px; font-size:11.5px; color:var(--muted)">
                         ${lastTxt}
                       </td>
                       <td style="padding:10px 14px; text-align:right;">
-                        <button type="button" onclick="FILTER.aluno='${(s.nome + " (" + s.email + ")").replace(/'/g, "\\'")}'; applyFilters(); selectTab('prog');" style="padding:4px 8px; font-size:11px; font-weight:700; border-radius:6px; background:var(--paper); border:1px solid var(--line); color:var(--brand); cursor:pointer;">
-                          Ver Detalhes ➔
+                        <button type="button" onclick="FILTER.aluno='${(s.nome + " (" + s.email + ")").replace(/'/g, "\'")}\'; applyFilters(); selectTab('prog');" style="padding:4px 8px; font-size:11px; font-weight:700; border-radius:6px; background:var(--paper); border:1px solid var(--line); color:var(--brand); cursor:pointer;">
+                          Ver Detalhes &rarr;
                         </button>
                       </td>
                     </tr>`;
@@ -7325,7 +7391,7 @@ function drawCursoView(courseName, force) {
               </tbody>
             </table>
           </div>
-          ${cStudents.length > 100 ? `<div style="padding:12px; text-align:center; color:var(--muted); font-size:11.5px; background:var(--paper)">Exibindo 100 de ${totalMatriculas} alunos. Acesse a aba <b>Progresso por Aluno</b> para ver a lista completa com filtros.</div>` : ''}
+          ${sortedStudents.length > 100 ? `<div style="padding:12px; text-align:center; color:var(--muted); font-size:11.5px; background:var(--paper)">Exibindo 100 de ${totalMatriculas} alunos. Acesse a aba <b>Progresso por Aluno</b> para ver a lista completa com filtros.</div>` : ''}
         </div>
       </div>
     `;
