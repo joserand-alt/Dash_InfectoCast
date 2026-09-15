@@ -71,14 +71,21 @@ def fetch_logs_from_api(students_df=None):
     return df_log
 
 
+def is_checkout_event(ev_name):
+    low = (ev_name or '').lower().strip()
+    return any(x in low for x in [
+        'pago', 'pendente', 'recorrencia', 'checkout', 'compra',
+        'pagamento', 'problema', 'hotmart', 'woocommerce'
+    ])
+
 def categorize_rd_event(ev_name):
-    low = ev_name.lower().strip()
+    low = (ev_name or '').lower().strip()
+    if is_checkout_event(low): return 'Checkout / Matrícula'
     if any(x in low for x in ['ebook', 'e-book', 'biofilme', 'candidiase', 'imuno', 'orto', 'ist']): return 'E-book / Material'
     if any(x in low for x in ['jornada', 'live', 'infectoxpert', 'congresso', 'webinar', 'webnar', 'evento', 'aula']): return 'Evento / Live'
     if any(x in low for x in ['fale-conosco', 'duvida', 'contato', 'form_3', 'fluentform', 'atendimento']): return 'Fale Conosco / Contato'
     if any(x in low for x in ['lista-espera', 'lista de espera', 'pre-inscricao', 'pré-inscrição', 'pre_antifungico', 'sos', 'grade_pos']): return 'Lista de Espera / Grade'
     if any(x in low for x in ['ex alunos', 'alunos infectoped', 'ex-alunos']): return 'Comunidade / Base Prévia'
-    if any(x in low for x in ['pago', 'pendente', 'recorrencia', 'checkout', 'compra']): return 'Checkout / Matrícula'
     return 'Outras Ações'
 
 def clean_rd_event_name(ev_name):
@@ -1333,6 +1340,10 @@ def main():
                     cat = categorize_rd_event(ident)
                     clean_name = clean_rd_event_name(ident)
                     
+                    # Desconsiderar tudo que for Checkout / Matrícula (conversão final de compra)
+                    if cat == 'Checkout / Matrícula' or is_checkout_event(ident):
+                        continue
+                    
                     if (data_f, ident) == last_ident:
                         continue
                     last_ident = (data_f, ident)
@@ -1345,14 +1356,19 @@ def main():
                         'categoria': cat
                     })
                 
-                # Calcular dias de maturação com precisão (Data Matrícula - 1ª Conversão RD)
+                # Calcular dias de maturação com precisão (Data Matrícula - 1ª Conversão RD Pré-Matrícula)
                 dias_maturacao = ''
+                dt_primeira_real = ast.get('dt_primeira')
+                if eventos_raw_list:
+                    dt_primeira_real = eventos_raw_list[0].get('data') or ast.get('dt_primeira')
+                else:
+                    dt_primeira_real = '—'
+                
                 try:
                     dt_insc_raw = s.get('data_insc') or s.get('data_inscricao') or s.get('inscricao')
-                    dt_pri_raw = ast.get('dt_primeira')
-                    if dt_insc_raw and dt_pri_raw and dt_pri_raw != '—':
+                    if dt_insc_raw and dt_primeira_real and dt_primeira_real not in ('?', '—', '-'):
                         d_insc = pd.to_datetime(dt_insc_raw, dayfirst=True)
-                        d_pri = pd.to_datetime(dt_pri_raw[:10], dayfirst=True)
+                        d_pri = pd.to_datetime(dt_primeira_real[:10], dayfirst=True)
                         diff = (d_insc.date() - d_pri.date()).days
                         if diff >= 0:
                             dias_maturacao = int(diff)
@@ -1362,10 +1378,10 @@ def main():
                 s['rd_funnel'] = {
                     'origem': ast.get('origem_funil') or 'Desconhecido',
                     'conversoes': ast.get('total_conversoes', 0),
-                    'conversoes_antes': len(conv_antes),
+                    'conversoes_antes': len(eventos_raw_list),
                     'scoring': ast.get('score_interesse', 0),
                     'dias_venda': dias_maturacao,
-                    'dt_primeira': ast.get('dt_primeira', '—'),
+                    'dt_primeira': dt_primeira_real,
                     'dt_ultima': ast.get('dt_ultima', '—'),
                     'eventos': fmt_eventos,
                     'eventos_detalhados': eventos_raw_list,
