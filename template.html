@@ -4743,10 +4743,11 @@ function computeUnifiedFinancialDataset(gatewayFilter) {
             cm.mrr = next6Avg;
         }
 
-        cm.proj_1m = cm.projecao_mensal[0]?.previsto || cm.proj_mes_atual || cm.mrr;
-        cm.proj_3m = cm.projecao_mensal.slice(0, 3).reduce((a, b) => a + b.previsto, 0);
-        cm.proj_6m = cm.projecao_mensal.slice(0, 6).reduce((a, b) => a + b.previsto, 0);
-        cm.proj_12m = cm.projecao_mensal.slice(0, 12).reduce((a, b) => a + b.previsto, 0);
+        // Projeção Próximo Mês Oficial: Próximo mês calendário fechado (M+1: Out/26)
+        cm.proj_1m = cm.projecao_mensal[1]?.previsto || cm.mrr;
+        cm.proj_3m = cm.projecao_mensal.slice(1, 4).reduce((a, b) => a + b.previsto, 0) || (cm.mrr * 3);
+        cm.proj_6m = cm.projecao_mensal.slice(1, 7).reduce((a, b) => a + b.previsto, 0) || (cm.mrr * 6);
+        cm.proj_12m = cm.projecao_mensal.slice(1, 13).reduce((a, b) => a + b.previsto, 0) || (cm.mrr * 12);
 
         cm.historico_mensal = Object.keys(cm.historico_map).sort().map(ym => {
             const [ano, m] = ym.split('-');
@@ -4838,6 +4839,12 @@ function computeUnifiedFinancialDataset(gatewayFilter) {
     if (gNext6Avg > 0) {
         globalObj.mrr = gNext6Avg;
     }
+
+    // Projeções Globais Oficiais: Próximo mês calendário fechado (M+1: Out/26) e horizontes subsequentes
+    globalObj.proj_1m = globalObj.projecao_mensal[1]?.previsto || globalObj.mrr;
+    globalObj.proj_3m = globalObj.projecao_mensal.slice(1, 4).reduce((a, b) => a + (b.previsto || 0), 0) || (globalObj.mrr * 3);
+    globalObj.proj_6m = globalObj.projecao_mensal.slice(1, 7).reduce((a, b) => a + (b.previsto || 0), 0) || (globalObj.mrr * 6);
+    globalObj.proj_12m = globalObj.projecao_mensal.slice(1, 13).reduce((a, b) => a + (b.previsto || 0), 0) || (globalObj.mrr * 12);
 
     // Ticket Médio Oficial: (Total Recebido nos últimos 180 dias / Clientes Pagantes dentro dos últimos 180 dias) / 6
     const d180Ref = new Date(2026, 8, 15).getTime() - (180 * 24 * 3600 * 1000);
@@ -5289,10 +5296,10 @@ function drawExecView(force) {
         cm.crescimento_mom = cm.pago_mes_ant > 0 ? (((diff) / cm.pago_mes_ant) * 100).toFixed(1) : (cm.previsto_mes_vigente > 0 ? '+100' : '0.0');
         
         const mArr = courseMonthlyProjection[cm.curso] || Array(12).fill(0);
-        const p1mContratual = mArr[0] > 0 ? mArr[0] : (cm.proj_1m || cm.mrr);
-        const p3mContratual = mArr.slice(0, 3).reduce((a, b) => a + b, 0);
-        const p6mContratual = mArr.slice(0, 6).reduce((a, b) => a + b, 0);
-        const p12mContratual = mArr.slice(0, 12).reduce((a, b) => a + b, 0);
+        const p1mContratual = mArr[1] > 0 ? mArr[1] : (cm.proj_1m || cm.mrr);
+        const p3mContratual = mArr.slice(1, 4).reduce((a, b) => a + b, 0);
+        const p6mContratual = mArr.slice(1, 7).reduce((a, b) => a + b, 0);
+        const p12mContratual = mArr.slice(1, 13).reduce((a, b) => a + b, 0);
 
         cm.proj_1m = p1mContratual;
         cm.proj_3m = p3mContratual > 0 ? p3mContratual : cm.mrr * 3;
@@ -5357,6 +5364,8 @@ function drawExecView(force) {
     };
     const labelMesVigente = formatMesLabel(mesVigenteKey);
     const labelMesAnterior = formatMesLabel(mesAnteriorKey);
+    const labelProxMes = formatMesLabel('2026-10');
+    const labelProxMesCompleto = 'Outubro de 2026';
 
     // Funil Comercial
     const fKpis = funil.kpis || {};
@@ -5416,11 +5425,11 @@ function drawExecView(force) {
           <!-- CARD 3: MRR (MENSALIDADE ATIVA) -->
           <div class="exec-card" style="border-top:3px solid var(--brand)">
             <div class="exec-card-top">
-              <span class="exec-card-label">MRR (Mensalidade Ativa)</span>
-              <span class="exec-pill pill-blue">Recorrente</span>
+              <span class="exec-card-label">MRR (Próx. 6M)</span>
+              <span class="exec-pill pill-blue">Média Móvel</span>
             </div>
             <div class="exec-card-val" style="color:var(--brand)">${fM(mrrConsolidado)}</div>
-            <div class="exec-card-sub">Base ativa: Vindi (${fM(vKpis.mrr_ativo)}) + Asaas (${fM(aKpis.mrr_ativo)})</div>
+            <div class="exec-card-sub">Média mensal projetada de Out/26 a Mar/27</div>
           </div>
 
           <!-- CARD 4: RECEITA REALIZADA TOTAL -->
@@ -5436,14 +5445,14 @@ function drawExecView(force) {
 
         <!-- LINHA 2: PROJEÇÕES FUTURAS DE CARTEIRA (1m, 3m, 6m, 12m) -->
         <div class="exec-grid-4">
-          <!-- CARD 5: PROJEÇÃO 1 MÊS (30 DIAS) -->
+          <!-- CARD 5: PROJEÇÃO PRÓXIMO MÊS -->
           <div class="exec-card" style="background:rgba(2,132,199,0.02); border-left:3px solid #0284c7">
             <div class="exec-card-top">
-              <span class="exec-card-label">Projeção 1 Mês (30 dias)</span>
-              <span class="exec-pill pill-blue">Próximos 30d (D+30)</span>
+              <span class="exec-card-label">Projeção Próximo Mês (${labelProxMes})</span>
+              <span class="exec-pill pill-blue">Mês Fechado</span>
             </div>
             <div class="exec-card-val" style="color:#0284c7">${fM(proj30d)}</div>
-            <div class="exec-card-sub">Faturas e parcelas agendadas para os próximos 30 dias corridos (D+30)</div>
+            <div class="exec-card-sub">Previsão contratual fechada para ${labelProxMesCompleto} (M+1)</div>
           </div>
 
           <!-- CARD 6: PROJEÇÃO 3 MESES (TRIMESTRE) -->
@@ -5722,7 +5731,7 @@ function drawExecView(force) {
                 <th style="padding:10px 8px; text-align:right">Receita Mês (${labelMesVigente})</th>
                 <th style="padding:10px 8px; text-align:right">Mês Anterior (${labelMesAnterior})</th>
                 <th style="padding:10px 8px; text-align:right">MRR Estimado</th>
-                <th style="padding:10px 8px; text-align:right">Proj. 1m (30d)</th>
+                <th style="padding:10px 8px; text-align:right">Proj. Próx. Mês (${labelProxMes})</th>
                 <th style="padding:10px 8px; text-align:right">Proj. 3m</th>
                 <th style="padding:10px 8px; text-align:right">Proj. 6m</th>
                 <th style="padding:10px 8px; text-align:right">Proj. 12m</th>
