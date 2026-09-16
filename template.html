@@ -4736,6 +4736,13 @@ function computeUnifiedFinancialDataset(gatewayFilter) {
             return { mes: fm.mes, label: fm.label, previsto: val };
         });
 
+        // MRR Oficial: Média das mensalidades ativas somadas da Vindi e do Asaas nos próximos 6 meses começando no mês posterior ao atual (Out/26 a Mar/27)
+        const next6Sim = cm.projecao_18m_sim.slice(1, 7);
+        const next6Avg = next6Sim.reduce((a, b) => a + b, 0) / 6;
+        if (next6Avg > 0) {
+            cm.mrr = next6Avg;
+        }
+
         cm.proj_1m = cm.projecao_mensal[0]?.previsto || cm.proj_mes_atual || cm.mrr;
         cm.proj_3m = cm.projecao_mensal.slice(0, 3).reduce((a, b) => a + b.previsto, 0);
         cm.proj_6m = cm.projecao_mensal.slice(0, 6).reduce((a, b) => a + b.previsto, 0);
@@ -4825,6 +4832,31 @@ function computeUnifiedFinancialDataset(gatewayFilter) {
     globalObj.historico_mensal = Object.values(gHistMap).sort((a,b) => a.mes.localeCompare(b.mes));
     globalObj.projecao_mensal = Object.values(gProjMap).sort((a,b) => a.mes.localeCompare(b.mes));
 
+    // MRR Global Oficial: Média consolidada dos próximos 6 meses (Out/26 a Mar/27)
+    const gNext6Sim = globalObj.projecao_mensal.slice(1, 7);
+    const gNext6Avg = gNext6Sim.reduce((a, b) => a + (b.previsto || 0), 0) / 6;
+    if (gNext6Avg > 0) {
+        globalObj.mrr = gNext6Avg;
+    }
+
+    // Ticket Médio Oficial: (Total Recebido nos últimos 180 dias / Clientes Pagantes dentro dos últimos 180 dias) / 6
+    const d180Ref = new Date(2026, 8, 15).getTime() - (180 * 24 * 3600 * 1000);
+    let gRec180 = 0;
+    const gPagantes180 = new Set();
+    faturasList.forEach(f => {
+        const st = (f.status || '').toLowerCase();
+        if (st === 'pago' || st === 'paid' || st === 'received' || st === 'confirmed') {
+            const dtStr = (f.data_pagamento || f.data_pagamento_iso || f.data || '').toString();
+            const dObj = _parseDateSafe(dtStr);
+            if (dObj && dObj.getTime() >= d180Ref) {
+                gRec180 += (Number(f.valor) || 0);
+                const em = (f.email || f.aluno || '').toLowerCase().trim();
+                if (em) gPagantes180.add(em);
+            }
+        }
+    });
+    globalObj.ticket_medio = gPagantes180.size > 0 ? (gRec180 / gPagantes180.size) / 6 : 0;
+
     const gBaseAdimp = globalObj.pago_total + globalObj.atraso;
     globalObj.taxa_adimplencia = gBaseAdimp > 0 ? Math.round((globalObj.pago_total / gBaseAdimp) * 100) : 100;
 
@@ -4834,6 +4866,7 @@ function computeUnifiedFinancialDataset(gatewayFilter) {
         a_vencer_mes_atual: globalObj.proj_mes_atual,
         previsto_mes_vigente: globalObj.previsto_mes_vigente,
         mrr_ativo: globalObj.mrr,
+        ticket_medio: globalObj.ticket_medio,
         projecao_30d: globalObj.proj_1m,
         proj_3m: globalObj.proj_3m,
         proj_6m: globalObj.proj_6m,
@@ -5487,11 +5520,11 @@ function drawExecView(force) {
 
           <div class="exec-card">
             <div class="exec-card-top">
-              <span class="exec-card-label">Ticket Médio Anual</span>
-              <span class="exec-pill pill-blue">Por Matrícula</span>
+              <span class="exec-card-label">Ticket Médio Mensal</span>
+              <span class="exec-pill pill-blue">180d / 6</span>
             </div>
-            <div class="exec-card-val" style="color:var(--ink)">${fM(totalMatriculas > 0 ? (recRealizadaTotal + proj12m) / totalMatriculas : 0)}</div>
-            <div class="exec-card-sub">LTV médio contratual por aluno matriculado</div>
+            <div class="exec-card-val" style="color:var(--ink)">${fM(unifiedFin.global.ticket_medio || 0)}</div>
+            <div class="exec-card-sub">Média mensal por aluno pagante ativo no semestre</div>
           </div>
         </div>
       </div>
@@ -6940,8 +6973,8 @@ function _renderFinKpiCards() {
         { key: 'total_recebido', icon: '💰', label: 'Total Recebido', value: fmt(k.total_recebido), sub: `${fmtN(k.total_faturas_pagas)} faturas pagas`, color: 'var(--emerald)' },
         { key: 'recebido_mes', icon: '📅', label: 'Recebido Este Mês', value: fmt(k.recebido_mes_atual), sub: 'Mês corrente', color: 'var(--sky)' },
         { key: 'em_atraso', icon: '🔴', label: 'Em Atraso', value: fmt(k.total_em_atraso), sub: `${fmtN(k.qtd_em_atraso)} fatura(s) pendente(s) · Clique p/ ver por aluno`, color: k.total_em_atraso > 0 ? 'var(--coral)' : 'var(--emerald)' },
-        { key: 'mrr', icon: '🔁', label: 'MRR Ativo', value: fmt(k.mrr_ativo), sub: 'Receita recorrente mensal', color: '#7c3aed' },
-        { key: 'projecao_30d', icon: '🔮', label: 'Projeção 30d', value: fmt(k.projecao_30d), sub: 'Próximas cobranças estimadas', color: 'var(--amber)' },
+        { key: 'mrr', icon: '🔄', label: 'MRR (Próx. 6M)', value: fmt(k.mrr_ativo), sub: 'Média mensal Out/26 a Mar/27', color: '#7c3aed' },
+        { key: 'ticket_medio', icon: '🎯', label: 'Ticket Médio Mensal', value: fmt(k.ticket_medio || 0), sub: 'Semestre móvel (180d / 6)', color: 'var(--amber)' },
         { key: 'adimplencia', icon: '📊', label: 'Adimplência', value: (k.taxa_adimplencia || 0) + '%', sub: 'Faturas pagas / total faturado', color: (k.taxa_adimplencia || 0) >= 80 ? 'var(--emerald)' : 'var(--coral)' },
     ];
 
@@ -7829,8 +7862,23 @@ function drawCursoView(courseName, force) {
     const countCancelados = cStudents.filter(s => s.status === 'Cancelado').length;
     const countConcluidos = cStudents.filter(s => s.status === 'Concluído' || s.turma_encerrada).length;
 
-    const totalAulasFeitas = cStudents.reduce((acc, s) => acc + (s.aulas_feitas || 0), 0);
-    const mediaAulasPorAluno = totalMatriculas > 0 ? (totalAulasFeitas / totalMatriculas).toFixed(1) : '0.0';
+    // Alunos ativos (excluindo cancelamentos) conforme regra institucional
+    const alunosAtivosCurso = cStudents.filter(s => s.status !== 'Cancelado');
+    const totalAulasFeitas = alunosAtivosCurso.reduce((acc, s) => acc + (s.aulas_feitas || 0), 0);
+    const mediaAulasPorAluno = alunosAtivosCurso.length > 0 ? (totalAulasFeitas / alunosAtivosCurso.length).toFixed(1) : '0.0';
+
+    // Total de aulas da grade curricular do curso
+    let totalAulasGrade = 0;
+    const curMods = isAll ? [] : (curric[activeCourse] || curric[resolveCanonicalCourse(activeCourse)] || []);
+    curMods.forEach(m => totalAulasGrade += (m.n_curric || (m.aulas ? m.aulas.length : 0)));
+    
+    // Progresso Médio do Curso: exclusivamente para alunos ativos (excluindo cancelamentos)
+    let progressoMedioCurso = 0;
+    if (alunosAtivosCurso.length > 0 && totalAulasGrade > 0) {
+        progressoMedioCurso = Math.min(100, ((totalAulasFeitas / (alunosAtivosCurso.length * totalAulasGrade)) * 100)).toFixed(1);
+    } else if (alunosAtivosCurso.length > 0) {
+        progressoMedioCurso = (alunosAtivosCurso.reduce((acc, s) => acc + (s.progresso_pct || 0), 0) / alunosAtivosCurso.length).toFixed(1);
+    }
 
     // Helpers SVG para Gráficos
     // A. Gráfico de Matrículas por Mês
@@ -8120,15 +8168,24 @@ function drawCursoView(courseName, force) {
         <div style="background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
           <div style="display:flex; gap:20px; align-items:center; flex-wrap:wrap;">
             <div>
+              <span style="font-size:11px; color:var(--muted); text-transform:uppercase; font-weight:700">Progresso Médio (Ativos):</span>
+              <span style="font-size:14px; font-weight:800; color:var(--emerald-d); margin-left:6px">${progressoMedioCurso}%</span>
+            </div>
+            <div>
               <span style="font-size:11px; color:var(--muted); text-transform:uppercase; font-weight:700">Média de Aulas por Aluno:</span>
               <span style="font-size:14px; font-weight:800; color:var(--ink); margin-left:6px">${mediaAulasPorAluno} aulas</span>
             </div>
             <div>
-              <span style="font-size:11px; color:var(--muted); text-transform:uppercase; font-weight:700">Total de Aulas Concluídas:</span>
-              <span style="font-size:14px; font-weight:800; color:var(--brand); margin-left:6px">${fN(totalAulasFeitas)} aulas</span>
+              <span style="font-size:11px; color:var(--muted); text-transform:uppercase; font-weight:700">Aulas Assistidas:</span>
+              <span style="font-size:14px; font-weight:800; color:var(--brand); margin-left:6px">${fN(totalAulasFeitas)}</span>
             </div>
+            ${!isAll && totalAulasGrade > 0 ? `
             <div>
-              <span style="font-size:11px; color:var(--muted); text-transform:uppercase; font-weight:700">Taxa de Conclusão de Curso:</span>
+              <span style="font-size:11px; color:var(--muted); text-transform:uppercase; font-weight:700">Aulas na Grade:</span>
+              <span style="font-size:14px; font-weight:800; color:#7c3aed; margin-left:6px">${totalAulasGrade} aulas</span>
+            </div>` : ''}
+            <div>
+              <span style="font-size:11px; color:var(--muted); text-transform:uppercase; font-weight:700">Taxa de Conclusão:</span>
               <span style="font-size:14px; font-weight:800; color:var(--emerald-d); margin-left:6px">${totalMatriculas > 0 ? ((countConcluidos / totalMatriculas)*100).toFixed(1) : 0}%</span>
             </div>
           </div>
