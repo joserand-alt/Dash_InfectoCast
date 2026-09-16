@@ -378,20 +378,31 @@ header::before {
   border: 1px solid var(--line);
   border-radius: 12px;
   overflow-x: auto;
+  max-height: 72vh;
+  overflow-y: auto;
   background: var(--card-translucent);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,240,255,0.3) rgba(10,14,20,0.8);
 }
+.tbl-wrap::-webkit-scrollbar { width: 6px; height: 6px; }
+.tbl-wrap::-webkit-scrollbar-thumb { background: rgba(0,240,255,0.3); border-radius: 4px; }
 table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
 th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   background: #0c121c !important;
-  color: var(--muted) !important;
+  color: #38bdf8 !important;
   font-family: var(--font-hud) !important;
   font-size: 10px !important;
-  font-weight: 700 !important;
+  font-weight: 800 !important;
   letter-spacing: 0.12em !important;
   text-transform: uppercase !important;
-  padding: 12px 14px !important;
-  border-bottom: 1px solid var(--line) !important;
+  padding: 14px 14px !important;
+  border-bottom: 2px solid rgba(0,240,255,0.25) !important;
   white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
 }
 td {
   padding: 12px 14px;
