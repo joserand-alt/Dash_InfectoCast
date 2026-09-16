@@ -86,7 +86,7 @@ def _fmt_date(iso):
 
     try: return datetime.fromisoformat(iso[:10]).strftime("%d/%m/%Y")
 
-    except: return iso[:10]
+    except (ValueError, TypeError): return iso[:10]
 
 
 
@@ -96,7 +96,7 @@ def _parse_date(iso):
 
     try: return datetime.fromisoformat(iso[:10])
 
-    except: return None
+    except (ValueError, TypeError): return None
 
 
 

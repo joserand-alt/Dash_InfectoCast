@@ -8,3 +8,8 @@ rd_tokens.json
 
 asaas_config.json
 asaas_cache.json
+
+# Backups e scripts temporários
+gerador_backup*.py
+temp_*.js
+test_exec.js

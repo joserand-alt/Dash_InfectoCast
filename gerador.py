@@ -117,6 +117,59 @@ def clean_rd_event_name(ev_name):
     if 'aula' in low and 'imuno' in low: return 'Aula Aberta: Imunodeprimidos'
     return ev_name.replace('---', ' - ').replace('__', ' ').strip()
 
+
+def optimize_payload_for_dashboard(data):
+    """
+    Otimiza e enxuga o payload JSON injetado no HTML para reduzir drasticamente
+    o tamanho do index.html (de ~23MB para ~10MB) sem perder nenhuma métrica ou funcionalidade.
+    """
+    # 1. Otimizar Vindi Financeiro
+    if "financeiro" in data and isinstance(data["financeiro"], dict):
+        data["financeiro"].pop("data", None) # Não utilizado no frontend JS (economiza ~5MB)
+        data["financeiro"].pop("faturas_recentes", None)
+        if "subscriptions" in data["financeiro"] and isinstance(data["financeiro"]["subscriptions"], list):
+            for sub in data["financeiro"]["subscriptions"]:
+                sub.pop("faturas", None) # Faturas já estão centralizadas em faturas_tabela
+                sub.pop("_score", None)
+
+    # 2. Otimizar Asaas Financeiro
+    if "financeiro_asaas" in data and isinstance(data["financeiro_asaas"], dict):
+        data["financeiro_asaas"].pop("data", None)
+        data["financeiro_asaas"].pop("faturas_recentes", None)
+        if "subscriptions" in data["financeiro_asaas"] and isinstance(data["financeiro_asaas"]["subscriptions"], list):
+            for sub in data["financeiro_asaas"]["subscriptions"]:
+                sub.pop("faturas", None)
+                sub.pop("_score", None)
+
+    # 3. Campos necessários para faturas nos modais dos alunos
+    FATURA_FIELDS = {'id', 'status', 'status_label', 'valor', 'valor_fmt', 'vencimento', 'data_pagamento', 'forma_pagamento', 'url', 'dias_atraso'}
+
+    # 4. Otimizar lista de alunos e eventos
+    if "students" in data and isinstance(data["students"], list):
+        for s in data["students"]:
+            # Compactar eventos (remover chaves vazias/nulas)
+            if "events" in s and isinstance(s["events"], list):
+                s["events"] = [{k: v for k, v in e.items() if v not in (None, "", [], {})} for e in s["events"]]
+
+            # Compactar faturas aninhadas de Vindi
+            if s.get("vindi") and isinstance(s["vindi"], dict):
+                s["vindi"].pop("_score", None)
+                if "faturas" in s["vindi"] and isinstance(s["vindi"]["faturas"], list):
+                    s["vindi"]["faturas"] = [
+                        {k: v for k, v in f.items() if k in FATURA_FIELDS and v not in (None, "", [], {})}
+                        for f in s["vindi"]["faturas"]
+                    ]
+
+            # Compactar faturas aninhadas de Asaas
+            if s.get("asaas") and isinstance(s["asaas"], dict):
+                if "faturas" in s["asaas"] and isinstance(s["asaas"]["faturas"], list):
+                    s["asaas"]["faturas"] = [
+                        {k: v for k, v in f.items() if k in FATURA_FIELDS and v not in (None, "", [], {})}
+                        for f in s["asaas"]["faturas"]
+                    ]
+
+    return data
+
 def main():
     cursos_path = r'C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\CURSOS.xlsx'
     log_uso_path = r'C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\Log de uso.xlsx'
@@ -1759,12 +1812,15 @@ def main():
         "financeiro_asaas": asaas_financeiro
     }
 
+    # Otimização de alta performance do payload JSON
+    data = optimize_payload_for_dashboard(data)
+
     pre, post = prepare_template(template_path)
     if pre == template_path:
         print("Erro: não encontrou DATA no template.")
         return
         
-    json_str = json.dumps(data, ensure_ascii=False)
+    json_str = json.dumps(data, separators=(',', ':'), ensure_ascii=False)
     
     final_html = pre + "const DATA = " + json_str + post
     

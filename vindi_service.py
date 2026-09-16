@@ -208,7 +208,7 @@ def get_vindi_data(force_reload=False):
         status = b.get('status', 'pending')
         amount_val = 0.0
         try: amount_val = float(b.get('amount', 0) or 0)
-        except: pass
+        except (ValueError, TypeError): amount_val = 0.0
 
         due_iso = b.get('due_at')
         due_dt = _parse_iso(due_iso)
@@ -329,7 +329,7 @@ def get_vindi_data(force_reload=False):
             ps = it.get('pricing_schema', {})
             if ps.get('price'):
                 try: price += float(ps['price'])
-                except: pass
+                except (ValueError, TypeError): pass
         if price == 0 and sub.get('plan'):
             for it in sub.get('plan', {}).get('plan_items', []):
                 ps = it.get('pricing_schema', {})
@@ -529,7 +529,7 @@ def get_vindi_data(force_reload=False):
                         a_vencer_mes_atual += price
                     if today <= p_dt <= d30_date:
                         proj_30d += price
-                except:
+                except (ValueError, TypeError, KeyError):
                     due_in_current_month = True
                     a_vencer_mes_atual += price
                     proj_30d += price
