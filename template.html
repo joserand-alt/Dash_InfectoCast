@@ -7629,7 +7629,17 @@ function drawCursoView(courseName, force) {
     if (!activeCourse || !availableCourses.includes(activeCourse)) {
         activeCourse = availableCourses[0];
     }
-    CURRENT_SELECTED_COURSE = activeCourse;
+        CURRENT_SELECTED_COURSE = activeCourse;
+    const globalCourseSel = document.getElementById('filter-curso');
+    if (globalCourseSel && FILTER.curso === 'all') {
+        // Se o filtro global estava em 'all', selecionamos a especialidade ativa no seletor para clareza
+        for (let i = 0; i < globalCourseSel.options.length; i++) {
+            if (globalCourseSel.options[i].value === activeCourse || (typeof resolveCanonicalCourse === 'function' && resolveCanonicalCourse(globalCourseSel.options[i].value) === activeCourse)) {
+                globalCourseSel.selectedIndex = i;
+                break;
+            }
+        }
+    }
 
     // 3. Alunos do Curso Ativo
     const cStudents = allEnrichedStudents.filter(s => s.canonical_curso === activeCourse);
@@ -7873,32 +7883,28 @@ function drawCursoView(courseName, force) {
     // Montagem do Cockpit Completo
     mount.innerHTML = `
       <!-- SELETOR DE CURSOS (PILLS) -->
-      <div style="background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 20px; margin-bottom:24px; box-shadow:0 1px 3px rgba(0,0,0,0.03)">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+            <div class="card hud-card" style="padding:16px 20px; margin-bottom:24px; border:1px solid rgba(0, 240, 255, 0.2); background:linear-gradient(180deg, rgba(16, 22, 34, 0.95) 0%, rgba(10, 14, 20, 0.98) 100%); border-radius:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
           <div>
-            <h2 style="font-size:18px; font-weight:800; color:var(--ink); margin:0;">Cockpit por Especialidade: <span style="color:var(--brand)">${activeCourse}</span></h2>
-            <div style="font-size:12px; color:var(--muted); margin-top:2px;">Selecione um curso abaixo para auditar indicadores de matrículas, engajamento e projeção financeira consolidada.</div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+              <span class="hud-live-dot"></span>
+              <span class="micro-label" style="color:var(--neon-cyan);">COCKPIT 360° POR ESPECIALIDADE</span>
+            </div>
+            <h2 style="font-size:20px; font-weight:800; color:#fff; margin:0;">${activeCourse}</h2>
+            <div style="font-size:12px; color:var(--muted); margin-top:4px; font-family:var(--font-hud);">
+              Para alternar de curso, utilize o seletor <b>CURSO / ESPECIALIDADE</b> na barra de filtros gerais acima.
+            </div>
           </div>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px">Base Vigente do Curso:</span>
-            <span class="badge" style="background:var(--brand-w); color:var(--brand); font-weight:700; font-size:12px; padding:4px 10px; border:1px solid rgba(2,132,199,0.3)">${fN(totalMatriculas)} Alunos Matriculados</span>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="background:#090d14; border:1px solid rgba(0,240,255,0.25); border-radius:8px; padding:8px 16px; text-align:right;">
+              <div style="font-size:9.5px; font-weight:700; color:var(--muted); font-family:var(--font-hud); letter-spacing:0.06em; text-transform:uppercase;">BASE VIGENTE</div>
+              <div style="font-size:18px; font-weight:700; font-family:var(--font-mono); color:#00f0ff;">${fN(totalMatriculas)} <span style="font-size:10px; color:var(--muted); font-family:var(--font-hud);">ALUNOS</span></div>
+            </div>
           </div>
-        </div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-          ${availableCourses.map(cName => {
-              const isSel = (activeCourse === cName);
-              const bg = isSel ? 'var(--brand)' : 'var(--paper)';
-              const col = isSel ? '#fff' : 'var(--ink)';
-              const border = isSel ? '1px solid var(--brand)' : '1px solid var(--line)';
-              const count = allEnrichedStudents.filter(s => s.canonical_curso === cName).length;
-              return `<button type="button" onclick="setCursoView('${cName.replace(/'/g, "\\'")}')" style="padding:6px 14px; font-size:11.5px; font-weight:700; border-radius:20px; background:${bg}; color:${col}; border:${border}; cursor:pointer; transition:all 0.15s ease; display:inline-flex; align-items:center; gap:6px;">
-                ${cName} <span style="background:${isSel ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.06)'}; padding:1px 6px; border-radius:10px; font-size:10px;">${count}</span>
-              </button>`;
-          }).join('')}
         </div>
       </div>
 
-      <!-- SEÇÃO 1: AQUISIÇÃO & MATRÍCULAS -->
+<!-- SEÇÃO 1: AQUISIÇÃO & MATRÍCULAS -->
       <div class="exec-sec" style="margin-bottom:24px;">
         <div class="exec-sec-head">
           <div class="exec-sec-title-wrap">
