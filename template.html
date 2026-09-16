@@ -1958,8 +1958,6 @@ option {
     </div>
   </section>
 
-</div>
-
 <div class="modal-ov" id="modal">
   <div class="modal" role="dialog" aria-modal="true">
     <div class="md-head">
@@ -3275,6 +3273,7 @@ Caso precise de qualquer ajuda estou por aqui`;
 function selectTab(pId) {
     if (!pId) return;
     try {
+        window.scrollTo({ top: 0, behavior: 'instant' });
         $$('.tab').forEach(t => t.classList.toggle('on', (t.dataset && t.dataset.p === pId) || t.getAttribute('data-p') === pId));
         $$('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + pId));
 
