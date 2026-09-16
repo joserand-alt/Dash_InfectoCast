@@ -1284,32 +1284,35 @@ option {
 </style>
 </head>
 <body>
-<header>
-  <div class="wrap hd">
-    <div class="brand" style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-      <div class="logo-box" style="width:44px; height:44px; background:radial-gradient(circle, rgba(0,240,255,0.2) 0%, rgba(10,14,20,0.8) 100%); border:1px solid var(--neon-cyan); border-radius:10px; display:grid; place-items:center; box-shadow:0 0 14px rgba(0,240,255,0.35);">
-        <span style="font-size:20px;">🛡️</span>
+<header style="background:linear-gradient(180deg, rgba(14, 20, 32, 0.98) 0%, rgba(10, 14, 20, 0.95) 100%); border-bottom:1px solid rgba(0, 240, 255, 0.2); box-shadow:0 2px 16px rgba(0, 0, 0, 0.8); padding:8px 24px; position:relative; width:100%; z-index:101;">
+  <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:16px;">
+    
+    <!-- ESQUERDA: MARCA E STATUS COMPACTOS (SEM ÍCONE) -->
+    <div style="display:flex; align-items:center; gap:12px; flex-wrap:nowrap;">
+      <div style="display:flex; align-items:baseline; gap:8px;">
+        <span style="font-family:var(--font-hud); font-size:15px; font-weight:800; letter-spacing:0.06em; color:#fff;">INFECTOCAST</span>
+        <span style="font-family:var(--font-mono); font-size:10px; font-weight:700; color:var(--neon-cyan); letter-spacing:0.1em; text-transform:uppercase;">// COMMAND CENTER HUD</span>
       </div>
-      <div class="brand-text">
-        <div class="eyebrow"><span class="hud-live-dot"></span> INFECTOCAST COMMAND CENTER // TELEMETRY HUD</div>
-        <h1>Painel de Acompanhamento</h1>
-        <div class="sub" id="hd-sub">Base Integrada de Alunos, Acessos e Telemetria em Tempo Real</div>
+      <div id="hd-sub" style="font-size:11px; color:var(--muted); font-family:var(--font-mono); border-left:1px solid rgba(255,255,255,0.15); padding-left:12px; white-space:nowrap;">
+        Base Integrada de Alunos, Acessos e Telemetria
       </div>
     </div>
     
-    <div class="hud-top-telemetry">
-      <div class="hud-status-badge">
+    <!-- DIREITA: TELEMETRIA SUPERIOR COMPACTA -->
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="hud-status-badge" style="padding:4px 8px; font-size:9.5px;">
         <span class="hud-live-dot"></span>
         <span>SISTEMA ATIVO // UTC-3</span>
       </div>
-      <div class="hud-clock-box">
-        <span style="color:var(--muted); font-size:10px; font-family:var(--font-hud);">HORA:</span>
-        <span id="hud-clock" style="font-weight:700;">--:--:--</span>
+      <div class="hud-clock-box" style="padding:4px 8px; font-size:10.5px;">
+        <span style="color:var(--muted); font-size:9.5px; font-family:var(--font-hud); margin-right:4px;">HORA:</span>
+        <span id="hud-clock" style="font-weight:700; font-family:var(--font-mono); color:#00f0ff;">--:--:--</span>
       </div>
-      <button id="btn-sync-live" onclick="syncLiveApiManual()" style="background:linear-gradient(135deg, #ff9e00 0%, #ff3366 100%); color:#0a0e14; border:none; padding:8px 16px; border-radius:6px; font-family:var(--font-hud); font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 0 16px rgba(255,158,0,0.4); transition:all 0.2s ease;">
+      <button id="btn-sync-live" onclick="syncLiveApiManual()" style="background:linear-gradient(135deg, #ff9e00 0%, #ff3366 100%); color:#0a0e14; border:none; padding:5px 12px; border-radius:6px; font-family:var(--font-hud); font-size:10.5px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; display:flex; align-items:center; gap:5px; box-shadow:0 0 12px rgba(255,158,0,0.35); transition:all 0.15s ease;">
         <span>🔄</span> <span>Sincronizar APIs</span>
       </button>
     </div>
+
   </div>
 </header>
 
@@ -8536,6 +8539,19 @@ window.addEventListener('DOMContentLoaded', initSidebarState);
   min-width: 0;
   padding: 0 32px 60px;
   max-width: 100%;
+}
+
+
+/* COMPACT SLIM HEADER OVERRIDES */
+header {
+  padding: 8px 24px !important;
+  min-height: 48px !important;
+  max-height: 52px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+header::before, header::after {
+  display: none !important;
 }
 
 </style>
