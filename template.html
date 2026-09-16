@@ -1332,16 +1332,16 @@ option {
 
     <!-- TABS MENU LATERAL -->
     <nav class="tabs" id="tabs">
-      <button class="tab on" data-p="exec" title="Visão Executiva"><span class="num">★</span><span class="tab-label">Visão Executiva</span></button>
-      <button class="tab" data-p="curso" id="btn-tab-curso" title="Visão por Curso"><span class="num">🎯</span><span class="tab-label">Visão por Curso</span></button>
-      <button class="tab" data-p="home" title="Visão Geral"><span class="num">0</span><span class="tab-label">Visão Geral</span></button>
-      <button class="tab" data-p="prog" title="Progresso por Aluno"><span class="num">1</span><span class="tab-label">Progresso por aluno</span></button>
-      <button class="tab" data-p="mod" title="Engajamento por Módulo"><span class="num">2</span><span class="tab-label">Engajamento por módulo</span></button>
-      <button class="tab" data-p="ret" title="Retenção & Abandono"><span class="num">3</span><span class="tab-label">Retenção &amp; abandono</span></button>
-      <button class="tab" data-p="tl" title="Linha Temporal"><span class="num">4</span><span class="tab-label">Linha temporal</span></button>
-      <button class="tab" data-p="funil" title="Funil de Leads"><span class="num">5</span><span class="tab-label">Funil de Leads</span></button>
-      <button class="tab" data-p="origem" title="Origem de Matrículas"><span class="num">6</span><span class="tab-label">Origem de Matrículas</span></button>
-      <button class="tab" data-p="fin" id="btn-tab-fin" title="Financeiro & Projeção"><span class="num">$</span><span class="tab-label">Financeiro &amp; Projeção</span></button>
+      <button class="tab on" data-p="exec" onclick="selectTab('exec')" title="Visão Executiva"><span class="num">★</span><span class="tab-label">Visão Executiva</span></button>
+      <button class="tab" data-p="curso" onclick="selectTab('curso')" id="btn-tab-curso" title="Visão por Curso"><span class="num">🎯</span><span class="tab-label">Visão por Curso</span></button>
+      <button class="tab" data-p="home" onclick="selectTab('home')" title="Visão Geral"><span class="num">0</span><span class="tab-label">Visão Geral</span></button>
+      <button class="tab" data-p="prog" onclick="selectTab('prog')" title="Progresso por Aluno"><span class="num">1</span><span class="tab-label">Progresso por aluno</span></button>
+      <button class="tab" data-p="mod" onclick="selectTab('mod')" title="Engajamento por Módulo"><span class="num">2</span><span class="tab-label">Engajamento por módulo</span></button>
+      <button class="tab" data-p="ret" onclick="selectTab('ret')" title="Retenção & Abandono"><span class="num">3</span><span class="tab-label">Retenção &amp; abandono</span></button>
+      <button class="tab" data-p="tl" onclick="selectTab('tl')" title="Linha Temporal"><span class="num">4</span><span class="tab-label">Linha temporal</span></button>
+      <button class="tab" data-p="funil" onclick="selectTab('funil')" title="Funil de Leads"><span class="num">5</span><span class="tab-label">Funil de Leads</span></button>
+      <button class="tab" data-p="origem" onclick="selectTab('origem')" title="Origem de Matrículas"><span class="num">6</span><span class="tab-label">Origem de Matrículas</span></button>
+      <button class="tab" data-p="fin" onclick="selectTab('fin')" id="btn-tab-fin" title="Financeiro & Projeção"><span class="num">$</span><span class="tab-label">Financeiro &amp; Projeção</span></button>
     </nav>
 
     <!-- FOOTER DA SIDEBAR -->
@@ -3267,35 +3267,39 @@ Caso precise de qualquer ajuda estou por aqui`;
 
 function selectTab(pId) {
     if (!pId) return;
-    $$('.tab').forEach(t => t.classList.toggle('on', t.dataset.p === pId));
-    $$('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + pId));
+    try {
+        $$('.tab').forEach(t => t.classList.toggle('on', (t.dataset && t.dataset.p === pId) || t.getAttribute('data-p') === pId));
+        $$('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + pId));
 
-    // Exibe/oculta barra de KPIs do cabeçalho de acordo com a aba
-    if (pId === 'exec' || pId === 'curso' || pId === 'home' || pId === 'fin' || pId === 'funil') {
-        if ($('#kpis')) $('#kpis').style.display = 'none';
-    } else {
-        if ($('#kpis')) $('#kpis').style.display = 'grid';
-    }
+        // Exibe/oculta barra de KPIs do cabeçalho de acordo com a aba
+        if (pId === 'exec' || pId === 'curso' || pId === 'home' || pId === 'fin' || pId === 'funil') {
+            if ($('#kpis')) $('#kpis').style.display = 'none';
+        } else {
+            if ($('#kpis')) $('#kpis').style.display = 'grid';
+        }
 
-    if (pId === 'exec') drawExecView(true);
-    if (pId === 'curso') drawCursoView((FILTER && FILTER.curso !== 'all') ? FILTER.curso : 'all', true);
-    if (pId === 'home') drawHome(true);
-    if (pId === 'prog') {
-        buildHead();
-        statusChips();
-        renderRows();
+        if (pId === 'exec') { try { drawExecView(true); } catch(e) { console.error('Erro drawExecView:', e); } }
+        if (pId === 'curso') { try { drawCursoView((FILTER && FILTER.curso !== 'all') ? FILTER.curso : 'all', true); } catch(e) { console.error('Erro drawCursoView:', e); } }
+        if (pId === 'home') { try { drawHome(true); } catch(e) { console.error('Erro drawHome:', e); } }
+        if (pId === 'prog') { 
+            try { buildHead(); } catch(e) { console.error('Erro buildHead:', e); }
+            try { statusChips(); } catch(e) { console.error('Erro statusChips:', e); }
+            try { renderRows(); } catch(e) { console.error('Erro renderRows:', e); }
+        }
+        if (pId === 'mod') { try { renderModules(); } catch(e) { console.error('Erro renderModules:', e); } }
+        if (pId === 'ret') { try { renderRetention(); } catch(e) { console.error('Erro renderRetention:', e); } }
+        if (pId === 'tl') { try { drawTimeline(true); } catch(e) { console.error('Erro drawTimeline:', e); } }
+        if (pId === 'funil') {
+            try { drawFunil(true); } catch(e) { console.error('Erro drawFunil:', e); }
+            if ($('.filters')) $('.filters').style.display = 'none';
+        } else {
+            if ($('.filters')) $('.filters').style.display = 'flex';
+        }
+        if (pId === 'origem') { try { drawOrigem(true); } catch(e) { console.error('Erro drawOrigem:', e); } }
+        if (pId === 'fin') { try { drawFinanceiro(true); } catch(e) { console.error('Erro drawFinanceiro:', e); } }
+    } catch(err) {
+        console.error('Erro em selectTab:', err);
     }
-    if (pId === 'mod') renderModules();
-    if (pId === 'ret') renderRetention();
-    if (pId === 'tl') drawTimeline(true);
-    if (pId === 'funil') {
-        drawFunil(true);
-        if ($('.filters')) $('.filters').style.display = 'none';
-    } else {
-        if ($('.filters')) $('.filters').style.display = 'flex';
-    }
-    if (pId === 'origem') drawOrigem(true);
-    if (pId === 'fin') drawFinanceiro(true);
 }
 window.selectTab = selectTab;
 window.switchTab = selectTab;
