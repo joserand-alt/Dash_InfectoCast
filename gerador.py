@@ -1738,9 +1738,13 @@ def main():
     print(f"[MATRÍCULAS] Base final oficial sanitizada: {len(matriculas_legitimas)} matrículas ({expurgados_count} desconsiderados por serem teste/internos/Nutrify Connect/sem vínculo).")
     students = matriculas_legitimas
 
+    now_dt = datetime.datetime.now()
     data = {
         "meta": {
-            "generated": datetime.date.today().strftime("%d/%m/%Y"),
+            "generated": now_dt.strftime("%d/%m/%Y"),
+            "updated_at": now_dt.strftime("%d/%m/%Y %H:%M:%S"),
+            "updated_iso": now_dt.isoformat(),
+            "hora_atualizacao": now_dt.strftime("%H:%M"),
             "report_start": df_log['Data log'].min().strftime("%d/%m/%Y"),
             "date_max": df_log['Data log'].max().strftime("%d/%m/%Y"),
             "ref_date": hoje.strftime("%d/%m/%Y")
