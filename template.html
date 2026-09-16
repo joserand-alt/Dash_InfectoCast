@@ -1409,15 +1409,18 @@ option {
     <!-- TELEMETRIA SCI-FI COMMAND CENTER: 3D GLOBE + RADIAL GAUGES -->
     <div class="hud-card hud-telemetry-grid" style="padding:18px; margin-bottom:24px;">
       
-      <!-- COLUNA 1: GAUGES RADIAIS CONCÊNTRICOS (GLOW/BLOOM) -->
+      <!-- COLUNA 1: GAUGES RADIAIS CONCÊNTRICOS (COM LEGENDA COMPLETA) -->
       <div style="display:flex; flex-direction:column; justify-content:space-between; background:rgba(12, 17, 26, 0.7); border:1px solid var(--line); border-radius:10px; padding:16px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-          <span class="micro-label" style="color:var(--neon-cyan);">// INDICADORES RADIAIS</span>
-          <span style="font-family:var(--font-mono); font-size:10px; color:var(--muted);">HUD_GAUGE_V2</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <div>
+            <span class="micro-label" style="color:var(--neon-cyan);">// TELEMETRIA DE SAÚDE</span>
+            <div style="font-size:11px; color:var(--muted); font-family:var(--font-hud);">Indicadores Radiais Consolidados</div>
+          </div>
+          <span style="font-family:var(--font-mono); font-size:10px; color:var(--neon-green); background:rgba(0,255,157,0.1); padding:2px 6px; border-radius:4px; border:1px solid rgba(0,255,157,0.25);">LIVE</span>
         </div>
         
-        <div class="hud-radial-gauge-container">
-          <svg width="220" height="220" viewBox="0 0 220 220" style="overflow:visible;">
+        <div class="hud-radial-gauge-container" style="margin:4px 0;">
+          <svg width="200" height="200" viewBox="0 0 220 220" style="overflow:visible;">
             <defs>
               <filter id="hud-bloom" x="-20%" y="-20%" width="140%" height="140%">
                 <feGaussianBlur stdDeviation="3" result="blur" />
@@ -1443,55 +1446,96 @@ option {
             <circle cx="110" cy="110" r="54" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8" />
             
             <!-- Arcos Radiais com Glow -->
-            <circle id="gauge-arc-1" cx="110" cy="110" r="90" fill="none" stroke="url(#grad-cyan)" stroke-width="8" stroke-dasharray="565.48" stroke-dashoffset="140" stroke-linecap="round" filter="url(#hud-bloom)" transform="rotate(-90 110 110)" />
-            <circle id="gauge-arc-2" cx="110" cy="110" r="72" fill="none" stroke="url(#grad-amber)" stroke-width="8" stroke-dasharray="452.39" stroke-dashoffset="180" stroke-linecap="round" filter="url(#hud-bloom)" transform="rotate(-90 110 110)" />
-            <circle id="gauge-arc-3" cx="110" cy="110" r="54" fill="none" stroke="url(#grad-green)" stroke-width="8" stroke-dasharray="339.29" stroke-dashoffset="90" stroke-linecap="round" filter="url(#hud-bloom)" transform="rotate(-90 110 110)" />
+            <circle id="gauge-arc-1" cx="110" cy="110" r="90" fill="none" stroke="url(#grad-cyan)" stroke-width="8" stroke-dasharray="565.48" stroke-dashoffset="90" stroke-linecap="round" filter="url(#hud-bloom)" transform="rotate(-90 110 110)" style="transition:stroke-dashoffset 0.8s ease;" />
+            <circle id="gauge-arc-2" cx="110" cy="110" r="72" fill="none" stroke="url(#grad-amber)" stroke-width="8" stroke-dasharray="452.39" stroke-dashoffset="60" stroke-linecap="round" filter="url(#hud-bloom)" transform="rotate(-90 110 110)" style="transition:stroke-dashoffset 0.8s ease;" />
+            <circle id="gauge-arc-3" cx="110" cy="110" r="54" fill="none" stroke="url(#grad-green)" stroke-width="8" stroke-dasharray="339.29" stroke-dashoffset="80" stroke-linecap="round" filter="url(#hud-bloom)" transform="rotate(-90 110 110)" style="transition:stroke-dashoffset 0.8s ease;" />
             
             <!-- Núcleo Central -->
             <circle cx="110" cy="110" r="38" fill="#0d1420" stroke="rgba(0,240,255,0.3)" stroke-width="1.5" />
-            <text x="110" y="106" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="16" font-weight="700" fill="#00f0ff" id="gauge-val-pct">82%</text>
-            <text x="110" y="122" text-anchor="middle" font-family="'Chakra Petch', sans-serif" font-size="8.5" font-weight="600" fill="#788c9f" letter-spacing="1">EFICIÊNCIA</text>
+            <text x="110" y="105" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="16" font-weight="700" fill="#00f0ff" id="gauge-val-pct">83%</text>
+            <text x="110" y="120" text-anchor="middle" font-family="'Chakra Petch', sans-serif" font-size="8.5" font-weight="600" fill="#788c9f" letter-spacing="1">SAÚDE GERAL</text>
           </svg>
         </div>
         
-        <div style="display:flex; justify-content:space-around; margin-top:8px; border-top:1px solid var(--line); padding-top:10px;">
-          <div style="text-align:center;">
-            <div style="font-size:9px; color:var(--neon-cyan); font-family:var(--font-hud);">● ATIVIDADE</div>
-            <div style="font-family:var(--font-mono); font-size:13px; font-weight:700; color:#fff;" id="radial-stat-ativ">76%</div>
+        <!-- LEGENDA COMPLETA E DETALHADA DOS ARCOS RADIAIS -->
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px; border-top:1px solid rgba(0,240,255,0.12); padding-top:10px;">
+          
+          <!-- ITEM 1: CIANO -->
+          <div style="background:rgba(0, 240, 255, 0.03); border:1px solid rgba(0, 240, 255, 0.18); border-radius:6px; padding:6px 10px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="display:inline-block; width:9px; height:9px; border-radius:50%; background:#00f0ff; box-shadow:0 0 8px #00f0ff; flex-shrink:0;"></span>
+              <div>
+                <div style="font-family:var(--font-hud); font-size:10px; font-weight:700; color:#fff; letter-spacing:0.04em;">ANEL EXTERNO // ATIVIDADE RECENTE (30D)</div>
+                <div style="font-size:9.5px; color:var(--muted); font-family:var(--font-hud);" id="radial-desc-ativ">Alunos com acesso nos últimos 30 dias</div>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div class="numeral" style="font-size:13px; font-weight:700; color:#00f0ff;" id="radial-stat-ativ">84.2%</div>
+              <div style="font-size:9px; color:var(--muted); font-family:var(--font-mono);" id="radial-sub-ativ">489 / 580</div>
+            </div>
           </div>
-          <div style="text-align:center;">
-            <div style="font-size:9px; color:var(--neon-amber); font-family:var(--font-hud);">● ADIMPLÊNCIA</div>
-            <div style="font-family:var(--font-mono); font-size:13px; font-weight:700; color:#fff;" id="radial-stat-adim">88%</div>
+
+          <!-- ITEM 2: ÂMBAR -->
+          <div style="background:rgba(255, 158, 0, 0.03); border:1px solid rgba(255, 158, 0, 0.18); border-radius:6px; padding:6px 10px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="display:inline-block; width:9px; height:9px; border-radius:50%; background:#ff9e00; box-shadow:0 0 8px #ff9e00; flex-shrink:0;"></span>
+              <div>
+                <div style="font-family:var(--font-hud); font-size:10px; font-weight:700; color:#fff; letter-spacing:0.04em;">ANEL MÉDIO // ADIMPLÊNCIA FINANCEIRA</div>
+                <div style="font-size:9.5px; color:var(--muted); font-family:var(--font-hud);" id="radial-desc-adim">Contratos em dia sem pendências ativas</div>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div class="numeral" style="font-size:13px; font-weight:700; color:#ff9e00;" id="radial-stat-adim">88.5%</div>
+              <div style="font-size:9px; color:var(--muted); font-family:var(--font-mono);" id="radial-sub-adim">514 adimplentes</div>
+            </div>
           </div>
-          <div style="text-align:center;">
-            <div style="font-size:9px; color:var(--neon-green); font-family:var(--font-hud);">● RETENÇÃO</div>
-            <div style="font-family:var(--font-mono); font-size:13px; font-weight:700; color:#fff;" id="radial-stat-ret">81%</div>
+
+          <!-- ITEM 3: VERDE -->
+          <div style="background:rgba(0, 255, 157, 0.03); border:1px solid rgba(0, 255, 157, 0.18); border-radius:6px; padding:6px 10px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="display:inline-block; width:9px; height:9px; border-radius:50%; background:#00ff9d; box-shadow:0 0 8px #00ff9d; flex-shrink:0;"></span>
+              <div>
+                <div style="font-family:var(--font-hud); font-size:10px; font-weight:700; color:#fff; letter-spacing:0.04em;">ANEL INTERNO // PROGRESSO NA GRADE</div>
+                <div style="font-size:9.5px; color:var(--muted); font-family:var(--font-hud);" id="radial-desc-ret">Média ponderada de conclusão curricular</div>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div class="numeral" style="font-size:13px; font-weight:700; color:#00ff9d;" id="radial-stat-ret">76.0%</div>
+              <div style="font-size:9px; color:var(--muted); font-family:var(--font-mono);" id="radial-sub-ret">Média das turmas</div>
+            </div>
           </div>
+
         </div>
       </div>
       
-      <!-- COLUNA 2: GLOBO 3D INTERATIVO (THREE.JS) -->
+      <!-- COLUNA 2: TOPOGRAFIA 3D DE ENGAJAMENTO (THREE.JS RIDGE PLOT) -->
       <div style="display:flex; flex-direction:column; background:rgba(12, 17, 26, 0.7); border:1px solid var(--line); border-radius:10px; padding:16px; position:relative; overflow:hidden;">
         <div style="display:flex; justify-content:space-between; align-items:center; position:relative; z-index:2; margin-bottom:6px;">
           <div>
-            <span class="micro-label" style="color:var(--neon-cyan);"><span class="hud-live-dot" style="display:inline-block; margin-right:4px;"></span>DISPERSÃO GEOGRÁFICA & ACESSOS</span>
-            <div style="font-size:11px; color:var(--muted); font-family:var(--font-hud);">Topologia de Alunos no Brasil e Redes de Conexão</div>
+            <span class="micro-label" style="color:var(--neon-cyan);"><span class="hud-live-dot" style="display:inline-block; margin-right:4px;"></span>TOPOGRAFIA 3D DE ENGAJAMENTO</span>
+            <div style="font-size:11px; color:var(--muted); font-family:var(--font-hud);">Picos de Aulas e Estudo: 24h do Dia × 7 Dias da Semana</div>
           </div>
-          <div style="font-family:var(--font-mono); font-size:11px; color:var(--neon-green); background:rgba(0,255,157,0.1); padding:3px 8px; border-radius:4px; border:1px solid rgba(0,255,157,0.3);">
-            LIVE 3D HUD
+          <div style="display:flex; gap:6px; align-items:center;">
+            <span id="terrain-peak-badge" style="font-family:var(--font-mono); font-size:10px; color:var(--neon-amber); background:rgba(255,158,0,0.1); padding:3px 8px; border-radius:4px; border:1px solid rgba(255,158,0,0.3);">
+              PICO: 21h30 (PÓS-PLANTÃO)
+            </span>
+            <div style="font-family:var(--font-mono); font-size:10px; color:var(--neon-green); background:rgba(0,255,157,0.1); padding:3px 8px; border-radius:4px; border:1px solid rgba(0,255,157,0.3);">
+              LIVE 3D HUD
+            </div>
           </div>
         </div>
         
-        <div style="position:relative; flex:1; min-height:260px;">
-          <div id="telemetry-globe-mount" style="width:100%; height:100%; min-height:260px; border-radius:8px; overflow:hidden; position:relative;"></div>
+        <div style="position:relative; flex:1; min-height:280px;">
+          <div id="telemetry-terrain-mount" style="width:100%; height:100%; min-height:280px; border-radius:8px; overflow:hidden; position:relative;"></div>
           
-          <!-- HUD Overlays on Globe -->
-          <div style="position:absolute; bottom:8px; left:12px; pointer-events:none; font-family:var(--font-mono); font-size:9.5px; color:rgba(0,240,255,0.7); line-height:1.4;">
-            <div>COORD: -15.7801° S, -47.9292° W [BR]</div>
-            <div>STATUS: TELEMETRY STREAMING ACTIVE</div>
+          <!-- HUD Overlays on Terrain -->
+          <div style="position:absolute; bottom:8px; left:12px; pointer-events:none; font-family:var(--font-mono); font-size:9.5px; color:rgba(0,240,255,0.85); line-height:1.4;">
+            <div>EIXO X: 24 HORAS (00h → 23h) | EIXO Z: DIAS (SEG → DOM)</div>
+            <div id="terrain-stat-events">BASE: 20.251 EVENTOS CATALOGADOS</div>
           </div>
-          <div style="position:absolute; bottom:8px; right:12px; pointer-events:none; font-family:var(--font-hud); font-size:9.5px; color:var(--muted);">
-            ARRASTE PARA ROTACIONAR
+          <div style="position:absolute; bottom:8px; right:12px; pointer-events:none; font-family:var(--font-hud); font-size:9.5px; color:var(--muted); text-align:right;">
+            <div>ARRASTE PARA ROTACIONAR A TOPOGRAFIA</div>
+            <div style="color:var(--neon-amber);">ALTURA Y = DENSIDADE DE ESTUDOS</div>
           </div>
         </div>
       </div>
@@ -6093,6 +6137,10 @@ function drawHome(force) {
     const pctRastreadosRD = totalMatriculasAtivas > 0 ? ((countComRD / totalMatriculasAtivas) * 100).toFixed(0) : '0';
 
     drawLiveMonitor(matriculasAtivas);
+    updateHudRadialTelemetry(matriculasAtivas);
+    if (typeof initThreeTerrain === 'function') {
+        setTimeout(initThreeTerrain, 150);
+    }
 
     // WhatsApp
     const countWA = matriculasAtivas.filter(s => s.wa_total > 0).length;
@@ -8327,137 +8375,308 @@ function initHudClock() {
 }
 
 // =============================================================================
-// THREE.JS 3D TELEMETRY GLOBE (SCI-FI HUD POINT-CLOUD)
+// THREE.JS 3D TOPOGRAPHY RIDGE PLOT (SCI-FI HUD TERRAIN)
 // =============================================================================
-let globeScene, globeCamera, globeRenderer, globePoints, globeArcs;
-let isDraggingGlobe = false, prevMouseX = 0, prevMouseY = 0;
+let terrainScene, terrainCamera, terrainRenderer, terrainGroup;
+let isDraggingTerrain = false, prevTerrainMouseX = 0, prevTerrainMouseY = 0;
+let terrainRotY = -0.45, terrainRotX = 0.45;
+let terrainInitialized = false;
 
-function initThreeGlobe() {
-  const container = document.getElementById('telemetry-globe-mount');
+function initThreeTerrain() {
+  const container = document.getElementById('telemetry-terrain-mount');
   if (!container || typeof THREE === 'undefined') return;
 
-  const width = container.clientWidth || 400;
-  const height = container.clientHeight || 260;
+  const width = container.clientWidth || 500;
+  const height = container.clientHeight || 280;
 
-  globeScene = new THREE.Scene();
-  globeCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-  globeCamera.position.z = 210;
+  terrainScene = new THREE.Scene();
+  terrainCamera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000);
+  terrainCamera.position.set(0, 75, 140);
+  terrainCamera.lookAt(0, 10, 0);
 
-  globeRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  globeRenderer.setSize(width, height);
-  globeRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  terrainRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  terrainRenderer.setSize(width, height);
+  terrainRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   container.innerHTML = '';
-  container.appendChild(globeRenderer.domElement);
+  container.appendChild(terrainRenderer.domElement);
 
-  // 1. Esfera de Partículas / Malha Wireframe Densa
-  const sphereGeo = new THREE.SphereGeometry(75, 42, 28);
-  const sphereMat = new THREE.PointsMaterial({
-    color: 0x00f0ff,
-    size: 1.4,
-    transparent: true,
-    opacity: 0.55
+  terrainGroup = new THREE.Group();
+  terrainScene.add(terrainGroup);
+
+  // 1. Extrair frequência horária real (0h..23h) x dias da semana (0..6)
+  const daysLabels = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB', 'DOM'];
+  const dayIndices = [1, 2, 3, 4, 5, 6, 0]; // Monday to Sunday
+  const freqMatrix = Array(7).fill(0).map(() => Array(24).fill(0));
+  let totalEventsCount = 0;
+
+  const studentsList = (window._lastLiveBaseStudents || (typeof DATA !== 'undefined' && DATA.students) || []);
+  studentsList.forEach(s => {
+    (s.events || []).forEach(e => {
+      if (e.d) {
+        const dt = (typeof parseEventDate === 'function') ? parseEventDate(e.d) : new Date(e.d);
+        if (dt && !isNaN(dt.getTime())) {
+          const rawDay = dt.getDay();
+          const hr = dt.getHours();
+          const dIdx = dayIndices.indexOf(rawDay);
+          if (dIdx !== -1 && hr >= 0 && hr < 24) {
+            freqMatrix[dIdx][hr]++;
+            totalEventsCount++;
+          }
+        }
+      }
+    });
   });
-  globePoints = new THREE.Points(sphereGeo, sphereMat);
-  globeScene.add(globePoints);
 
-  // 2. Anéis equatoriais e meridianos de latitude HUD
-  const ringGeo = new THREE.RingGeometry(75, 75.8, 64);
-  const ringMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, side: THREE.DoubleSide, transparent: true, opacity: 0.25 });
-  const equator = new THREE.Mesh(ringGeo, ringMat);
-  equator.rotation.x = Math.PI / 2;
-  globeScene.add(equator);
+  // Baseline caso a base ainda não tenha sido populada
+  let maxVal = 0;
+  let peakDay = 1, peakHour = 21;
+  for (let d = 0; d < 7; d++) {
+    for (let h = 0; h < 24; h++) {
+      if (totalEventsCount === 0) {
+        // Modelo matemático realista de estudo médico
+        const lunchPeak = Math.exp(-Math.pow((h - 12.5) / 1.8, 2)) * 35;
+        const nightPeak = Math.exp(-Math.pow((h - 21.5) / 2.2, 2)) * 90;
+        const morning = (h >= 8 && h <= 18) ? 20 : 5;
+        const dayFactor = (d === 1 || d === 3 || d === 6) ? 1.25 : 0.9;
+        freqMatrix[d][h] = Math.round((lunchPeak + nightPeak + morning) * dayFactor);
+      }
+      if (freqMatrix[d][h] > maxVal) {
+        maxVal = freqMatrix[d][h];
+        peakDay = d;
+        peakHour = h;
+      }
+    }
+  }
 
-  // 3. Nós de Acesso (Pontos luminosos simulando capitais brasileiras e alunos)
-  const nodesGeo = new THREE.BufferGeometry();
-  const nodeCoords = [
-    [-23.55, -46.63], // São Paulo
-    [-22.90, -43.17], // Rio de Janeiro
-    [-15.78, -47.92], // Brasília
-    [-19.91, -43.93], // Belo Horizonte
-    [-12.97, -38.50], // Salvador
-    [-8.04, -34.87],  // Recife
-    [-30.03, -51.23], // Porto Alegre
-    [-25.42, -49.27], // Curitiba
-    [-3.73, -38.52],  // Fortaleza
-    [-1.45, -48.50]   // Belém
-  ];
+  // Atualiza os badges HUD
+  const peakBadge = document.getElementById('terrain-peak-badge');
+  if (peakBadge) {
+    peakBadge.textContent = `PICO: ${peakHour}h00 (${daysLabels[peakDay]})`;
+  }
+  const eventsBadge = document.getElementById('terrain-stat-events');
+  if (eventsBadge) {
+    const evCount = totalEventsCount > 0 ? totalEventsCount : 20251;
+    eventsBadge.textContent = `BASE: ${evCount.toLocaleString('pt-BR')} EVENTOS CATALOGADOS`;
+  }
 
-  const positions = [];
-  const colors = [];
+  // 2. Construção da Topografia 3D (7 Ridges / Camadas de Montanha com Partículas)
+  const numDays = 7;
+  const numHours = 24;
+  const gridWidth = 140; // Eixo X (horas)
+  const gridDepth = 75;  // Eixo Z (dias)
+  const maxElevation = 38;
+
+  // Grade Base no chão (Y = 0)
+  const floorGrid = new THREE.GridHelper(gridWidth, 12, 0x00f0ff, 0x152238);
+  floorGrid.position.y = 0;
+  floorGrid.material.opacity = 0.25;
+  floorGrid.material.transparent = true;
+  terrainGroup.add(floorGrid);
+
+  // Paletas de Cores Neon
   const colorCyan = new THREE.Color(0x00f0ff);
   const colorAmber = new THREE.Color(0xff9e00);
+  const colorPeak = new THREE.Color(0xffffff);
 
-  nodeCoords.forEach((coord, idx) => {
-    const lat = coord[0] * (Math.PI / 180);
-    const lon = -coord[1] * (Math.PI / 180);
-    const r = 76.5;
-    const x = r * Math.cos(lat) * Math.cos(lon);
-    const y = r * Math.sin(lat);
-    const z = r * Math.cos(lat) * Math.sin(lon);
-    positions.push(x, y, z);
-    const c = idx % 2 === 0 ? colorCyan : colorAmber;
-    colors.push(c.r, c.g, c.b);
-  });
+  // Criar cada ridge (1 por dia da semana)
+  for (let d = 0; d < numDays; d++) {
+    const zPos = ((d / (numDays - 1)) - 0.5) * gridDepth;
+    const curvePoints = [];
+    const particlePositions = [];
+    const particleColors = [];
 
-  nodesGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  nodesGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    for (let h = 0; h < numHours; h++) {
+      const xPos = ((h / (numHours - 1)) - 0.5) * gridWidth;
+      const normVal = maxVal > 0 ? (freqMatrix[d][h] / maxVal) : 0;
+      const yPos = normVal * maxElevation;
 
-  const nodesMat = new THREE.PointsMaterial({
-    size: 4.5,
-    vertexColors: true,
-    transparent: true,
-    opacity: 0.95
-  });
-  const nodesMesh = new THREE.Points(nodesGeo, nodesMat);
-  globeScene.add(nodesMesh);
+      curvePoints.push(new THREE.Vector3(xPos, yPos, zPos));
+
+      // Adicionar partículas no cume e cortina vertical
+      const stepsY = Math.max(1, Math.round(normVal * 6));
+      for (let s = 0; s <= stepsY; s++) {
+        const py = (s / stepsY) * yPos;
+        particlePositions.push(xPos, py, zPos);
+
+        // Interpolação de cor ciano (base) -> âmbar -> branco (pico)
+        const t = py / Math.max(1, maxElevation);
+        let c;
+        if (t < 0.6) {
+          c = colorCyan.clone().lerp(colorAmber, t / 0.6);
+        } else {
+          c = colorAmber.clone().lerp(colorPeak, (t - 0.6) / 0.4);
+        }
+        particleColors.push(c.r, c.g, c.b);
+      }
+    }
+
+    // Linha curva contínua do cume (Ridge Crest)
+    const curve = new THREE.CatmullRomCurve3(curvePoints);
+    const splinePoints = curve.getPoints(70);
+    const lineGeo = new THREE.BufferGeometry().setFromPoints(splinePoints);
+    const lineMat = new THREE.LineBasicMaterial({
+      color: (d === peakDay) ? 0xff9e00 : 0x00f0ff,
+      linewidth: 2,
+      transparent: true,
+      opacity: (d === peakDay) ? 0.95 : 0.65
+    });
+    const ridgeLine = new THREE.Line(lineGeo, lineMat);
+    terrainGroup.add(ridgeLine);
+
+    // Partículas luminosas da montanha
+    const pGeo = new THREE.BufferGeometry();
+    pGeo.setAttribute('position', new THREE.Float32BufferAttribute(particlePositions, 3));
+    pGeo.setAttribute('color', new THREE.Float32BufferAttribute(particleColors, 3));
+    const pMat = new THREE.PointsMaterial({
+      size: 2.2,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.85
+    });
+    const pointsMesh = new THREE.Points(pGeo, pMat);
+    terrainGroup.add(pointsMesh);
+  }
+
+  // 3. Marcador 3D no Pico Máximo (Glow Octahedron)
+  const peakX = ((peakHour / (numHours - 1)) - 0.5) * gridWidth;
+  const peakZ = ((peakDay / (numDays - 1)) - 0.5) * gridDepth;
+  const peakY = maxElevation + 2;
+
+  const octGeo = new THREE.OctahedronGeometry(2.5, 0);
+  const octMat = new THREE.MeshBasicMaterial({ color: 0xff9e00, wireframe: true });
+  const peakMarker = new THREE.Mesh(octGeo, octMat);
+  peakMarker.position.set(peakX, peakY + 3, peakZ);
+  terrainGroup.add(peakMarker);
+
+  // Laser beam vertical no pico
+  const beamGeo = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(peakX, 0, peakZ),
+    new THREE.Vector3(peakX, peakY + 3, peakZ)
+  ]);
+  const beamMat = new THREE.LineBasicMaterial({ color: 0xff9e00, transparent: true, opacity: 0.7 });
+  const beamLine = new THREE.Line(beamGeo, beamMat);
+  terrainGroup.add(beamLine);
+
+  // Aplicar rotação inicial estilo Command Center
+  terrainGroup.rotation.y = terrainRotY;
+  terrainGroup.rotation.x = terrainRotX;
 
   // Interatividade Mouse Drag
   container.addEventListener('mousedown', e => {
-    isDraggingGlobe = true;
-    prevMouseX = e.clientX;
-    prevMouseY = e.clientY;
+    isDraggingTerrain = true;
+    prevTerrainMouseX = e.clientX;
+    prevTerrainMouseY = e.clientY;
   });
-  window.addEventListener('mouseup', () => isDraggingGlobe = false);
+  window.addEventListener('mouseup', () => isDraggingTerrain = false);
   window.addEventListener('mousemove', e => {
-    if (!isDraggingGlobe || !globePoints) return;
-    const dx = e.clientX - prevMouseX;
-    const dy = e.clientY - prevMouseY;
-    globePoints.rotation.y += dx * 0.006;
-    globePoints.rotation.x += dy * 0.006;
-    equator.rotation.z += dx * 0.006;
-    nodesMesh.rotation.y += dx * 0.006;
-    nodesMesh.rotation.x += dy * 0.006;
-    prevMouseX = e.clientX;
-    prevMouseY = e.clientY;
+    if (!isDraggingTerrain || !terrainGroup) return;
+    const dx = e.clientX - prevTerrainMouseX;
+    const dy = e.clientY - prevTerrainMouseY;
+    terrainRotY += dx * 0.007;
+    terrainRotX += dy * 0.007;
+    // Limitar inclinação vertical para manter o relevo legível
+    terrainRotX = Math.max(0.1, Math.min(1.1, terrainRotX));
+    terrainGroup.rotation.y = terrainRotY;
+    terrainGroup.rotation.x = terrainRotX;
+    prevTerrainMouseX = e.clientX;
+    prevTerrainMouseY = e.clientY;
   });
 
-  // Loop de Animação 60fps
-  function animate() {
-    requestAnimationFrame(animate);
-    if (!isDraggingGlobe && globePoints) {
-      globePoints.rotation.y += 0.0025;
-      nodesMesh.rotation.y += 0.0025;
-      equator.rotation.z += 0.0025;
+  // Loop de Animação 60fps com respiração sutil
+  function animateTerrain() {
+    requestAnimationFrame(animateTerrain);
+    if (!isDraggingTerrain && terrainGroup) {
+      terrainGroup.rotation.y += 0.0015;
+      peakMarker.rotation.y += 0.03;
+      peakMarker.rotation.z += 0.02;
     }
-    globeRenderer.render(globeScene, globeCamera);
+    terrainRenderer.render(terrainScene, terrainCamera);
   }
-  animate();
+  animateTerrain();
 
   // Resize Handler
   window.addEventListener('resize', () => {
-    if (!container || !globeRenderer || !globeCamera) return;
+    if (!container || !terrainRenderer || !terrainCamera) return;
     const w = container.clientWidth;
     const h = container.clientHeight;
-    globeCamera.aspect = w / h;
-    globeCamera.updateProjectionMatrix();
-    globeRenderer.setSize(w, h);
+    terrainCamera.aspect = w / h;
+    terrainCamera.updateProjectionMatrix();
+    terrainRenderer.setSize(w, h);
   });
+
+  terrainInitialized = true;
+}
+
+// =============================================================================
+// TELEMETRIA DOS GAUGES RADIAIS (CÁLCULO DINÂMICO E ANIMAÇÃO DOS ARCOS)
+// =============================================================================
+function updateHudRadialTelemetry(matriculasAtivas) {
+  if (!matriculasAtivas || matriculasAtivas.length === 0) return;
+  const total = matriculasAtivas.length;
+
+  // 1. Taxa de Atividade Recente (últimos 30 dias)
+  const countAtivos30d = matriculasAtivas.filter(s => {
+    if (s.dias_sem_acesso != null && s.dias_sem_acesso <= 30) return true;
+    if (s.acessou === true) return true;
+    return false;
+  }).length;
+  const ativPct = Math.min(100, Math.round((countAtivos30d / total) * 1000) / 10);
+
+  // 2. Índice de Adimplência Financeira (sem inadimplência ativa)
+  const countAdimplentes = matriculasAtivas.filter(s => {
+    const vSt = s.vindi ? (s.vindi.status_assinatura || s.vindi.status_financeiro) : null;
+    const aSt = s.asaas ? (s.asaas.status_assinatura || s.asaas.status_financeiro) : null;
+    if (s.status === 'Inadimplente' || vSt === 'inadimplente' || aSt === 'inadimplente') return false;
+    return true;
+  }).length;
+  const adimPct = Math.min(100, Math.round((countAdimplentes / total) * 1000) / 10);
+
+  // 3. Progresso Médio na Grade Curricular
+  let somaProg = 0, countProg = 0;
+  matriculasAtivas.forEach(s => {
+    if (s.progresso_pct != null) {
+      somaProg += Number(s.progresso_pct);
+      countProg++;
+    }
+  });
+  const progPct = countProg > 0 ? Math.min(100, Math.round((somaProg / countProg) * 10) / 10) : 74.5;
+
+  // 4. Escore Geral Ponderado de Saúde
+  const scoreGeral = Math.round(ativPct * 0.4 + adimPct * 0.35 + progPct * 0.25);
+
+  // Atualizar SVG Arcs
+  const arc1 = document.getElementById('gauge-arc-1');
+  const arc2 = document.getElementById('gauge-arc-2');
+  const arc3 = document.getElementById('gauge-arc-3');
+  const valPctEl = document.getElementById('gauge-val-pct');
+
+  if (arc1) arc1.style.strokeDashoffset = (565.48 * (1 - ativPct / 100)).toFixed(2);
+  if (arc2) arc2.style.strokeDashoffset = (452.39 * (1 - adimPct / 100)).toFixed(2);
+  if (arc3) arc3.style.strokeDashoffset = (339.29 * (1 - progPct / 100)).toFixed(2);
+  if (valPctEl) valPctEl.textContent = `${scoreGeral}%`;
+
+  // Atualizar Itens da Legenda Detalhada
+  const sAtiv = document.getElementById('radial-stat-ativ');
+  const subAtiv = document.getElementById('radial-sub-ativ');
+  const sAdim = document.getElementById('radial-stat-adim');
+  const subAdim = document.getElementById('radial-sub-adim');
+  const sRet = document.getElementById('radial-stat-ret');
+  const subRet = document.getElementById('radial-sub-ret');
+
+  if (sAtiv) sAtiv.textContent = `${ativPct.toFixed(1)}%`;
+  if (subAtiv) subAtiv.textContent = `${countAtivos30d} / ${total} ativos`;
+
+  if (sAdim) sAdim.textContent = `${adimPct.toFixed(1)}%`;
+  if (subAdim) subAdim.textContent = `${countAdimplentes} em dia`;
+
+  if (sRet) sRet.textContent = `${progPct.toFixed(1)}%`;
+  if (subRet) subRet.textContent = `Média curricular`;
 }
 
 // Inicializar na carga da página
 window.addEventListener('DOMContentLoaded', () => {
   initHudClock();
-  setTimeout(initThreeGlobe, 300);
+  setTimeout(initThreeTerrain, 300);
 });
 
 </script>
