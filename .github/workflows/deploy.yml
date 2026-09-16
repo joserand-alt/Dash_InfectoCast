@@ -1,12 +1,15 @@
-name: Publicar Dashboard InfectoCast no GitHub Pages
+name: Sincronização Automática das APIs & Deploy no GitHub Pages
 
 on:
+  schedule:
+    # Executa de hora em hora em ponto (ex: 00:00, 01:00, 02:00, ..., 23:00 UTC)
+    - cron: '0 * * * *'
   push:
     branches: [ main ]
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -15,16 +18,47 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  sync_and_deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout do código
+      - name: Checkout do repositório
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Configurar Pages
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Instalar Dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Executar Gerador e Consultar APIs (Academy, Cativa, Vindi, Asaas, RD)
+        run: |
+          python gerador.py
+
+      - name: Salvar Caches e Dashboard Atualizado no Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html dashboard_gerado.html *cache.json asaas_config.json rd_tokens.json || true
+          if git status --porcelain | grep -q .; then
+            git commit -m "Auto-Sync: Dados atualizados via APIs [skip ci]"
+            git push origin main
+          else
+            echo "Nenhuma alteração nos dados detectada."
+          fi
+
+      - name: Configurar GitHub Pages
         uses: actions/configure-pages@v4
 
       - name: Upload do artefato HTML
