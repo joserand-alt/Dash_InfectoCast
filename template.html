@@ -2024,6 +2024,17 @@ window.resetGlobalFilters = function() {
 };
 
 window.setCursoView = function(cName) {
+    if (!cName || cName === 'all') {
+        FILTER.curso = 'all';
+        CURRENT_SELECTED_COURSE = 'all';
+        const sel = document.getElementById('filter-curso');
+        if (sel) sel.value = 'all';
+        applyFilters();
+        if (typeof drawCursoView === 'function') {
+            drawCursoView('all', true);
+        }
+        return;
+    }
     const cCanonical = (typeof resolveCanonicalCourse === 'function') ? resolveCanonicalCourse(cName) : cName;
     CURRENT_SELECTED_COURSE = cCanonical;
     FILTER.curso = cCanonical;
@@ -2088,6 +2099,8 @@ function initFilters() {
             FILTER.curso = e.target.value; 
             if (FILTER.curso !== 'all') {
                 CURRENT_SELECTED_COURSE = (typeof resolveCanonicalCourse === 'function') ? resolveCanonicalCourse(FILTER.curso) : FILTER.curso;
+            } else {
+                CURRENT_SELECTED_COURSE = 'all';
             }
             applyFilters(); 
         };
@@ -2106,7 +2119,11 @@ function parseDate(dStr) {
 
 function applyFilters() {
     let filteredStudents = DATA.students.filter(s => {
-        if (FILTER.curso !== 'all' && s.curso !== FILTER.curso) return false;
+        if (FILTER.curso !== 'all') {
+            const sCur = (typeof resolveCanonicalCourse === 'function') ? resolveCanonicalCourse(s.curso) : s.curso;
+            const fCur = (typeof resolveCanonicalCourse === 'function') ? resolveCanonicalCourse(FILTER.curso) : FILTER.curso;
+            if (sCur !== fCur && s.curso !== FILTER.curso) return false;
+        }
         if (FILTER.aluno !== 'all' && (s.nome + " (" + s.email + ")") !== FILTER.aluno) return false;
         return true;
     });
@@ -2323,7 +2340,7 @@ function renderAll() {
   drawOrigem(true);
   drawFinanceiro(true);
   if (typeof drawCursoView === 'function') {
-      const active = (FILTER && FILTER.curso && FILTER.curso !== 'all') ? resolveCanonicalCourse(FILTER.curso) : CURRENT_SELECTED_COURSE;
+      const active = (FILTER && FILTER.curso && FILTER.curso !== 'all') ? resolveCanonicalCourse(FILTER.curso) : 'all';
       drawCursoView(active, true);
   }
   if (typeof drawFunil === 'function') {
@@ -3261,7 +3278,7 @@ function selectTab(pId) {
     }
 
     if (pId === 'exec') drawExecView(true);
-    if (pId === 'curso') drawCursoView(FILTER.curso !== 'all' ? FILTER.curso : '', true);
+    if (pId === 'curso') drawCursoView((FILTER && FILTER.curso !== 'all') ? FILTER.curso : 'all', true);
     if (pId === 'home') drawHome(true);
     if (pId === 'prog') {
         buildHead();
@@ -7625,30 +7642,41 @@ function drawCursoView(courseName, force) {
         return;
     }
 
-    let activeCourse = courseName || CURRENT_SELECTED_COURSE || (FILTER && FILTER.curso !== 'all' ? resolveCanonicalCourse(FILTER.curso) : '');
-    if (!activeCourse || !availableCourses.includes(activeCourse)) {
-        activeCourse = availableCourses[0];
-    }
+    const isAll = (courseName === 'all') || (!courseName && (!FILTER || FILTER.curso === 'all')) || (FILTER && FILTER.curso === 'all');
+    let activeCourse = '';
+    if (isAll) {
+        activeCourse = 'Todos os Cursos (Consolidado)';
+        CURRENT_SELECTED_COURSE = 'all';
+    } else {
+        activeCourse = courseName || CURRENT_SELECTED_COURSE || (FILTER && FILTER.curso !== 'all' ? resolveCanonicalCourse(FILTER.curso) : '');
+        if (!activeCourse || !availableCourses.includes(activeCourse)) {
+            activeCourse = availableCourses[0];
+        }
         CURRENT_SELECTED_COURSE = activeCourse;
+    }
+
     const globalCourseSel = document.getElementById('filter-curso');
-    if (globalCourseSel && FILTER.curso === 'all') {
-        // Se o filtro global estava em 'all', selecionamos a especialidade ativa no seletor para clareza
-        for (let i = 0; i < globalCourseSel.options.length; i++) {
-            if (globalCourseSel.options[i].value === activeCourse || (typeof resolveCanonicalCourse === 'function' && resolveCanonicalCourse(globalCourseSel.options[i].value) === activeCourse)) {
-                globalCourseSel.selectedIndex = i;
-                break;
+    if (globalCourseSel) {
+        if (isAll) {
+            globalCourseSel.value = 'all';
+        } else {
+            for (let i = 0; i < globalCourseSel.options.length; i++) {
+                if (globalCourseSel.options[i].value === activeCourse || (typeof resolveCanonicalCourse === 'function' && resolveCanonicalCourse(globalCourseSel.options[i].value) === activeCourse)) {
+                    globalCourseSel.selectedIndex = i;
+                    break;
+                }
             }
         }
     }
 
-    // 3. Alunos do Curso Ativo
-    const cStudents = allEnrichedStudents.filter(s => s.canonical_curso === activeCourse);
+    // 3. Alunos do Curso Ativo (ou Todos se isAll)
+    const cStudents = isAll ? allEnrichedStudents : allEnrichedStudents.filter(s => s.canonical_curso === activeCourse);
     const totalMatriculas = cStudents.length;
 
     // 4. Dados Financeiros Unificados do Curso
     const unifiedFin = computeUnifiedFinancialDataset('all');
     const coursesData = (unifiedFin && (unifiedFin.courses || unifiedFin.coursesMap)) || {};
-    const cFin = coursesData[activeCourse] || {
+    const cFin = isAll ? (unifiedFin.global || {
         pago_total: 0,
         pago_mes_atual: 0,
         proj_mes_atual: 0,
@@ -7665,7 +7693,24 @@ function drawCursoView(courseName, force) {
         historico_mensal: [],
         projecao_mensal: [],
         faturas_tabela: []
-    };
+    }) : (coursesData[activeCourse] || {
+        pago_total: 0,
+        pago_mes_atual: 0,
+        proj_mes_atual: 0,
+        previsto_mes_vigente: 0,
+        pago_mes_ant: 0,
+        mrr: 0,
+        proj_1m: 0,
+        proj_3m: 0,
+        proj_6m: 0,
+        proj_12m: 0,
+        atraso: 0,
+        qtd_atraso: 0,
+        taxa_adimplencia: 100,
+        historico_mensal: [],
+        projecao_mensal: [],
+        faturas_tabela: []
+    });
 
     // 5. Indicadores de Matrícula (Totais, 30d recentes, 30d anteriores, evolução mensal)
     const refDate = new Date(2026, 8, 15); // Data base de referência do fechamento
@@ -7892,7 +7937,7 @@ function drawCursoView(courseName, force) {
             </div>
             <h2 style="font-size:20px; font-weight:800; color:#fff; margin:0;">${activeCourse}</h2>
             <div style="font-size:12px; color:var(--muted); margin-top:4px; font-family:var(--font-hud);">
-              Para alternar de curso, utilize o seletor <b>CURSO / ESPECIALIDADE</b> na barra de filtros gerais acima.
+              ${isAll ? 'Visão integrada e consolidada de matrículas, retenção e faturamento de todas as especialidades.' : 'Para alternar de curso, utilize o seletor <b>CURSO / ESPECIALIDADE</b> na barra de filtros gerais acima.'}
             </div>
           </div>
           <div style="display:flex; align-items:center; gap:12px;">
@@ -8139,8 +8184,8 @@ function drawCursoView(courseName, force) {
           <div class="exec-sec-title-wrap">
             <div class="exec-sec-num" style="background:var(--ink); color:#fff">👥</div>
             <div>
-              <h3 class="exec-sec-title">ALUNOS MATRICULADOS NESTE CURSO</h3>
-              <div class="exec-sec-sub">Listagem de alunos vinculados a esta especialidade com status de engajamento pedagógico e financeiro.</div>
+              <h3 class="exec-sec-title">${isAll ? 'ALUNOS MATRICULADOS (TODAS AS ESPECIALIDADES)' : 'ALUNOS MATRICULADOS NESTE CURSO'}</h3>
+              <div class="exec-sec-sub">${isAll ? 'Listagem consolidada de todos os alunos ativos da carteira acadêmica.' : 'Listagem de alunos vinculados a esta especialidade com status de engajamento pedagógico e financeiro.'}</div>
             </div>
           </div>
           <span class="badge" style="background:var(--paper); color:var(--ink); font-weight:700">${cStudents.length} Alunos Listados</span>
@@ -8168,6 +8213,7 @@ function drawCursoView(courseName, force) {
                       <td style="padding:10px 14px;">
                         <div style="font-weight:700; color:var(--ink)">${s.nome || 'Sem Nome'}</div>
                         <div style="font-size:11px; color:var(--muted)">${s.email || '-'}</div>
+                        ${isAll && s.canonical_curso ? `<div style="font-size:10px; color:var(--brand); font-weight:600; margin-top:2px;">${s.canonical_curso}</div>` : ''}
                       </td>
                       <td style="padding:10px 14px;">
                         ${getStatusChip(s.status)}
