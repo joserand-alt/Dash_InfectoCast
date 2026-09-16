@@ -4086,6 +4086,77 @@ function getDashboardUpdateTime(allEvts) {
     return new Date();
 }
 
+
+function getDeduplicatedEvents(baseStudents) {
+    const studentCoursesMap = new Map();
+    (DATA.students || []).forEach(s => {
+        const em = (s.email || s.nome || '').toLowerCase().trim();
+        if (!em) return;
+        if (!studentCoursesMap.has(em)) studentCoursesMap.set(em, new Set());
+        if (s.curso) studentCoursesMap.get(em).add(s.curso);
+    });
+
+    const seenKeys = new Set();
+    const allEvts = [];
+
+    baseStudents.forEach(s => {
+        const emailNorm = (s.email || s.nome || '').toLowerCase().trim();
+        const studentCourses = Array.from(studentCoursesMap.get(emailNorm) || (s.curso ? [s.curso] : []));
+        const hasMultiCourses = studentCourses.length > 1;
+
+        (s.events || []).forEach(e => {
+            if (!e.d) return;
+            const dt = parseEventDate(e.d);
+            if (!dt || isNaN(dt.getTime())) return;
+
+            const isLogin = (e.cat === 'login') || (e.acao && e.acao.toUpperCase().includes('LOGIN'));
+            
+            // Login e unico na plataforma para o aluno no horario (nao e vinculado a um curso especifico).
+            // Acoes de conteudo (aulas, pdfs) sao unificadas por aluno + data + acao + item.
+            const evtKey = isLogin 
+                ? `${emailNorm}|${e.d}|LOGIN`
+                : `${emailNorm}|${e.d}|${e.acao}|${e.item_id || e.item || ''}`;
+
+            if (seenKeys.has(evtKey)) return;
+            seenKeys.add(evtKey);
+
+            let displayCurso = s.curso || '';
+            let cursoTooltip = displayCurso;
+            if (isLogin) {
+                if (typeof currentCourseFilter !== 'undefined' && currentCourseFilter && currentCourseFilter !== 'ALL') {
+                    displayCurso = `Acesso à Plataforma · ${currentCourseFilter}`;
+                    cursoTooltip = hasMultiCourses 
+                        ? `Aluno matriculado em ${studentCourses.length} cursos: ${studentCourses.join(' | ')}`
+                        : `Acesso à Plataforma · ${currentCourseFilter}`;
+                } else if (hasMultiCourses) {
+                    displayCurso = `Acesso Geral à Plataforma · Multi-Cursos (${studentCourses.length} cursos)`;
+                    cursoTooltip = `Matriculado em: ${studentCourses.join(' | ')}`;
+                } else {
+                    displayCurso = `Acesso à Plataforma · ${studentCourses[0] || displayCurso}`;
+                    cursoTooltip = displayCurso;
+                }
+            }
+
+            allEvts.push({
+                dt: dt,
+                d: e.d,
+                aluno: s.nome || 'Aluno',
+                email: s.email || '',
+                curso: displayCurso,
+                cursoTooltip: cursoTooltip,
+                rawCurso: s.curso || '',
+                plataforma: s.plataforma || 'Academy',
+                acao: e.acao || 'AÇÃO',
+                item: e.item || (isLogin ? 'Ambiente de Aprendizagem' : ''),
+                mod: e.mod || '',
+                isLogin: isLogin
+            });
+        });
+    });
+
+    return allEvts;
+}
+
 function drawLiveMonitor(baseStudents, isAutoTick) {
     window._lastLiveBaseStudents = baseStudents;
     const liveSectionEl = document.getElementById('home-live-section');
@@ -4095,27 +4166,7 @@ function drawLiveMonitor(baseStudents, isAutoTick) {
         startHourlyAutoRefresh();
     }
 
-    let allEvts = [];
-    baseStudents.forEach(s => {
-        (s.events || []).forEach(e => {
-            if (e.d) {
-                const dt = parseEventDate(e.d);
-                if (dt && !isNaN(dt.getTime())) {
-                    allEvts.push({
-                        dt: dt,
-                        d: e.d,
-                        aluno: s.nome || 'Aluno',
-                        email: s.email || '',
-                        curso: s.curso || '',
-                        plataforma: s.plataforma || 'Academy',
-                        acao: e.acao || 'AÇÃO',
-                        item: e.item || '',
-                        mod: e.mod || ''
-                    });
-                }
-            }
-        });
-    });
+    let allEvts = getDeduplicatedEvents(baseStudents);
 
     if (allEvts.length === 0) {
         liveSectionEl.style.display = 'none';
@@ -4170,7 +4221,7 @@ function drawLiveMonitor(baseStudents, isAutoTick) {
           </div>
           <div style="background:#090d14; border:1px solid rgba(255, 158, 0, 0.25); border-radius:8px; padding:7px 12px; text-align:right; box-shadow:0 0 10px rgba(255,158,0,0.05); min-width:110px;">
             <div style="font-size:9px; font-weight:700; color:var(--muted); font-family:var(--font-hud); letter-spacing:0.06em; text-transform:uppercase;">TOTAL 24 HORAS</div>
-            <div style="font-size:17px; font-weight:700; font-family:var(--font-mono); color:#ff9e00;">${evts24h.length} <span style="font-size:9.5px; font-weight:600; color:var(--muted); font-family:var(--font-hud);">AULAS</span></div>
+            <div style="font-size:17px; font-weight:700; font-family:var(--font-mono); color:#ff9e00;">${evts24h.length} <span style="font-size:9.5px; font-weight:600; color:var(--muted); font-family:var(--font-hud);">AÇÕES</span></div>
           </div>
           <div style="background:#090d14; border:1px solid rgba(168, 85, 247, 0.25); border-radius:8px; padding:7px 12px; text-align:right; box-shadow:0 0 10px rgba(168,85,247,0.05); min-width:110px;">
             <div style="font-size:9px; font-weight:700; color:var(--muted); font-family:var(--font-hud); letter-spacing:0.06em; text-transform:uppercase;">ALUNOS EM 24H</div>
@@ -4245,7 +4296,7 @@ function drawLiveMonitor(baseStudents, isAutoTick) {
                         </span>
                       </div>
                       
-                      <div style="font-size:10.5px; color:var(--muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">
+                      <div style="font-size:10.5px; color:var(--muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap" title="${e.cursoTooltip || e.curso}">
                         ${e.curso}
                       </div>
                     </div>
@@ -4266,27 +4317,7 @@ function drawLiveHourlyChart(baseStudents, actionFilter) {
     const totalLabel = document.getElementById('home-chart-total-label');
     if (!chartContainer) return;
 
-    let allEvts = [];
-    baseStudents.forEach(s => {
-        (s.events || []).forEach(e => {
-            if (e.d) {
-                const dt = parseEventDate(e.d);
-                if (dt && !isNaN(dt.getTime())) {
-                    allEvts.push({
-                        dt: dt,
-                        d: e.d,
-                        aluno: s.nome || 'Aluno',
-                        email: s.email || '',
-                        curso: s.curso || '',
-                        plataforma: s.plataforma || 'Academy',
-                        acao: e.acao || 'AÇÃO',
-                        item: e.item || '',
-                        mod: e.mod || ''
-                    });
-                }
-            }
-        });
-    });
+    let allEvts = getDeduplicatedEvents(baseStudents);
 
     if (allEvts.length === 0) {
         chartContainer.innerHTML = '<div style="text-align:center; padding:40px 0; color:var(--muted)">Sem dados no período.</div>';
