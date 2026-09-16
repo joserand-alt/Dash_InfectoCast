@@ -1188,16 +1188,23 @@ def main():
         
         # --- 5. Scoring de Maturidade ---
         leads_scoring = []
+        keywords_pos = ['pos-graduacao', 'pós', 'pos', 'ccih', 'infectoped', 'pediatria', 'ortoped', 'imuno', 'multi-r', 'biofilme', 'pga', 'enfermagem', 'especializacao', 'diploma', 'grade_pos']
+        icp_profs = ['enferm', 'medic', 'médic', 'farmac', 'infecto', 'biomed', 'bioméd', 'fisio', 'nutri', 'biolog', 'biólog']
+
         for _, row in df_rd[~df_rd['e_aluno']].iterrows():
             conversoes = row['Total de conversões'] if pd.notna(row['Total de conversões']) else 0
             scoring_rd = row['Lead Scoring - Interesse'] if pd.notna(row['Lead Scoring - Interesse']) else 0
             
-            # Dias desde primeira conversão
+            # Dias desde primeira conversão e última conversão
             dias_desde = 0
             if pd.notna(row['dt_primeira']):
                 dias_desde = (pd.Timestamp(hoje) - row['dt_primeira']).days
+                
+            dias_ultima = 9999
+            if pd.notna(row['dt_ultima']):
+                dias_ultima = (pd.Timestamp(hoje) - row['dt_ultima']).days
             
-            # Check events for pós-graduação mentions
+            # Check events
             evs_str = str(row[ev_col_name]) if ev_col_name else ''
             ev_list_raw = [e.strip() for e in evs_str.split('/') if e.strip()] if evs_str != 'nan' else []
             ev_list = []
@@ -1209,17 +1216,19 @@ def main():
             
             # Remove duplicated events maintaining order
             ev_list = list(dict.fromkeys(ev_list))
+            
+            tags_lower = str(row['Tags']).lower() if pd.notna(row['Tags']) else ''
+            evs_text = ' '.join(ev_list).lower() + ' ' + tags_lower
                     
-            tem_pos = any('pos-graduacao' in e.lower() or 'pós' in e.lower() for e in ev_list)
-            tem_lista_espera = any('lista-espera' in e.lower() for e in ev_list)
+            tem_pos = any(k in evs_text for k in keywords_pos)
+            tem_lista_espera = any('lista-espera' in e.lower() or 'espera' in e.lower() for e in ev_list)
             
             # Curso recomendado via Tags
-            tags_lower = str(row['Tags']).lower()
             cursos_rec = []
-            if '[ped]' in tags_lower: cursos_rec.append('Ped')
-            if '[ccih]' in tags_lower: cursos_rec.append('CCIH')
-            if '[imuno]' in tags_lower: cursos_rec.append('Imuno')
-            if '[orto]' in tags_lower: cursos_rec.append('Orto')
+            if '[ped]' in tags_lower or 'ped' in tags_lower or 'pediatria' in evs_text: cursos_rec.append('Ped')
+            if '[ccih]' in tags_lower or 'ccih' in tags_lower or 'ccih' in evs_text: cursos_rec.append('CCIH')
+            if '[imuno]' in tags_lower or 'imuno' in tags_lower or 'imuno' in evs_text: cursos_rec.append('Imuno')
+            if '[orto]' in tags_lower or 'orto' in tags_lower or 'ortoped' in evs_text: cursos_rec.append('Orto')
             curso_str = ', '.join(cursos_rec) if cursos_rec else '-'
             
             # Profissão consolidada
@@ -1234,18 +1243,33 @@ def main():
             if len(profissao_str) > 45:
                 profissao_str = profissao_str[:42] + '...'
             
+            tem_icp_prof = any(p in profissao_str.lower() for p in icp_profs)
+            
             # Score calculation (0-100)
             score = 0
-            score += min(35, (conversoes / 16) * 35)
-            if 30 <= dias_desde <= 200:
+            # 1. Volume de conversões (máx 30 pts)
+            score += min(30, (conversoes / 8) * 30)
+            
+            # 2. Maturidade / Fidelidade / Recência (máx 20 pts)
+            if (dias_desde > 180 and (dias_ultima <= 120 or conversoes >= 4)) or (30 <= dias_desde <= 180):
                 score += 20
-            elif dias_desde > 200:
+            else:
                 score += 10
-            score += min(15, (scoring_rd / 100) * 15)
+                
+            # 3. Interesse temático em Cursos / Pós-graduação (máx 25 pts)
             if tem_pos:
-                score += 20
+                score += 25
+                
+            # 4. Lista de Espera (máx 10 pts)
             if tem_lista_espera:
                 score += 10
+                
+            # 5. Afinidade de Profissão / Perfil ICP (máx 15 pts)
+            if tem_icp_prof:
+                score += 15
+                
+            # 6. Scoring RD Station (bônus máx 5 pts)
+            score += min(5, (scoring_rd / 100) * 5)
             
             score = min(100, round(score))
             
@@ -1264,7 +1288,7 @@ def main():
                     'email': row['Email'],
                     'nome': str(row['Nome']) if pd.notna(row['Nome']) else '',
                     'telefone': str(row['Telefone']) if pd.notna(row['Telefone']) else (str(row['Celular']) if pd.notna(row['Celular']) else ''),
-                    'estagio': row['Estágio no funil'],
+                    'estagio': row['Estágio no funil'] if pd.notna(row['Estágio no funil']) else 'Lead',
                     'conversoes': int(conversoes),
                     'scoring_rd': int(scoring_rd),
                     'dias_desde': dias_desde,
