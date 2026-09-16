@@ -1313,7 +1313,50 @@ option {
   </div>
 </header>
 
-<div class="wrap">
+
+<div class="hud-app-layout">
+  <!-- BARRA LATERAL RECOLHÍVEL (HUD COMMAND SIDEBAR) -->
+  <aside class="hud-sidebar" id="hud-sidebar">
+    <div class="hud-sidebar-top">
+      <div class="hud-sidebar-brand">
+        <span class="hud-live-dot"></span>
+        <span class="hud-sidebar-title">MENU DE COMANDO</span>
+      </div>
+      <button type="button" id="btn-toggle-sidebar" class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Recolher / Expandir Menu">
+        <span id="sidebar-toggle-icon">◀</span>
+      </button>
+    </div>
+
+    <!-- TABS MENU LATERAL -->
+    <nav class="tabs" id="tabs">
+      <button class="tab on" data-p="exec" title="Visão Executiva"><span class="num">★</span><span class="tab-label">Visão Executiva</span></button>
+      <button class="tab" data-p="curso" id="btn-tab-curso" title="Visão por Curso"><span class="num">🎯</span><span class="tab-label">Visão por Curso</span></button>
+      <button class="tab" data-p="home" title="Visão Geral"><span class="num">0</span><span class="tab-label">Visão Geral</span></button>
+      <button class="tab" data-p="prog" title="Progresso por Aluno"><span class="num">1</span><span class="tab-label">Progresso por aluno</span></button>
+      <button class="tab" data-p="mod" title="Engajamento por Módulo"><span class="num">2</span><span class="tab-label">Engajamento por módulo</span></button>
+      <button class="tab" data-p="ret" title="Retenção & Abandono"><span class="num">3</span><span class="tab-label">Retenção &amp; abandono</span></button>
+      <button class="tab" data-p="tl" title="Linha Temporal"><span class="num">4</span><span class="tab-label">Linha temporal</span></button>
+      <button class="tab" data-p="funil" title="Funil de Leads"><span class="num">5</span><span class="tab-label">Funil de Leads</span></button>
+      <button class="tab" data-p="origem" title="Origem de Matrículas"><span class="num">6</span><span class="tab-label">Origem de Matrículas</span></button>
+      <button class="tab" data-p="fin" id="btn-tab-fin" title="Financeiro & Projeção"><span class="num">$</span><span class="tab-label">Financeiro &amp; Projeção</span></button>
+    </nav>
+
+    <!-- FOOTER DA SIDEBAR -->
+    <div class="hud-sidebar-footer">
+      <button type="button" class="sidebar-collapse-bar-btn" onclick="toggleSidebar()">
+        <span id="sidebar-footer-icon">◀</span>
+        <span class="sidebar-footer-label">Recolher Menu</span>
+      </button>
+      <div class="sidebar-status-pill">
+        <span class="hud-live-dot" style="margin-right:6px;"></span>
+        <span class="sidebar-footer-label">SISTEMA ATIVO</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ÁREA PRINCIPAL DO DASHBOARD -->
+  <main class="hud-main-content">
+
   <!-- BARRA DE FILTROS GERAIS RESPONSIVA E UNIFICADA -->
   <div class="global-filter-bar" style="background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 20px; margin:20px 0 24px 0; box-shadow:0 2px 8px rgba(0,0,0,0.04); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
     <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; flex:1; min-width:300px;">
@@ -1367,18 +1410,7 @@ option {
 
   <div class="kpis" id="kpis"></div>
 
-    <nav class="tabs" id="tabs">
-    <button class="tab on" data-p="exec"><span class="num">★</span>Visão Executiva</button>
-    <button class="tab" data-p="curso" id="btn-tab-curso"><span class="num">🎯</span>Visão por Curso</button>
-    <button class="tab" data-p="home"><span class="num">0</span>Visão Geral</button>
-    <button class="tab" data-p="prog"><span class="num">1</span>Progresso por aluno</button>
-    <button class="tab" data-p="mod"><span class="num">2</span>Engajamento por módulo</button>
-    <button class="tab" data-p="ret"><span class="num">3</span>Retenção &amp; abandono</button>
-    <button class="tab" data-p="tl"><span class="num">4</span>Linha temporal</button>
-    <button class="tab" data-p="funil"><span class="num">5</span>Funil de Leads</button>
-    <button class="tab" data-p="origem"><span class="num">6</span>Origem de Matrículas</button>
-    <button class="tab" data-p="fin" id="btn-tab-fin"><span class="num">$</span>Financeiro &amp; Projeção</button>
-  </nav>
+    
 
     <!-- PANEL: VISÃO EXECUTIVA (COCKPIT ESTRATÉGICO) -->
   <section class="panel on" id="p-exec">
@@ -1957,6 +1989,10 @@ option {
   Painel gerado a partir de integrações de CRM, Área de Membros e WhatsApp · InfectoCast · <span id="ft-gen"></span><br>
   Aluno identificado por e-mail. "Hoje" de referência = <span id="ft-ref"></span> (dia seguinte ao último evento). Métricas de engajamento e retenção derivam integralmente do log.
 </footer>
+  </main>
+</div>
+
+
 
 <script>
 // Will be injected by gerador.py
@@ -8201,6 +8237,53 @@ window.addEventListener('DOMContentLoaded', () => {
   
 });
 
+
+
+// =============================================================================
+// HUD COLLAPSIBLE SIDEBAR CONTROLLER
+// =============================================================================
+function toggleSidebar() {
+  const sb = document.getElementById('hud-sidebar');
+  if (!sb) return;
+  const isCollapsed = sb.classList.toggle('collapsed');
+  
+  const toggleIcon = document.getElementById('sidebar-toggle-icon');
+  const footerIcon = document.getElementById('sidebar-footer-icon');
+  const footerLabel = document.querySelector('.sidebar-footer-label');
+  
+  if (toggleIcon) toggleIcon.textContent = isCollapsed ? '▶' : '◀';
+  if (footerIcon) footerIcon.textContent = isCollapsed ? '▶' : '◀';
+  if (footerLabel) footerLabel.textContent = isCollapsed ? 'Expandir' : 'Recolher Menu';
+  
+  try {
+    localStorage.setItem('infecto_sidebar_collapsed', isCollapsed ? 'true' : 'false');
+  } catch(e) {}
+
+  // Dispara evento de redimensionamento para os gráficos adaptarem sua largura
+  setTimeout(() => {
+    window.dispatchEvent(new Event('resize'));
+  }, 250);
+}
+
+function initSidebarState() {
+  try {
+    if (localStorage.getItem('infecto_sidebar_collapsed') === 'true') {
+      const sb = document.getElementById('hud-sidebar');
+      if (sb) {
+        sb.classList.add('collapsed');
+        const toggleIcon = document.getElementById('sidebar-toggle-icon');
+        const footerIcon = document.getElementById('sidebar-footer-icon');
+        const footerLabel = document.querySelector('.sidebar-footer-label');
+        if (toggleIcon) toggleIcon.textContent = '▶';
+        if (footerIcon) footerIcon.textContent = '▶';
+        if (footerLabel) footerLabel.textContent = 'Expandir';
+      }
+    }
+  } catch(e) {}
+}
+
+window.addEventListener('DOMContentLoaded', initSidebarState);
+
 </script>
 <style>
 @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -8210,6 +8293,251 @@ window.addEventListener('DOMContentLoaded', () => {
   70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(224, 85, 85, 0); }
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(224, 85, 85, 0); }
 }
+
+/* ========================================================================== */
+/* HUD APP LAYOUT & COLLAPSIBLE SIDEBAR                                       */
+/* ========================================================================== */
+.hud-app-layout {
+  display: flex;
+  width: 100%;
+  min-height: calc(100vh - 72px);
+  position: relative;
+  background: #0a0e14;
+}
+
+.hud-sidebar {
+  width: 240px;
+  min-width: 240px;
+  background: rgba(10, 14, 20, 0.98);
+  border-right: 1px solid rgba(0, 240, 255, 0.15);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 100;
+  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-x: hidden;
+  overflow-y: auto;
+  user-select: none;
+}
+
+.hud-sidebar.collapsed {
+  width: 68px;
+  min-width: 68px;
+}
+
+.hud-sidebar-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  min-height: 56px;
+}
+
+.hud-sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.hud-sidebar.collapsed .hud-sidebar-brand {
+  display: none;
+}
+
+.hud-sidebar-title {
+  font-family: var(--font-hud);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--neon-cyan);
+}
+
+.sidebar-toggle-btn {
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  color: var(--neon-cyan);
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.sidebar-toggle-btn:hover {
+  background: var(--neon-cyan);
+  color: #0a0e14;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+}
+.hud-sidebar.collapsed .sidebar-toggle-btn {
+  margin: 0 auto;
+}
+
+/* SIDEBAR TABS NAV */
+.hud-sidebar .tabs {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 5px !important;
+  padding: 12px 8px !important;
+  margin: 0 !important;
+  border: none !important;
+  flex: 1 !important;
+}
+
+.hud-sidebar .tab {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  padding: 9px 12px !important;
+  border-radius: 8px !important;
+  border: 1px solid transparent !important;
+  border-left: 3px solid transparent !important;
+  background: transparent !important;
+  color: var(--muted) !important;
+  font-family: var(--font-hud) !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  white-space: nowrap !important;
+  position: relative !important;
+}
+
+.hud-sidebar .tab .num {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  border-radius: 6px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: var(--muted) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 11px !important;
+  display: grid !important;
+  place-items: center !important;
+  flex-shrink: 0 !important;
+  transition: all 0.15s ease !important;
+}
+
+.hud-sidebar .tab .tab-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 0.15s ease;
+}
+
+.hud-sidebar.collapsed .tab {
+  padding: 9px 0 !important;
+  justify-content: center !important;
+}
+
+.hud-sidebar.collapsed .tab .tab-label {
+  display: none !important;
+}
+
+.hud-sidebar .tab:hover {
+  background: rgba(0, 240, 255, 0.06) !important;
+  color: #fff !important;
+  border-color: rgba(0, 240, 255, 0.15) !important;
+}
+
+.hud-sidebar .tab:hover .num {
+  background: rgba(0, 240, 255, 0.15) !important;
+  color: var(--neon-cyan) !important;
+}
+
+.hud-sidebar .tab.on {
+  background: rgba(0, 240, 255, 0.12) !important;
+  color: var(--neon-cyan) !important;
+  border-left: 3px solid var(--neon-cyan) !important;
+  border-color: rgba(0, 240, 255, 0.25) !important;
+  border-left-color: var(--neon-cyan) !important;
+  box-shadow: inset 4px 0 12px rgba(0, 240, 255, 0.1), 0 0 14px rgba(0, 240, 255, 0.08) !important;
+}
+
+.hud-sidebar .tab.on .num {
+  background: var(--neon-cyan) !important;
+  color: #0a0e14 !important;
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.6) !important;
+  font-weight: 800 !important;
+}
+
+.hud-sidebar .tab.on::after {
+  display: none !important;
+}
+
+/* SIDEBAR FOOTER */
+.hud-sidebar-footer {
+  padding: 12px 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-collapse-bar-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: var(--muted);
+  font-family: var(--font-hud);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.sidebar-collapse-bar-btn:hover {
+  background: rgba(0, 240, 255, 0.08);
+  color: var(--neon-cyan);
+  border-color: rgba(0, 240, 255, 0.25);
+}
+.hud-sidebar.collapsed .sidebar-collapse-bar-btn {
+  justify-content: center;
+  padding: 8px 0;
+}
+.hud-sidebar.collapsed .sidebar-footer-label {
+  display: none !important;
+}
+
+.sidebar-status-pill {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--neon-green);
+  white-space: nowrap;
+}
+.hud-sidebar.collapsed .sidebar-status-pill {
+  justify-content: center;
+  padding: 6px 0;
+}
+
+/* MAIN CONTENT */
+.hud-main-content {
+  flex: 1;
+  min-width: 0;
+  padding: 0 32px 60px;
+  max-width: 100%;
+}
+
 </style>
 </body>
 </html>
