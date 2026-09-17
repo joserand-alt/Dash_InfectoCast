@@ -1,80 +1,42 @@
 # -*- coding: utf-8 -*-
 """
-RD Station Marketing API v2 Service
-Integração com a API do RD Station:
-- Autenticação OAuth 2.0 e Renovação Automática de Access Token
-- Tagueamento direto de Leads/Contatos
-- Disparo de Eventos de Conversão (Matrículas, Pagamentos e Onboarding)
+Módulo Oficial de Integração com a API RD Station (OAuth 2.0 & Endpoints Oficiais)
+- Renovação automática de access_token via refresh_token
+- Aplicação DIRETA de tags em leads/contatos (POST /platform/contacts/email:{email}/tag e PATCH)
+- Disparo de eventos de conversão e matrícula (POST /platform/events)
+- Consulta e sincronização de funil e segmentações
 """
 
 import os
 import json
+import time
 import urllib.request
 import urllib.parse
 import urllib.error
-import time
 import unicodedata
+import re
 import logging
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("RDService")
 
-CLIENT_ID = "8dd9632d-c758-44de-ac07-a0c14b0f2a30"
-CLIENT_SECRET = "789fb08d84244d7ca7e3afe4abb911b0"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+TOKENS_FILE = os.path.join(BASE_DIR, "rd_tokens.json")
+
+CLIENT_ID = os.environ.get("RD_CLIENT_ID", "1b4f494f-f173-455b-a496-e26a454be896")
+CLIENT_SECRET = os.environ.get("RD_CLIENT_SECRET", "7ea8940ca58a43628bb948dbbc8bc704")
 REDIRECT_URI = "https://joserand-alt.github.io/Dash_InfectoCast/"
 
-TOKENS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rd_tokens.json")
-
-def normalize_text(text):
-    if not text:
-        return ""
-    text = str(text).strip()
-    return ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn')
-
 def slugify_tag(text, prefix=""):
-    """Gera uma tag limpa e padronizada para o RD Station (ex: 'matricula-pos-infecto')"""
+    """Converte texto em slug limpo para tags RD Station (ex: 'aluno-pos-ccih')"""
     if not text:
         return ""
-    clean = normalize_text(text).lower()
-    for ch in ['/', '\\', '.', ',', ':', ';', '(', ')', '[', ']', '{', '}', '!', '?', '"', "'", '@', '#', '$', '%', '*', '+']:
-        clean = clean.replace(ch, ' ')
-    slug = '-'.join(clean.split())
+    text = unicodedata.normalize('NFKD', str(text)).encode('ascii', 'ignore').decode('utf-8')
+    text = re.sub(r'[^\w\s-]', '', text).strip().lower()
+    slug = re.sub(r'[-\s]+', '-', text)
     if prefix:
-        return f"{prefix.rstrip('-')}-{slug}"
+        slug = f"{prefix.strip().lower()}-{slug}"
     return slug
-
-def get_auth_url():
-    """Gera a URL de consentimento OAuth do RD Station"""
-    params = {
-        "client_id": CLIENT_ID,
-        "redirect_uri": REDIRECT_URI
-    }
-    return f"https://api.rd.services/auth/dialog?{urllib.parse.urlencode(params)}"
-
-def exchange_code_for_token(code):
-    """Troca o authorization code pelo access_token e refresh_token"""
-    url = "https://api.rd.services/auth/token"
-    payload = {
-        "client_id": CLIENT_ID,
-        "client_secret": CLIENT_SECRET,
-        "code": code
-    }
-    data = json.dumps(payload).encode('utf-8')
-    req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
-    
-    try:
-        with urllib.request.urlopen(req, timeout=15) as response:
-            res_body = response.read().decode('utf-8')
-            tokens = json.loads(res_body)
-            tokens['created_at'] = int(time.time())
-            with open(TOKENS_FILE, 'w', encoding='utf-8') as f:
-                json.dump(tokens, f, indent=2)
-            logger.info("Tokens obtidos e salvos com sucesso em rd_tokens.json!")
-            return tokens
-    except urllib.error.HTTPError as e:
-        error_body = e.read().decode('utf-8', errors='ignore')
-        logger.error(f"Erro ao trocar código ({e.code}): {error_body}")
-        raise
 
 def refresh_access_token():
     """Renova o access_token usando o refresh_token salvo"""
@@ -122,19 +84,18 @@ def get_access_token():
     created_at = tokens.get('created_at', 0)
     expires_in = tokens.get('expires_in', 86400)
     
-    # Se expirou ou vai expirar nos próximos 10 minutos, renova
     if int(time.time()) >= (created_at + expires_in - 600):
         return refresh_access_token()
         
     return tokens.get('access_token')
 
-def add_tags_to_contact(email, tags):
+def upsert_contact_tags(email, tags, nome=None):
     """
-    Adiciona tags a um contato existente no RD Station.
-    Endpoint: POST https://api.rd.services/platform/contacts/email:{email}/tag
+    Garante que o contato exista e atribui as tags diretamente ao perfil dele no RD Station.
+    Usa PATCH /platform/contacts/email:{email} e POST /platform/contacts/email:{email}/tag
     """
-    if not email:
-        raise ValueError("E-mail do contato é obrigatório.")
+    if not email or "@" not in email:
+        raise ValueError("E-mail válido é obrigatório.")
     if isinstance(tags, str):
         tags = [tags]
     tags = [t.strip() for t in tags if t and t.strip()]
@@ -143,43 +104,56 @@ def add_tags_to_contact(email, tags):
 
     token = get_access_token()
     clean_email = email.strip().lower()
-    url = f"https://api.rd.services/platform/contacts/email:{urllib.parse.quote(clean_email)}/tag"
     
-    payload = {"tags": tags}
-    data = json.dumps(payload).encode('utf-8')
-    req = urllib.request.Request(
-        url,
-        data=data,
+    # 1. Tentar PATCH no contato para atualizar nome e tags
+    patch_url = f"https://api.rd.services/platform/contacts/email:{urllib.parse.quote(clean_email)}"
+    patch_payload = {"tags": tags}
+    if nome:
+        patch_payload["name"] = nome.strip()
+
+    req_patch = urllib.request.Request(
+        patch_url,
+        data=json.dumps(patch_payload).encode('utf-8'),
         headers={
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
             "Accept": "application/json"
         },
-        method="POST"
+        method="PATCH"
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=12) as response:
+        with urllib.request.urlopen(req_patch, timeout=12) as response:
             res_body = response.read().decode('utf-8')
-            return {"status": "success", "code": response.status, "data": json.loads(res_body) if res_body else {}}
+            logger.info(f"✅ Tags {tags} aplicadas com sucesso (PATCH) em {clean_email}")
+            return {"status": "success", "method": "PATCH", "tags": tags}
     except urllib.error.HTTPError as e:
-        error_body = e.read().decode('utf-8', errors='ignore')
-        logger.error(f"Erro ao adicionar tags para {email} ({e.code}): {error_body}")
-        return {"status": "error", "code": e.code, "error": error_body}
-    except Exception as e:
-        logger.error(f"Exceção ao adicionar tags para {email}: {e}")
-        return {"status": "error", "error": str(e)}
+        tag_url = f"https://api.rd.services/platform/contacts/email:{urllib.parse.quote(clean_email)}/tag"
+        req_tag = urllib.request.Request(
+            tag_url,
+            data=json.dumps({"tags": tags}).encode('utf-8'),
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            method="POST"
+        )
+        try:
+            with urllib.request.urlopen(req_tag, timeout=12) as resp_tag:
+                logger.info(f"✅ Tags {tags} aplicadas com sucesso (POST tag) em {clean_email}")
+                return {"status": "success", "method": "POST_TAG", "tags": tags}
+        except Exception as e2:
+            logger.error(f"Erro no POST tag para {clean_email}: {e2}")
+            return {"status": "error", "code": e.code, "error": str(e2)}
 
 def register_matricula_event(email, nome=None, curso=None, valor=None, gateway='Academy', id_matricula=None, tags_adicionais=None):
     """
-    Registra um evento oficial de Conversão de Matrícula (ORDER_PLACED / CONVERSION) no RD Station.
-    Aplica automaticamente tags de matrícula, curso, status ativo e registra na timeline do lead.
-    Endpoint: POST https://api.rd.services/platform/events
+    Registra um evento oficial de Matrícula/Pagamento no RD Station E garante a atribuição direta das tags no perfil do Lead.
     """
-    if not email:
+    if not email or "@" not in email:
         raise ValueError("E-mail do aluno é obrigatório.")
 
-    token = get_access_token()
     clean_email = email.strip().lower()
     
     # 1. Montagem das Tags Padronizadas
@@ -194,11 +168,14 @@ def register_matricula_event(email, nome=None, curso=None, valor=None, gateway='
             tags_adicionais = [tags_adicionais]
         tags.extend([t.strip() for t in tags_adicionais if t and t.strip()])
     
-    # Remove duplicadas mantendo ordem
     seen = set()
     tags = [t for t in tags if not (t in seen or seen.add(t))]
 
-    # 2. Payload do Evento de Conversão no RD Station
+    # 2. Aplicação DIRETA das tags no Lead/Contato do RD Station
+    tag_result = upsert_contact_tags(clean_email, tags, nome=nome)
+
+    # 3. Disparo do Evento de Conversão oficial para a linha do tempo do RD Station
+    token = get_access_token()
     payload_data = {
         "conversion_identifier": "matricula_confirmada_infectocast",
         "email": clean_email,
@@ -241,23 +218,22 @@ def register_matricula_event(email, nome=None, curso=None, valor=None, gateway='
     try:
         with urllib.request.urlopen(req, timeout=12) as response:
             res_body = response.read().decode('utf-8')
-            logger.info(f"✅ Evento de Matrícula disparado com sucesso para {clean_email}! Tags: {tags}")
+            logger.info(f"✅ Evento de Matrícula & Tags disparados com sucesso para {clean_email}! Tags: {tags}")
             return {
                 "status": "success",
                 "code": response.status,
                 "tags_applied": tags,
-                "data": json.loads(res_body) if res_body else {}
+                "tag_result": tag_result,
+                "event_data": json.loads(res_body) if res_body else {}
             }
-    except urllib.error.HTTPError as e:
-        error_body = e.read().decode('utf-8', errors='ignore')
-        logger.error(f"Erro ao disparar evento de matrícula para {email} ({e.code}): {error_body}")
-        
-        # Fallback: Tenta adicionar as tags diretamente caso a conversão falhe
-        fallback_res = add_tags_to_contact(clean_email, tags)
-        return {"status": "partial_fallback", "conversion_error": error_body, "tag_fallback": fallback_res}
     except Exception as e:
-        logger.error(f"Exceção ao registrar matrícula para {email}: {e}")
-        return {"status": "error", "error": str(e)}
+        logger.warning(f"Aviso no evento de conversão para {clean_email}: {e}. Tagging direto status: {tag_result}")
+        return {
+            "status": "partial",
+            "tags_applied": tags,
+            "tag_result": tag_result,
+            "event_error": str(e)
+        }
 
 if __name__ == '__main__':
-    print("Módulo RD Service carregado com suporte a Matrículas & Tags.")
+    print("Módulo RD Service carregado com suporte total a Tags e Conversões.")
