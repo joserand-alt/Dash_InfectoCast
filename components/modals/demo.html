@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laboratório de Componentes · Módulo de Modais</title>
+  <link rel="stylesheet" href="modals.css">
+  <link rel="stylesheet" href="../tables/tables.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      padding: 40px 24px;
+      min-height: 100vh;
+    }
+    .demo-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .demo-header {
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .demo-header h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+    }
+    .demo-header p {
+      color: #64748b;
+      font-size: 0.95rem;
+      margin-top: 4px;
+    }
+    .modal-triggers-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 640px) {
+      .modal-triggers-grid { grid-template-columns: 1fr; }
+    }
+    .trigger-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05);
+    }
+    .trigger-card h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 6px;
+    }
+    .trigger-card p {
+      font-size: 0.825rem;
+      color: #64748b;
+      margin-bottom: 20px;
+    }
+    .btn-open-modal {
+      background: #0284c7;
+      color: #ffffff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: background 0.15s;
+      width: 100%;
+    }
+    .btn-open-modal:hover { background: #0369a1; }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <div class="demo-header">
+      <h1>🪟 Módulo de Modais Interativos</h1>
+      <p>Overlay com backdrop blur, animações suaves, tecla ESC e componentes especializados de visualização.</p>
+    </div>
+
+    <div class="modal-triggers-grid">
+      <!-- 1. Modal da Jornada do Aluno -->
+      <div class="trigger-card">
+        <div>
+          <h3>🧑‍🎓 Jornada 360° do Aluno</h3>
+          <p>Exibe perfil completo, métricas de progresso e linha do tempo de conversões do RD até as aulas.</p>
+        </div>
+        <button class="btn-open-modal" id="btn-open-journey">Abrir Jornada de Vivian</button>
+      </div>
+
+      <!-- 2. Modal de Faturas -->
+      <div class="trigger-card">
+        <div>
+          <h3>💳 Detalhamento de Faturas</h3>
+          <p>Tabela de parcelas, valores consolidados, status de liquidação e links de pagamento.</p>
+        </div>
+        <button class="btn-open-modal" id="btn-open-invoices" style="background: #10b981;">Ver Faturas</button>
+      </div>
+
+      <!-- 3. Modal de Sincronização -->
+      <div class="trigger-card">
+        <div>
+          <h3>☁️ Status de Sincronização</h3>
+          <p>Monitor de integridade das APIs na nuvem e atalho para deploy do GitHub Actions.</p>
+        </div>
+        <button class="btn-open-modal" id="btn-open-sync" style="background: #8b5cf6;">Ver Status da Nuvem</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { StudentJourneyModal, InvoiceListModal, SyncStatusModal } from './index.js';
+
+    // Instancia os modais
+    const journeyModal = new StudentJourneyModal();
+    const invoiceModal = new InvoiceListModal();
+    const syncModal = new SyncStatusModal();
+
+    // 1. Dados de Teste para Vivian Vidal
+    const vivianMock = {
+      nome: "Vivian Vidal",
+      email: "vivianvidal01@gmail.com",
+      telefone: "+55 11 98511-5047",
+      curso: "PÓS-GRADUAÇÃO EM PREVENÇÃO E CONTROLE DE INFECÇÃO HOSPITALAR (CCIH)",
+      progresso: 15,
+      aulas_assistidas: 6,
+      total_aulas: 40,
+      status: "Ativo",
+      gateway: "Asaas",
+      eventos: [
+        { nome: "Lead Ads - Ebook CCIH (Clostridium)", data: "12/06/2025", desc: "Primeira conversão de topo de funil" },
+        { nome: "Lead Ads - Ebook CCIH (Avaliação Diária Dispositivos)", data: "15/08/2025", desc: "Download de material intermediário" },
+        { nome: "Jornada Multi-R (Edição 1 a 4)", data: "Mar/2026 a Jul/2026", desc: "Participação contínua nas lives e eventos" },
+        { nome: "Matrícula Asaas Confirmada", data: "16/09/2026", desc: "Inscrição oficial na Pós-Graduação CCIH" },
+        { nome: "Aula 1 Assistida: Introdução à CCIH", data: "16/09/2026 às 14:20", desc: "Primeiro acesso na plataforma" }
+      ]
+    };
+
+    document.getElementById('btn-open-journey').addEventListener('click', () => {
+      journeyModal.showStudent(vivianMock);
+    });
+
+    // 2. Dados de Teste para Faturas
+    const mockInvoices = [
+      { aluno: "Vivian Vidal", email: "vivianvidal01@gmail.com", plano: "Parcela 1 de 12 (CCIH)", vencimento: "16/09/2026", valor: 68.25, status: "pago", status_label: "Pago", url: "https://www.asaas.com/i/sample1" },
+      { aluno: "Vivian Vidal", email: "vivianvidal01@gmail.com", plano: "Parcela 2 de 12 (CCIH)", vencimento: "16/10/2026", valor: 68.25, status: "futuro", status_label: "Futuro", url: "https://www.asaas.com/i/sample2" },
+      { aluno: "Sebastião Ribeiro", email: "sebastiaoribeirocn@gmail.com", plano: "Parcela 3 de 12 (SOS ATB)", vencimento: "22/09/2026", valor: 68.25, status: "futuro", status_label: "Futuro", url: "https://www.asaas.com/i/sample3" }
+    ];
+
+    document.getElementById('btn-open-invoices').addEventListener('click', () => {
+      invoiceModal.showInvoices(mockInvoices, "· Setembro/2026");
+    });
+
+    // 3. Status de Sincronização
+    document.getElementById('btn-open-sync').addEventListener('click', () => {
+      syncModal.showSyncStatus();
+    });
+  </script>
+</body>
+</html>

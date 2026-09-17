@@ -1,0 +1,101 @@
+/* ==========================================================================
+   InfectoCast Dark Command-Center (Sci-Fi HUD Analytics) Design System
+   ========================================================================== */
+
+:root {
+  --hud-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --hud-mono: 'JetBrains Mono', 'Courier New', monospace;
+  
+  /* Backgrounds & Voide Surfaces */
+  --hud-bg-base: #030712;
+  --hud-bg-surface: rgba(15, 23, 42, 0.75);
+  --hud-bg-surface-solid: #0b1329;
+  --hud-bg-hover: rgba(30, 41, 59, 0.7);
+  --hud-bg-elevated: rgba(30, 41, 59, 0.85);
+
+  /* Borders & Grid */
+  --hud-border: rgba(56, 189, 248, 0.18);
+  --hud-border-bright: rgba(56, 189, 248, 0.45);
+  --hud-grid-line: rgba(56, 189, 248, 0.05);
+
+  /* Typography */
+  --hud-text-primary: #f8fafc;
+  --hud-text-secondary: #94a3b8;
+  --hud-text-muted: #64748b;
+
+  /* Neon HUD Accents */
+  --hud-cyan: #00f0ff;
+  --hud-cyan-dim: #0284c7;
+  --hud-cyan-glow: 0 0 16px rgba(0, 240, 255, 0.35);
+
+  --hud-emerald: #00ff9d;
+  --hud-emerald-dim: #059669;
+  --hud-emerald-glow: 0 0 16px rgba(0, 255, 157, 0.35);
+
+  --hud-amber: #fbbf24;
+  --hud-amber-dim: #d97706;
+  --hud-amber-glow: 0 0 16px rgba(251, 191, 36, 0.35);
+
+  --hud-rose: #ff3366;
+  --hud-rose-dim: #e11d48;
+  --hud-rose-glow: 0 0 16px rgba(255, 51, 102, 0.35);
+
+  --hud-purple: #c084fc;
+  --hud-purple-dim: #9333ea;
+  --hud-purple-glow: 0 0 16px rgba(192, 132, 252, 0.35);
+
+  /* Shadows */
+  --hud-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.55);
+  --hud-shadow-hover: 0 12px 40px -4px rgba(0, 240, 255, 0.15), 0 0 20px rgba(0, 0, 0, 0.8);
+  --hud-radius: 12px;
+}
+
+/* Background com Matriz Sci-Fi */
+body.hud-theme {
+  background-color: var(--hud-bg-base);
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(2, 132, 199, 0.15) 0%, transparent 60%),
+    linear-gradient(to right, var(--hud-grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--hud-grid-line) 1px, transparent 1px);
+  background-size: 100% 100%, 36px 36px, 36px 36px;
+  color: var(--hud-text-primary);
+  font-family: var(--hud-font);
+  min-height: 100vh;
+}
+
+/* Badge de Status Live Pulsing */
+.hud-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--hud-cyan);
+  box-shadow: 0 0 10px var(--hud-cyan);
+  display: inline-block;
+  animation: hudPulse 2s infinite;
+}
+
+@keyframes hudPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(0, 240, 255, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 240, 255, 0); }
+}
+
+/* Efeito Scanline Shimmer */
+.hud-scanline {
+  position: relative;
+  overflow: hidden;
+}
+
+.hud-scanline::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.08), transparent);
+  animation: hudScan 4s infinite linear;
+  pointer-events: none;
+}
+
+@keyframes hudScan {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}

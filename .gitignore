@@ -13,3 +13,5 @@ asaas_cache.json
 gerador_backup*.py
 temp_*.js
 test_exec.js
+
+rd_tagged_matriculas.json

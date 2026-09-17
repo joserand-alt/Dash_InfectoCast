@@ -1,0 +1,277 @@
+/* ==========================================================================
+   InfectoCast Modals Component Module CSS - Dark Command-Center Edition
+   ========================================================================== */
+
+@import '../theme/hud-theme.css';
+
+body.modal-open {
+  overflow: hidden !important;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(3, 7, 18, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-dialog {
+  background: var(--hud-bg-surface-solid);
+  border: 1px solid var(--hud-border-bright);
+  border-radius: var(--hud-radius);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85), var(--hud-cyan-glow);
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: var(--hud-font);
+  transform: scale(0.95) translateY(10px);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--hud-text-primary);
+}
+
+.modal-dialog-large { max-width: 860px; }
+.modal-dialog-small { max-width: 460px; }
+
+.modal-overlay.open .modal-dialog {
+  transform: scale(1) translateY(0);
+}
+
+.modal-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--hud-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(15, 23, 42, 0.95);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.modal-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--hud-text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--hud-border);
+  background: rgba(30, 41, 59, 0.8);
+  color: var(--hud-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.modal-close-btn:hover {
+  background: rgba(255, 51, 102, 0.2);
+  color: var(--hud-rose);
+  border-color: var(--hud-rose);
+}
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  color: var(--hud-text-secondary);
+  font-size: 0.9rem;
+}
+
+.student-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--hud-border);
+}
+
+.student-profile-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0284c7, #38bdf8);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.25rem;
+  box-shadow: var(--hud-cyan-glow);
+  flex-shrink: 0;
+}
+
+.student-profile-name {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.student-profile-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: var(--hud-text-muted);
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.modal-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 640px) {
+  .modal-stat-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.modal-stat-card {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid var(--hud-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-stat-label {
+  font-size: 0.725rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--hud-text-muted);
+  letter-spacing: 0.04em;
+}
+
+.modal-stat-val {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--hud-text-primary);
+  margin-top: 4px;
+}
+
+.timeline-section-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--hud-cyan);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.journey-timeline {
+  position: relative;
+  padding-left: 28px;
+  margin-left: 6px;
+}
+
+.journey-timeline::before {
+  content: '';
+  position: absolute;
+  left: 6px; top: 6px; bottom: 6px;
+  width: 2px;
+  background: rgba(56, 189, 248, 0.2);
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 18px;
+}
+
+.timeline-node {
+  position: absolute;
+  left: -28px; top: 2px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: #030712;
+  border: 3px solid var(--hud-cyan);
+  box-shadow: 0 0 8px currentColor;
+  z-index: 2;
+}
+
+.timeline-node-lead { border-color: var(--hud-cyan); color: var(--hud-cyan); }
+.timeline-node-payment { border-color: var(--hud-emerald); color: var(--hud-emerald); }
+.timeline-node-lesson { border-color: var(--hud-purple); color: var(--hud-purple); }
+
+.timeline-content {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--hud-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.timeline-content-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.775rem;
+  color: var(--hud-text-muted);
+  margin-bottom: 2px;
+}
+
+.timeline-content-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.timeline-content-desc {
+  font-size: 0.8rem;
+  color: var(--hud-text-secondary);
+  margin-top: 2px;
+}
+
+.modal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.modal-table th {
+  background: rgba(15, 23, 42, 0.95);
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 0.725rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--hud-cyan);
+  border-bottom: 1px solid var(--hud-border);
+}
+
+.modal-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.08);
+  vertical-align: middle;
+  color: var(--hud-text-primary);
+}

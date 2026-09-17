@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laboratório de Componentes · Módulo de Gráficos</title>
+  <link rel="stylesheet" href="charts.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      padding: 40px 24px;
+      min-height: 100vh;
+    }
+    .demo-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .demo-header {
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .demo-header h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+    }
+    .demo-header p {
+      color: #64748b;
+      font-size: 0.95rem;
+      margin-top: 4px;
+    }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 900px) {
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <div class="demo-header">
+      <div>
+        <h1>📊 Módulo de Gráficos Reutilizáveis</h1>
+        <p>Canvas de alta precisão (Retina), tooltips flutuantes interativos e compatibilidade nativa de dados.</p>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <!-- 1. Atividade 24h -->
+      <div id="chart-hourly-container"></div>
+
+      <!-- 2. Faturamento Mensal -->
+      <div id="chart-revenue-container"></div>
+
+      <!-- 3. Curva de Retenção -->
+      <div id="chart-retention-container"></div>
+
+      <!-- 4. Funil de Conversão -->
+      <div id="chart-funnel-container"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { HourlyActivityChart, RevenueChart, RetentionCurveChart, FunnelPyramidChart } from './index.js';
+
+    // 1. Gráfico de Atividade Horária (24h)
+    const mockHourly = [12, 5, 2, 0, 1, 4, 18, 45, 82, 110, 95, 120, 88, 76, 92, 115, 140, 168, 195, 210, 185, 130, 85, 42];
+    new HourlyActivityChart({
+      hourlyData: mockHourly
+    }).mount('#chart-hourly-container');
+
+    // 2. Gráfico de Faturamento Mensal
+    const mockMonths = [
+      { mes: 'Out/25', recebido: 32000, futuro: 0 },
+      { mes: 'Nov/25', recebido: 48000, futuro: 0 },
+      { mes: 'Dez/25', recebido: 61000, futuro: 0 },
+      { mes: 'Jan/26', recebido: 54000, futuro: 8000 },
+      { mes: 'Fev/26', recebido: 68000, futuro: 15000 },
+      { mes: 'Mar/26', recebido: 75000, futuro: 24000 },
+      { mes: 'Abr/26', recebido: 46500, futuro: 38000 }
+    ];
+    new RevenueChart({
+      months: mockMonths
+    }).mount('#chart-revenue-container');
+
+    // 3. Curva de Retenção & Sobrevivência
+    const mockSurvival = [
+      { semana: 'Sem 1', retencao: 100 },
+      { semana: 'Sem 2', retencao: 96.5 },
+      { semana: 'Sem 4', retencao: 91.2 },
+      { semana: 'Sem 6', retencao: 87.8 },
+      { semana: 'Sem 8', retencao: 84.0 },
+      { semana: 'Sem 10', retencao: 80.5 },
+      { semana: 'Sem 12', retencao: 76.2 }
+    ];
+    new RetentionCurveChart({
+      survivalData: mockSurvival
+    }).mount('#chart-retention-container');
+
+    // 4. Pirâmide do Funil de Conversão
+    const mockFunnelStages = [
+      { name: '1. Leads Cadastrados (RD Station)', count: 26566, color: '#3b82f6' },
+      { name: '2. Leads Qualificados (Interesse/ICP)', count: 6593, color: '#0ea5e9' },
+      { name: '3. Contatados no WhatsApp', count: 1840, color: '#10b981' },
+      { name: '4. Matrículas Confirmadas (Alunos)', count: 581, color: '#8b5cf6' }
+    ];
+    new FunnelPyramidChart({
+      stages: mockFunnelStages
+    }).mount('#chart-funnel-container');
+  </script>
+</body>
+</html>

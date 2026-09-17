@@ -1,0 +1,330 @@
+/* ==========================================================================
+   InfectoCast Tables Component Module CSS - Dark Command-Center Edition
+   ========================================================================== */
+
+@import '../theme/hud-theme.css';
+
+.datatable-wrapper {
+  background: var(--hud-bg-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--hud-border);
+  border-radius: var(--hud-radius);
+  box-shadow: var(--hud-shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: var(--hud-font);
+  margin-bottom: 24px;
+}
+
+/* Toolbar */
+.datatable-toolbar {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--hud-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: rgba(15, 23, 42, 0.85);
+  flex-wrap: wrap;
+}
+
+.datatable-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: 380px;
+}
+
+.datatable-search-icon {
+  position: absolute;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  color: var(--hud-text-muted);
+}
+
+.datatable-search-input {
+  width: 100%;
+  padding: 9px 12px 9px 36px;
+  border: 1px solid var(--hud-border);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  color: var(--hud-text-primary);
+  background: rgba(3, 7, 18, 0.6);
+  transition: all 0.15s ease;
+}
+
+.datatable-search-input:focus {
+  outline: none;
+  border-color: var(--hud-cyan);
+  background: rgba(15, 23, 42, 0.9);
+  box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.18), var(--hud-cyan-glow);
+}
+
+/* Tabela */
+.datatable-scroll-area {
+  overflow-x: auto;
+  max-height: 600px;
+  position: relative;
+}
+
+.datatable-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+/* Cabeçalho Sticky */
+.datatable-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #0b1329;
+}
+
+.datatable-table th {
+  padding: 13px 16px;
+  font-size: 0.725rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--hud-cyan);
+  border-bottom: 1px solid var(--hud-border);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.datatable-table th.sortable {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.datatable-table th.sortable:hover {
+  background: rgba(30, 41, 59, 0.9);
+  color: #ffffff;
+}
+
+.datatable-sort-indicator {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 0.7rem;
+  color: var(--hud-text-muted);
+}
+
+.datatable-table th.sorted-asc .datatable-sort-indicator,
+.datatable-table th.sorted-desc .datatable-sort-indicator {
+  color: var(--hud-cyan);
+  text-shadow: var(--hud-cyan-glow);
+}
+
+/* Linhas e Células */
+.datatable-table tbody tr {
+  border-bottom: 1px solid rgba(56, 189, 248, 0.08);
+  transition: background 0.12s ease;
+}
+
+.datatable-table tbody tr:nth-child(even) {
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.datatable-table tbody tr:hover {
+  background: rgba(30, 41, 59, 0.8) !important;
+}
+
+.datatable-table td {
+  padding: 13px 16px;
+  color: var(--hud-text-primary);
+  vertical-align: middle;
+}
+
+/* Aluno Info */
+.student-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.student-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0284c7, #3b82f6);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 0 10px rgba(2, 132, 199, 0.4);
+  flex-shrink: 0;
+}
+
+.student-name {
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.student-email {
+  font-size: 0.775rem;
+  color: var(--hud-text-muted);
+}
+
+/* Badges de Status Neon */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-ativo { background: rgba(0, 255, 157, 0.12); color: var(--hud-emerald); border: 1px solid rgba(0, 255, 157, 0.35); box-shadow: 0 0 8px rgba(0, 255, 157, 0.15); }
+.status-risco { background: rgba(251, 191, 36, 0.12); color: var(--hud-amber); border: 1px solid rgba(251, 191, 36, 0.35); box-shadow: 0 0 8px rgba(251, 191, 36, 0.15); }
+.status-abandono { background: rgba(255, 51, 102, 0.12); color: var(--hud-rose); border: 1px solid rgba(255, 51, 102, 0.35); box-shadow: 0 0 8px rgba(255, 51, 102, 0.15); }
+.status-nunca { background: rgba(148, 163, 184, 0.1); color: var(--hud-text-muted); border: 1px solid rgba(148, 163, 184, 0.2); }
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+}
+
+/* Barra de Progresso na Tabela */
+.table-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 130px;
+}
+
+.table-progress-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.table-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--hud-cyan);
+  box-shadow: var(--hud-cyan-glow);
+}
+
+.table-progress-text {
+  font-size: 0.775rem;
+  font-weight: 700;
+  color: var(--hud-text-primary);
+  width: 38px;
+  text-align: right;
+  font-family: var(--hud-mono);
+}
+
+/* Tags de Curso */
+.course-tag {
+  display: inline-block;
+  padding: 3px 8px;
+  background: rgba(30, 41, 59, 0.7);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Botão de Ação */
+.action-btn {
+  padding: 5px 12px;
+  background: rgba(2, 132, 199, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 6px;
+  font-size: 0.775rem;
+  font-weight: 700;
+  color: var(--hud-cyan);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.action-btn:hover {
+  background: var(--hud-cyan-dim);
+  color: #ffffff;
+  box-shadow: var(--hud-cyan-glow);
+  border-color: var(--hud-cyan);
+}
+
+/* Paginação */
+.datatable-pagination {
+  padding: 12px 20px;
+  border-top: 1px solid var(--hud-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(15, 23, 42, 0.85);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.datatable-page-info {
+  font-size: 0.85rem;
+  color: var(--hud-text-muted);
+}
+
+.datatable-page-btn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--hud-border);
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--hud-text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.datatable-page-btn:hover:not(:disabled) {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: var(--hud-cyan);
+}
+
+.datatable-page-btn.active {
+  background: var(--hud-cyan-dim);
+  color: #ffffff;
+  border-color: var(--hud-cyan);
+  box-shadow: var(--hud-cyan-glow);
+}
+
+.datatable-page-size {
+  padding: 6px 10px;
+  border: 1px solid var(--hud-border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: var(--hud-text-primary);
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.datatable-empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--hud-text-muted);
+}

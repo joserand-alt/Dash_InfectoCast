@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laboratório de Componentes · Módulo de KPIs</title>
+  <link rel="stylesheet" href="kpi.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      padding: 40px 24px;
+      min-height: 100vh;
+    }
+    .demo-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .demo-header {
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .demo-header h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .demo-header p {
+      color: #64748b;
+      font-size: 0.95rem;
+      margin-top: 4px;
+    }
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #334155;
+      margin: 32px 0 16px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .log-box {
+      background: #1e293b;
+      color: #38bdf8;
+      font-family: monospace;
+      font-size: 0.85rem;
+      padding: 14px 18px;
+      border-radius: 10px;
+      margin-top: 24px;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+    }
+    .btn-action {
+      background: #0ea5e9;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-action:hover { background: #0284c7; }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <div class="demo-header">
+      <div>
+        <h1>🏷️ Módulo de KPIs · Biblioteca de Componentes</h1>
+        <p>Sandbox de testes com renderização isolada, tipos de métricas e eventos interativos.</p>
+      </div>
+      <div>
+        <button class="btn-action" id="btn-toggle-loading">Testar Shimmer / Loading</button>
+      </div>
+    </div>
+
+    <!-- 1. Métricas Acadêmicas & Alunos -->
+    <div class="section-title">🎓 Métricas Acadêmicas & Status de Alunos (Interativos)</div>
+    <div id="grid-academic"></div>
+
+    <!-- 2. Métricas Financeiras -->
+    <div class="section-title">💰 Métricas Financeiras (Vindi & Asaas)</div>
+    <div id="grid-financial"></div>
+
+    <!-- 3. Funil de Vendas & Leads -->
+    <div class="section-title">🚀 Funil de Leads & Qualificação (RD Station)</div>
+    <div id="grid-funnel"></div>
+
+    <!-- Console de Interação -->
+    <div class="log-box" id="log-box">
+      👉 Clique em qualquer card interativo acima para disparar o callback e visualizar os dados.
+    </div>
+  </div>
+
+  <script type="module">
+    import { KpiCard, KpiGrid } from './index.js';
+
+    const logEl = document.getElementById('log-box');
+    function log(msg) {
+      logEl.innerHTML = `⚡ <strong>Evento:</strong> ${msg}`;
+    }
+
+    // 1. Grid Acadêmico (4 colunas)
+    const gridAcademic = new KpiGrid({
+      columns: 4,
+      cards: [
+        new KpiCard({
+          id: 'kpi-alunos-total',
+          title: 'Total de Alunos',
+          value: 581,
+          format: 'number',
+          subtitle: '445 alunos únicos',
+          color: 'blue',
+          icon: 'users',
+          trend: { value: '+18 este mês', direction: 'up', label: 'Crescimento' },
+          tooltip: 'Total consolidado de matrículas ativas em todas as plataformas',
+          onClick: (c) => log(`Clicou em Total de Alunos (${c.value})`)
+        }),
+        new KpiCard({
+          id: 'kpi-alunos-ativos',
+          title: 'Alunos Ativos',
+          value: 412,
+          format: 'number',
+          subtitle: '70.9% da turma',
+          color: 'emerald',
+          icon: 'check',
+          progress: 70.9,
+          trend: { value: '98% retenção', direction: 'up' },
+          tooltip: 'Alunos com pelo menos 1 aula assistida nos últimos 30 dias',
+          onClick: (c) => log(`Filtrando tabela por Alunos Ativos (${c.value})`)
+        }),
+        new KpiCard({
+          id: 'kpi-alunos-risco',
+          title: 'Em Risco (>30d)',
+          value: 46,
+          format: 'number',
+          subtitle: '7.9% da turma',
+          color: 'amber',
+          icon: 'alert',
+          progress: 7.9,
+          tooltip: 'Sem acesso registrado entre 30 e 60 dias',
+          onClick: (c) => log(`Filtrando tabela por Alunos em Risco (${c.value})`)
+        }),
+        new KpiCard({
+          id: 'kpi-alunos-abandono',
+          title: 'Abandono (>60d)',
+          value: 68,
+          format: 'number',
+          subtitle: '11.7% da turma',
+          color: 'rose',
+          icon: 'clock',
+          progress: 11.7,
+          tooltip: 'Alunos inativos há mais de 60 dias seguidos',
+          onClick: (c) => log(`Filtrando tabela por Alunos em Abandono (${c.value})`)
+        })
+      ]
+    }).mount('#grid-academic');
+
+    // 2. Grid Financeiro (3 colunas)
+    const gridFinancial = new KpiGrid({
+      columns: 3,
+      cards: [
+        new KpiCard({
+          id: 'kpi-fin-recebido',
+          title: 'Faturamento Realizado',
+          value: 384500.00,
+          format: 'currency',
+          subtitle: '912 faturas liquidadas',
+          color: 'emerald',
+          icon: 'dollar',
+          trend: { value: '+12.4%', direction: 'up', label: 'vs mês passado' },
+          tooltip: 'Soma total de cobranças pagas e confirmadas via Vindi e Asaas',
+          onClick: (c) => log(`Visualizando faturas Pagas (${c.formatValue(c.value)})`)
+        }),
+        new KpiCard({
+          id: 'kpi-fin-futuro',
+          title: 'A Receber / Futuro',
+          value: 198350.00,
+          format: 'currency',
+          subtitle: 'Parcelas a vencer em 2026/2027',
+          color: 'cyan',
+          icon: 'chart',
+          tooltip: 'Receita contratada com parcelas a vencer no cartão/boleto'
+        }),
+        new KpiCard({
+          id: 'kpi-fin-inadimplente',
+          title: 'Inadimplência',
+          value: 12480.00,
+          format: 'currency',
+          subtitle: '19 faturas vencidas',
+          color: 'rose',
+          icon: 'alert',
+          trend: { value: '3.1% do total', direction: 'down' },
+          tooltip: 'Cobranças com prazo de pagamento expirado',
+          onClick: (c) => log(`Abrindo lista de inadimplentes (${c.formatValue(c.value)})`)
+        })
+      ]
+    }).mount('#grid-financial');
+
+    // 3. Grid Funil de Leads (4 colunas)
+    const gridFunnel = new KpiGrid({
+      columns: 4,
+      cards: [
+        new KpiCard({
+          id: 'kpi-leads-prontos',
+          title: 'Leads Prontos (Score ≥70)',
+          value: 35,
+          format: 'number',
+          subtitle: 'Alta afinidade + Cursos',
+          color: 'purple',
+          icon: 'star',
+          trend: { value: '🔥 Pronto', direction: 'up' },
+          tooltip: 'Leads altamente qualificados com histórico de jornadas e materiais de pós',
+          onClick: (c) => log(`Filtrando lista de Leads Prontos para Compra (${c.value} leads)`)
+        }),
+        new KpiCard({
+          id: 'kpi-leads-quentes',
+          title: 'Leads Quentes (50-69)',
+          value: 176,
+          format: 'number',
+          subtitle: 'Em nutrição ativa',
+          color: 'amber',
+          icon: 'tag',
+          tooltip: 'Leads em aquecimento com múltiplas conversões recentes'
+        }),
+        new KpiCard({
+          id: 'kpi-leads-mornos',
+          title: 'Leads Mornos (25-49)',
+          value: 298,
+          format: 'number',
+          subtitle: 'Consumindo e-books/lives',
+          color: 'blue',
+          icon: 'users'
+        }),
+        new KpiCard({
+          id: 'kpi-leads-tempo',
+          title: 'Tempo Médio de Decisão',
+          value: 68,
+          format: 'days',
+          subtitle: 'Da 1ª conversão à matrícula',
+          color: 'cyan',
+          icon: 'clock',
+          tooltip: 'Média de dias que um lead leva entre o primeiro contato no RD e a compra'
+        })
+      ]
+    }).mount('#grid-funnel');
+
+    // Botão de teste Shimmer
+    let isLoading = false;
+    document.getElementById('btn-toggle-loading').addEventListener('click', () => {
+      isLoading = !isLoading;
+      const allCards = [...gridAcademic.cards, ...gridFinancial.cards, ...gridFunnel.cards];
+      allCards.forEach(c => c.setLoading(isLoading));
+      log(isLoading ? 'Modo Shimmer / Loading ativado em todos os cards.' : 'Modo Shimmer desativado.');
+    });
+  </script>
+</body>
+</html>

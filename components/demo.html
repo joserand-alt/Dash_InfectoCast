@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InfectoCast · Dark Command-Center (Sci-Fi HUD Analytics)</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Design Tokens & CSS Modules -->
+  <link rel="stylesheet" href="./theme/hud-theme.css">
+  <link rel="stylesheet" href="./kpi/kpi.css">
+  <link rel="stylesheet" href="./tables/tables.css">
+  <link rel="stylesheet" href="./charts/charts.css">
+  <link rel="stylesheet" href="./modals/modals.css">
+  <link rel="stylesheet" href="./modules/modules.css">
+
+  <style>
+    /* Custom Showcase Layout */
+    .showcase-nav {
+      display: flex;
+      gap: 12px;
+      margin: 24px 0 32px 0;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .showcase-nav-btn {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 10px 18px;
+      color: #94a3b8;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      transition: all 0.25s ease;
+    }
+    .showcase-nav-btn:hover {
+      background: rgba(6, 182, 212, 0.15);
+      border-color: rgba(6, 182, 212, 0.4);
+      color: #38bdf8;
+    }
+    .showcase-nav-btn.active {
+      background: rgba(6, 182, 212, 0.25);
+      border-color: #06b6d4;
+      color: #38bdf8;
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+    }
+    .showcase-section {
+      display: none;
+      animation: fadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .showcase-section.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Mission Control Telemetry Header -->
+  <header class="hud-top-header">
+    <div class="hud-branding">
+      <div class="hud-logo-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="hud-brand-text">
+        <h2>INFECTOCAST // COMMAND-CENTER</h2>
+        <span>SCI-FI TELEMETRY & MULTI-COURSE INTELLIGENCE</span>
+      </div>
+    </div>
+
+    <div class="hud-telemetry-cluster">
+      <div class="hud-telemetry-badge">
+        <span class="hud-live-dot"></span>
+        <span>LINK: OPERACIONAL</span>
+      </div>
+      <div class="hud-telemetry-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span id="live-clock">--:--:--</span>
+      </div>
+      <button class="action-btn" id="btn-open-sync" style="margin-left: 8px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        Status Sync
+      </button>
+    </div>
+  </header>
+
+  <main class="hud-container">
+
+    <!-- Navigation Hub -->
+    <nav class="showcase-nav">
+      <button class="showcase-nav-btn active" data-target="sec-executive">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        01 // VISÃO EXECUTIVA
+      </button>
+      <button class="showcase-nav-btn" data-target="sec-students">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        02 // MATRIZ DE ALUNOS
+      </button>
+      <button class="showcase-nav-btn" data-target="sec-leads">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        03 // FUNIL DE LEADS RD
+      </button>
+      <button class="showcase-nav-btn" data-target="sec-financial">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        04 // GESTÃO FINANCEIRA
+      </button>
+      <button class="showcase-nav-btn" data-target="sec-modules">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        05 // ENGAJAMENTO & GARGALOS
+      </button>
+    </nav>
+
+    <!-- SECTION 01: Visão Executiva -->
+    <section id="sec-executive" class="showcase-section active">
+      <div id="kpi-grid-container" style="margin-bottom: 24px;"></div>
+      
+      <div class="hud-charts-grid">
+        <div class="hud-chart-card">
+          <div class="hud-chart-header">
+            <h4>ATIVIDADE HORÁRIA (24H MATRIX)</h4>
+            <span class="hud-telemetry-badge"><span class="hud-live-dot"></span> LIVE</span>
+          </div>
+          <div id="hourly-chart-container" class="hud-chart-body"></div>
+        </div>
+
+        <div class="hud-chart-card">
+          <div class="hud-chart-header">
+            <h4>PROJEÇÃO DE FATURAMENTO RECORRENTE (MRR)</h4>
+            <span class="hud-telemetry-badge" style="color: #34d399; border-color: rgba(16, 185, 129, 0.3);">+18.4%</span>
+          </div>
+          <div id="revenue-chart-container" class="hud-chart-body"></div>
+        </div>
+
+        <div class="hud-chart-card">
+          <div class="hud-chart-header">
+            <h4>FUNIL DE CONVERSÃO & NUTRIÇÃO DE LEADS</h4>
+          </div>
+          <div id="funnel-chart-container" class="hud-chart-body"></div>
+        </div>
+
+        <div class="hud-chart-card">
+          <div class="hud-chart-header">
+            <h4>CURVA DE RETENÇÃO DE ALUNOS (COHORT)</h4>
+          </div>
+          <div id="retention-chart-container" class="hud-chart-body"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 02: Matriz de Alunos -->
+    <section id="sec-students" class="showcase-section">
+      <div class="hud-chart-card" style="padding: 20px;">
+        <div class="hud-chart-header" style="margin-bottom: 16px;">
+          <div>
+            <h4 style="font-size: 1.1rem; color: #38bdf8;">TELEMETRIA DA BASE DE ALUNOS ATIVOS</h4>
+            <p style="font-size: 0.8rem; color: #64748b; margin: 4px 0 0 0;">Visualização granular de acessos, progresso de aulas e jornada do aluno.</p>
+          </div>
+        </div>
+        <div id="student-table-container"></div>
+      </div>
+    </section>
+
+    <!-- SECTION 03: Funil de Leads RD -->
+    <section id="sec-leads" class="showcase-section">
+      <div class="hud-chart-card" style="padding: 20px;">
+        <div class="hud-chart-header" style="margin-bottom: 16px;">
+          <div>
+            <h4 style="font-size: 1.1rem; color: #a855f7;">PIPELINE DE LEADS & SCORING ICP (RD STATION)</h4>
+            <p style="font-size: 0.8rem; color: #64748b; margin: 4px 0 0 0;">Leads qualificados por score de maturidade médica com acionamento direto via WhatsApp.</p>
+          </div>
+        </div>
+        <div id="leads-table-container"></div>
+      </div>
+    </section>
+
+    <!-- SECTION 04: Gestão Financeira -->
+    <section id="sec-financial" class="showcase-section">
+      <div class="hud-chart-card" style="padding: 20px;">
+        <div class="hud-chart-header" style="margin-bottom: 16px;">
+          <div>
+            <h4 style="font-size: 1.1rem; color: #38bdf8;">FLUXO DE FATURAS & RECEBÍVEIS (ASAAS & VINDI)</h4>
+            <p style="font-size: 0.8rem; color: #64748b; margin: 4px 0 0 0;">Gestão em tempo real de parcelas pagas, futuras e controle de inadimplência.</p>
+          </div>
+        </div>
+        <div id="financial-table-container"></div>
+      </div>
+    </section>
+
+    <!-- SECTION 05: Engajamento & Gargalos -->
+    <section id="sec-modules" class="showcase-section">
+      <div style="margin-bottom: 20px;">
+        <h4 style="font-size: 1.1rem; color: #38bdf8; margin: 0 0 4px 0;">MAPA DE RETENÇÃO E PONTOS DE ATRITO CURRICULAR</h4>
+        <p style="font-size: 0.8rem; color: #64748b; margin: 0;">Diagnóstico automático de quedas de engajamento por módulo e taxas de conclusão.</p>
+      </div>
+      <div id="modules-grid-container"></div>
+    </section>
+
+  </main>
+
+  <!-- Modals Container -->
+  <div id="modals-root"></div>
+
+  <!-- Component Logic Scripts (ES Modules) -->
+  <script type="module">
+    import { KpiCard, KpiGrid } from './kpi/index.js';
+    import { StudentTable, LeadsTable, FinancialTable } from './tables/index.js';
+    import { 
+      HourlyActivityChart, 
+      RevenueChart, 
+      FunnelPyramidChart, 
+      RetentionCurveChart 
+    } from './charts/index.js';
+    import { 
+      StudentJourneyModal, 
+      InvoiceListModal, 
+      SyncStatusModal 
+    } from './modals/index.js';
+    import { ModuleEngagementGrid } from './modules/index.js';
+
+    // 1. Live Clock Telemetry
+    function updateClock() {
+      const now = new Date();
+      const el = document.getElementById('live-clock');
+      if (el) el.textContent = now.toLocaleTimeString('pt-BR');
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // 2. Navigation Tabs Switcher
+    document.querySelectorAll('.showcase-nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.showcase-nav-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.showcase-section').forEach(s => s.classList.remove('active'));
+        
+        btn.classList.add('active');
+        const targetId = btn.getAttribute('data-target');
+        const targetSec = document.getElementById(targetId);
+        if (targetSec) targetSec.classList.add('active');
+
+        // Dispara redimensionamento para ajustar gráficos Canvas se necessário
+        window.dispatchEvent(new Event('resize'));
+      });
+    });
+
+    // 3. Render KPIs
+    const kpiGrid = new KpiGrid({
+      columns: 4,
+      cards: [
+        {
+          title: 'Alunos Matriculados',
+          value: '482',
+          trend: { value: '+12%', isPositive: true, text: 'vs. mês anterior' },
+          target: { current: 482, max: 500, label: 'Meta Turma 2026' },
+          color: 'cyan',
+          icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
+        },
+        {
+          title: 'Taxa de Engajamento Ativo',
+          value: '78.4%',
+          trend: { value: '+5.2%', isPositive: true, text: 'últimos 7 dias' },
+          target: { current: 78.4, max: 100, label: 'Alunos sem risco' },
+          color: 'emerald',
+          icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>'
+        },
+        {
+          title: 'Faturamento Mensal (MRR)',
+          value: 'R$ 142.850',
+          trend: { value: '+18.4%', isPositive: true, text: 'recorrência ativa' },
+          target: { current: 142850, max: 180000, label: 'Meta Q3' },
+          color: 'purple',
+          icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>'
+        },
+        {
+          title: 'Alunos em Risco / Abandono',
+          value: '38',
+          trend: { value: '-4.1%', isPositive: true, text: 'redução de evasão' },
+          target: { current: 38, max: 482, label: 'Base sob monitoramento' },
+          color: 'crimson',
+          icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+        }
+      ]
+    });
+    kpiGrid.render('kpi-grid-container');
+
+    // 4. Render Charts
+    new HourlyActivityChart({
+      hours: Array.from({ length: 24 }, (_, i) => `${i}h`),
+      views: [12, 5, 2, 1, 0, 8, 28, 65, 110, 145, 130, 95, 120, 160, 185, 210, 195, 170, 220, 280, 310, 240, 150, 45]
+    }).render('hourly-chart-container');
+
+    new RevenueChart({
+      months: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out'],
+      realizado: [95000, 102000, 110000, 118000, 125000, 132000, 138000, 142850, 0, 0],
+      projetado: [95000, 102000, 110000, 118000, 125000, 132000, 138000, 145000, 155000, 168000]
+    }).render('revenue-chart-container');
+
+    new FunnelPyramidChart({
+      stages: [
+        { label: 'Leads Captados', value: 2450, color: '#38bdf8' },
+        { label: 'Engajados / ICP', value: 1280, color: '#06b6d4' },
+        { label: 'Maturidade Alta', value: 640, color: '#a855f7' },
+        { label: 'Propostas Enviadas', value: 310, color: '#f59e0b' },
+        { label: 'Matrículas Efetivadas', value: 142, color: '#10b981' }
+      ]
+    }).render('funnel-chart-container');
+
+    new RetentionCurveChart({
+      days: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4', 'Semana 6', 'Semana 8', 'Semana 12'],
+      turmaA: [100, 92, 88, 84, 79, 76, 74],
+      turmaB: [100, 95, 91, 89, 86, 83, 81]
+    }).render('retention-chart-container');
+
+    // 5. Modals Setup
+    const journeyModal = new StudentJourneyModal();
+    journeyModal.render('modals-root');
+
+    const syncModal = new SyncStatusModal();
+    syncModal.render('modals-root');
+
+    const invoiceModal = new InvoiceListModal();
+    invoiceModal.render('modals-root');
+
+    document.getElementById('btn-open-sync').addEventListener('click', () => {
+      syncModal.open({
+        lastSync: 'Há 4 minutos (18:42)',
+        services: [
+          { name: 'Cativa EAD Platform', status: 'ONLINE', latency: '42ms' },
+          { name: 'RD Station Marketing API', status: 'ONLINE', latency: '128ms' },
+          { name: 'Asaas Payments Gateway', status: 'ONLINE', latency: '85ms' },
+          { name: 'Vindi Recorrência', status: 'ONLINE', latency: '94ms' }
+        ]
+      });
+    });
+
+    // 6. Render StudentTable
+    const mockStudents = [
+      { nome: 'Dra. Camila Vasconcelos', email: 'camila.vasconcelos@med.usp.br', curso: 'Pós Infectologia Clínica', status: 'ativo', progresso: 94, aulas_assistidas: 47, total_aulas: 50, ultimo_acesso: 'Hoje às 14:22' },
+      { nome: 'Dr. Lucas Silveira', email: 'lucas.silveira@einstein.br', curso: 'Pós Infectologia Pediátrica', status: 'ativo', progresso: 82, aulas_assistidas: 41, total_aulas: 50, ultimo_acesso: 'Ontem às 19:10' },
+      { nome: 'Dra. Mariana Prado', email: 'mariana.prado@hu.ufba.br', curso: 'Pós Infectologia Clínica', status: 'risco', progresso: 34, aulas_assistidas: 17, total_aulas: 50, ultimo_acesso: 'Há 18 dias' },
+      { nome: 'Dr. Rodrigo Mendes', email: 'rodrigo.mendes@santacasa.sp.gov.br', curso: 'SOS Antibióticos', status: 'ativo', progresso: 100, aulas_assistidas: 30, total_aulas: 30, ultimo_acesso: 'Hoje às 11:05' },
+      { nome: 'Dra. Fernanda Albuquerque', email: 'fernanda.albuquerque@gmail.com', curso: 'Pós Infectologia Pediátrica', status: 'abandono', progresso: 12, aulas_assistidas: 6, total_aulas: 50, ultimo_acesso: 'Há 45 dias' },
+      { nome: 'Dr. Gabriel Martins', email: 'gabriel.martins@unifesp.br', curso: 'Pós Infectologia Clínica', status: 'ativo', progresso: 76, aulas_assistidas: 38, total_aulas: 50, ultimo_acesso: 'Hoje às 08:30' },
+      { nome: 'Dra. Larissa Toledo', email: 'larissa.toledo@hc.ufg.br', curso: 'Controle de Infecção Hospitalar', status: 'ativo', progresso: 64, aulas_assistidas: 25, total_aulas: 40, ultimo_acesso: 'Há 2 dias' },
+      { nome: 'Dr. Thiago Ribeiro', email: 'thiago.ribeiro@ufrj.br', curso: 'Pós Infectologia Clínica', status: 'nunca', progresso: 0, aulas_assistidas: 0, total_aulas: 50, ultimo_acesso: 'Nunca acessou' }
+    ];
+
+    const studentTable = new StudentTable({
+      students: mockStudents,
+      onVerJornada: (student) => {
+        journeyModal.open({
+          nome: student.nome,
+          email: student.email,
+          curso: student.curso,
+          progresso: student.progresso,
+          status: student.status,
+          aulasAssistidas: student.aulas_assistidas,
+          totalAulas: student.total_aulas,
+          eventos: [
+            { tipo: 'LOGIN', titulo: 'Acesso à plataforma', data: student.ultimo_acesso, detalhe: 'IP: 187.54.12.90 (São Paulo)' },
+            { tipo: 'CONCLUSAO', titulo: 'Concluiu aula: Manejo de Sepse Grave', data: '14/09/2026', detalhe: 'Módulo 4 · Nota no Quiz: 95%' },
+            { tipo: 'PAGAMENTO', titulo: 'Mensalidade confirmada via Cartão', data: '05/09/2026', detalhe: 'Fatura Asaas #98432 - R$ 850,00' }
+          ]
+        });
+      }
+    });
+    studentTable.render('student-table-container');
+
+    // 7. Render LeadsTable (RD Station)
+    const mockLeads = [
+      { nome: 'Dr. Marcelo Antunes', email: 'marcelo.antunes@cardio.med.br', telefone: '11987654321', score: 92, maturidade: 'Pronto', profissao: 'Médico Infectologista', interesse: 'Pós Infectologia Clínica', origem: 'Instagram Ads' },
+      { nome: 'Dra. Juliana Guimarães', email: 'juliana.g@hospitalgeral.com.br', telefone: '21976543210', score: 85, maturidade: 'Pronto', profissao: 'Pediatra UTI', interesse: 'Pós Infecto Pediátrica', origem: 'RD Station (Ebook)' },
+      { nome: 'Dr. Vinícius Siqueira', email: 'vinicius.siqueira@gmail.com', telefone: '31998761234', score: 68, maturidade: 'Quente', profissao: 'Residente R2 Clínica', interesse: 'SOS Antibióticos', origem: 'Workshop Sepse' },
+      { nome: 'Dra. Beatriz Fontana', email: 'beatriz.fontana@saude.gov.br', telefone: '41988887777', score: 45, maturidade: 'Morno', profissao: 'Clínica Geral', interesse: 'Pós Infectologia Clínica', origem: 'Orgânico / Podcast' },
+      { nome: 'Dr. Leonardo Braga', email: 'leonardo.braga@medicina.ufrj.br', telefone: '21981234567', score: 20, maturidade: 'Frio', profissao: 'Estudante Medicina 6º ano', interesse: 'Controle de Infecção', origem: 'Indicação' }
+    ];
+
+    const leadsTable = new LeadsTable({
+      leads: mockLeads,
+      onWhatsApp: (lead) => {
+        const tel = (lead.telefone || '').replace(/\D/g, '');
+        const msg = encodeURIComponent(`Olá ${lead.nome}! Vimos seu interesse na ${lead.interesse} da InfectoCast Academy. Como podemos te auxiliar?`);
+        window.open(`https://wa.me/55${tel}?text=${msg}`, '_blank');
+      }
+    });
+    leadsTable.render('leads-table-container');
+
+    // 8. Render FinancialTable (Asaas / Vindi)
+    const mockInvoices = [
+      { sacado: 'Dra. Camila Vasconcelos', email: 'camila.vasconcelos@med.usp.br', descricao: 'Pós Infectologia Clínica - Parcela 08/12', vencimento: '10/09/2026', valor: 850.00, status: 'PAGO', gateway: 'Asaas', url_fatura: '#' },
+      { sacado: 'Dr. Lucas Silveira', email: 'lucas.silveira@einstein.br', descricao: 'Pós Infecto Pediátrica - Parcela 06/12', vencimento: '15/09/2026', valor: 920.00, status: 'PAGO', gateway: 'Asaas', url_fatura: '#' },
+      { sacado: 'Dra. Mariana Prado', email: 'mariana.prado@hu.ufba.br', descricao: 'Pós Infectologia Clínica - Parcela 05/12', vencimento: '05/09/2026', valor: 850.00, status: 'VENCIDO', gateway: 'Vindi', url_fatura: '#' },
+      { sacado: 'Dr. Gabriel Martins', email: 'gabriel.martins@unifesp.br', descricao: 'Pós Infectologia Clínica - Parcela 09/12', vencimento: '25/09/2026', valor: 850.00, status: 'PENDENTE', gateway: 'Asaas', url_fatura: '#' },
+      { sacado: 'Dra. Fernanda Albuquerque', email: 'fernanda.albuquerque@gmail.com', descricao: 'Pós Infecto Pediátrica - Parcela 03/12', vencimento: '12/08/2026', valor: 920.00, status: 'INADIMPLENTE', gateway: 'Vindi', url_fatura: '#' },
+      { sacado: 'Dr. Rodrigo Mendes', email: 'rodrigo.mendes@santacasa.sp.gov.br', descricao: 'Curso SOS Antibióticos - À Vista', vencimento: '01/09/2026', valor: 1450.00, status: 'CONFIRMED', gateway: 'Asaas', url_fatura: '#' }
+    ];
+
+    const financialTable = new FinancialTable({
+      invoices: mockInvoices,
+      onViewInvoice: (inv) => {
+        invoiceModal.open({
+          aluno: inv.sacado,
+          email: inv.email,
+          faturas: [
+            { id: 'FAT-9821', descricao: inv.descricao, vencimento: inv.vencimento, valor: inv.valor, status: inv.status, gateway: inv.gateway },
+            { id: 'FAT-9820', descricao: 'Parcela Anterior', vencimento: '10/08/2026', valor: inv.valor, status: 'PAGO', gateway: inv.gateway }
+          ]
+        });
+      }
+    });
+    financialTable.render('financial-table-container');
+
+    // 9. Render ModuleEngagementGrid
+    const mockModules = [
+      {
+        codigo: 'MÓDULO 01',
+        nome: 'Fundamentos de Infectologia Clínica & Diagnóstico',
+        duracao_total: '2h 15m',
+        total_aulas: 6,
+        taxa_conclusao: 92,
+        is_friction: false,
+        aulas: [
+          { titulo: 'Introdução à Microbiologia Clínica', views: 465 },
+          { titulo: 'Coleta Adequada de Hemoculturas', views: 442 },
+          { titulo: 'Interpretação do Antibiograma (TSA)', views: 430 },
+          { titulo: 'Mecanismos de Resistência Bacteriana', views: 418 },
+          { titulo: 'Biomarcadores: PCR vs Procalcitonina', views: 405 },
+          { titulo: 'Discussão de Caso Clínico M1', views: 390 }
+        ]
+      },
+      {
+        codigo: 'MÓDULO 02',
+        nome: 'Terapêutica Antimicrobiana & PK/PD Avançado',
+        duracao_total: '3h 40m',
+        total_aulas: 8,
+        taxa_conclusao: 84,
+        is_friction: false,
+        aulas: [
+          { titulo: 'Conceitos de PK/PD em Pacientes Críticos', views: 385 },
+          { titulo: 'Beta-lactâmicos em Infusão Estendida', views: 372 },
+          { titulo: 'Glicopeptídeos: Monitorização de Vancomicina', views: 360 },
+          { titulo: 'Aminoglicosídeos: Dose Única Diária', views: 345 }
+        ]
+      },
+      {
+        codigo: 'MÓDULO 03',
+        nome: 'Bactérias Multirresistentes (MDR) & Infecções Complexas',
+        duracao_total: '4h 10m',
+        total_aulas: 10,
+        taxa_conclusao: 48,
+        is_friction: true,
+        queda_taxa: 36,
+        aulas: [
+          { titulo: 'Enterobactérias Produtoras de KPC e NDM', views: 330 },
+          { titulo: 'Pseudomonas aeruginosa DTR: Manejo Terapêutico', views: 250 },
+          { titulo: 'Acinetobacter baumannii Pan-resistente', views: 195 },
+          { titulo: 'Novos Betalactâmicos com Inibidores de Betalactamase', views: 160 },
+          { titulo: 'Polimixinas: Risco de Nefrotoxicidade e Ajustes', views: 140 }
+        ]
+      },
+      {
+        codigo: 'MÓDULO 04',
+        nome: 'Infecções em Pacientes Imunocomprometidos & Transplantes',
+        duracao_total: '3h 05m',
+        total_aulas: 7,
+        taxa_conclusao: 72,
+        is_friction: false,
+        aulas: [
+          { titulo: 'Neutropenia Febril de Alto Risco', views: 310 },
+          { titulo: 'Infecções Fúngicas Invasivas (Aspergilose e Candidíase)', views: 295 },
+          { titulo: 'Reativação de CMV e Manejo Preventivo', views: 280 }
+        ]
+      }
+    ];
+
+    const moduleGrid = new ModuleEngagementGrid({
+      modules: mockModules,
+      onLessonSelect: (aula, mod) => {
+        alert(`Aula Selecionada: ${aula.titulo}\nMódulo: ${mod.nome}\nTotal de visualizações: ${aula.views}`);
+      }
+    });
+    moduleGrid.render('modules-grid-container');
+
+  </script>
+</body>
+</html>
