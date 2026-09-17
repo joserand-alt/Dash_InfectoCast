@@ -558,9 +558,13 @@ def main():
     for curso, lessons_dict in course_lessons.items():
         modules_for_course = course_modules.get(curso, set())
         
-        # We will create a dict mapping module_name -> list of lesson objects
-        mod_dict = {m: [] for m in modules_for_course}
-        mod_dict["Aulas Adicionais"] = []
+        # Mapeamento estrito para os módulos oficiais do curso (sem Aulas Adicionais)
+        valid_mods = [m for m in modules_for_course if m and m != 'Aulas Adicionais']
+        if not valid_mods:
+            valid_mods = ['Conteúdo Curricular']
+        
+        mod_dict = {m: [] for m in valid_mods}
+        first_mod = valid_mods[0]
         
         for n_key, original_name in sorted(lessons_dict.items(), key=lambda x: x[1]):
             lesson_id_counter += 1
@@ -568,20 +572,25 @@ def main():
                 "id": lesson_id_counter,
                 "nome": original_name,
                 "curriculo": True,
-                "ordem": 0 # updated later
+                "ordem": 0
             }
             
-            # Use scoped lookup for this specific course
             mapped_mod = course_lesson_to_module.get((curso, n_key))
             if mapped_mod and mapped_mod in mod_dict:
                 mod_dict[mapped_mod].append(lesson_obj)
             else:
-                mod_dict["Aulas Adicionais"].append(lesson_obj)
+                # Aloca no módulo temático mais adequado ou no primeiro módulo oficial
+                found_mod = None
+                for m_cand in valid_mods:
+                    if norm_title(m_cand) in n_key or n_key in norm_title(m_cand):
+                        found_mod = m_cand
+                        break
+                target_mod = found_mod if found_mod else first_mod
+                mod_dict[target_mod].append(lesson_obj)
                 
-        # Transform into final list format, skipping modules with 0 lessons
         mod_list = []
         for mod_name, aulas in mod_dict.items():
-            if len(aulas) == 0:
+            if len(aulas) == 0 or mod_name == 'Aulas Adicionais':
                 continue
             for idx, a in enumerate(aulas):
                 a["ordem"] = str(idx + 1)
@@ -593,8 +602,7 @@ def main():
                 "aulas": aulas
             })
             
-        # Ordena a lista de módulos (Aulas Adicionais por último)
-        mod_list.sort(key=lambda x: (x["modulo"] == "Aulas Adicionais", x["modulo"]))
+        mod_list.sort(key=lambda x: x["modulo"])
         final_curriculum[curso] = mod_list
     
     print(f"Grade montada: {len(final_curriculum)} cursos, {sum(len(m) for m in final_curriculum.values())} módulos, {sum(len(a) for mods in final_curriculum.values() for m in mods for a in m['aulas'])} aulas.")

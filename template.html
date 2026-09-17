@@ -3050,22 +3050,27 @@ function openStudent(email, curso){
   if (s.curso && DATA.curriculum && DATA.curriculum[s.curso]) {
       const s_done = new Set();
       (s.events || []).forEach(e => {
-          if (e.acao === 'ASSISTIU AULA') {
+          if (e.acao === 'ASSISTIU AULA' || e.acao === 'CONCLUIU AULA') {
               if (e.item_id) s_done.add(String(e.item_id));
               if (e.item) s_done.add(e.item.toString().trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
           }
       });
-      const mRows = DATA.curriculum[s.curso].map(m => {
+      // Filtra estritamente os módulos oficiais do curso (sem Aulas Adicionais)
+      const officialMods = DATA.curriculum[s.curso].filter(m => m.modulo && m.modulo !== 'Aulas Adicionais');
+      let totalModsConcluidos = 0;
+
+      const mRows = officialMods.map(m => {
           let mDone = 0;
-          m.aulas.forEach(a => {
+          (m.aulas || []).forEach(a => {
               const aNorm = a.nome ? a.nome.toString().trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : '';
               if (s_done.has(String(a.id)) || s_done.has(aNorm)) mDone++;
           });
           const mPct = m.n_curric > 0 ? Math.min(100, Math.round(mDone / m.n_curric * 100)) : 0;
           const isDone = m.n_curric > 0 && mDone >= m.n_curric;
+          if (isDone) totalModsConcluidos++;
           const color = isDone ? 'var(--emerald)' : (mPct > 0 ? 'var(--sky)' : 'var(--muted)');
           return `
-            <div style="display:flex; flex-direction:column; gap:4px; font-size:11.5px; padding:7px 0; border-bottom:1px solid var(--line2)">
+            <div style="display:flex; flex-direction:column; gap:4px; font-size:11.5px; padding:8px 0; border-bottom:1px solid var(--line2)">
               <div style="display:flex; justify-content:space-between; align-items:center">
                 <span style="font-weight:600; color:var(--ink)">${m.modulo}</span>
                 <span style="font-weight:700; color:${color}">${mDone}/${m.n_curric} aulas (${mPct}%) ${isDone ? '✓ Concluído' : ''}</span>
@@ -3081,7 +3086,7 @@ function openStudent(email, curso){
         <div style="margin:20px 20px 0; padding:14px 16px; border:1px solid var(--line2); border-radius:10px; background:rgba(255,255,255,0.03); box-shadow:0 2px 8px rgba(0,0,0,0.04)">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
             <b style="font-size:12px; color:var(--ink)">Evolução e Conclusão por Módulos (${s.curso})</b>
-            <span style="font-size:11px; font-weight:700; color:var(--emerald-d)">${s.mods_concluidos || 0}/${s.total_mods || 0} módulos concluídos</span>
+            <span style="font-size:11px; font-weight:700; color:var(--emerald-d)">${totalModsConcluidos}/${officialMods.length} módulos concluídos</span>
           </div>
           <div>${mRows}</div>
         </div>
