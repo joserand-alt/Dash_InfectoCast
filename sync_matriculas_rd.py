@@ -18,9 +18,17 @@ import rd_service
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("SyncMatriculasRD")
 
-BASE_DIR = r"C:\Users\DELL\Desktop\Dash_InfectoCast"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TAGGED_HISTORY_FILE = os.path.join(BASE_DIR, "rd_tagged_matriculas.json")
-EXCEL_INSCRICOES = r"C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\Inscrições.xlsx"
+
+def get_inscricoes_file():
+    p1 = os.path.join(BASE_DIR, "BD", "Inscrições.xlsx")
+    if os.path.exists(p1):
+        return p1
+    p2 = r"C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\Inscrições.xlsx"
+    if os.path.exists(p2):
+        return p2
+    return p1
 
 def load_tagged_history():
     """Carrega o histórico de alunos/matrículas que já receberam a tag no RD"""
@@ -45,13 +53,13 @@ def sync_pending_matriculas(dry_run=False):
     novos_tagueados = 0
     erros = 0
 
-    # 1. Carregar Inscrições / Matrículas da base
-    if not os.path.exists(EXCEL_INSCRICOES):
-        logger.error(f"Arquivo de inscrições não encontrado em {EXCEL_INSCRICOES}")
-        return {"status": "error", "message": "Arquivo de inscrições não encontrado"}
+    insc_file = get_inscricoes_file()
+    if not os.path.exists(insc_file):
+        logger.warning(f"Arquivo de inscrições não encontrado em {insc_file}. Prosseguindo sem inscrições locais.")
+        return {"status": "skipped", "message": "Arquivo não encontrado"}
 
     try:
-        df_insc = pd.read_excel(EXCEL_INSCRICOES)
+        df_insc = pd.read_excel(insc_file)
     except Exception as e:
         logger.error(f"Erro ao ler planilha de inscrições: {e}")
         return {"status": "error", "error": str(e)}
@@ -60,7 +68,7 @@ def sync_pending_matriculas(dry_run=False):
 
     for idx, row in df_insc.iterrows():
         email = str(row.get("E-mail") or "").strip().lower()
-        if not email or "@" not in email:
+        if not email or "@" not in email or email.endswith("@infectocast.com") or "teste" in email:
             continue
 
         nome = str(row.get("Nome") or "").strip()
@@ -68,45 +76,41 @@ def sync_pending_matriculas(dry_run=False):
         valor = row.get("Valor") or row.get("Valor Pago") or None
         id_matricula = str(row.get("ID") or row.get("Matrícula") or f"MAT-{idx+1}").strip()
         
-        # Chave única de idempotência: email + curso
         unique_key = f"{email}|{rd_service.slugify_tag(curso)}"
 
-        if unique_key in history:
-            # Já processado anteriormente
+        if unique_key in history and history[unique_key].get("status") == "success":
             continue
 
-        logger.info(f"📢 Nova matrícula identificada: {nome} ({email}) - Curso: {curso}")
+        logger.info(f"📢 Nova matrícula a taguear no RD: {nome} ({email}) - Curso: {curso}")
 
         if dry_run:
-            logger.info(f"   [DRY-RUN] Dispararia tag e conversão para {email} no curso {curso}")
+            logger.info(f"   [DRY-RUN] Dispararia tag e conversão para {email}")
             novos_tagueados += 1
             continue
 
-        # Executa o disparo no RD Station
-        res = rd_service.register_matricula_event(
-            email=email,
-            nome=nome,
-            curso=curso,
-            valor=valor,
-            gateway="Academy",
-            id_matricula=id_matricula
-        )
-
-        if res.get("status") in ["success", "partial_fallback"]:
+        try:
+            res = rd_service.register_matricula_event(
+                email=email,
+                nome=nome,
+                curso=curso,
+                valor=valor,
+                gateway="Academy",
+                id_matricula=id_matricula
+            )
             history[unique_key] = {
                 "email": email,
                 "nome": nome,
                 "curso": curso,
+                "status": "success",
                 "data_tagueamento": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "tags_aplicadas": res.get("tags_applied", []),
-                "resposta_rd": res
+                "tags_aplicadas": res.get("tags_applied", [])
             }
             novos_tagueados += 1
             save_tagged_history(history)
-            time.sleep(0.4) # Intervalo preventivo de rate-limit
-        else:
+            time.sleep(0.3)
+        except Exception as e:
             erros += 1
-            logger.error(f"❌ Falha ao processar {email}: {res}")
+            logger.error(f"❌ Falha ao processar {email}: {e}")
 
     logger.info(f"🏁 Sincronização concluída! Novos tagueados: {novos_tagueados}, Erros: {erros}, Total histórico: {len(history)}")
     return {

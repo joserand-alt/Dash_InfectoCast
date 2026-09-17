@@ -26,6 +26,19 @@ def prepare_template(template_path):
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BD_LOCAL = os.path.join(BASE_DIR, "BD")
+BD_FALLBACK = r"C:\Users\DELL\Desktop\Acompanhamento de acessos\BD"
+
+def get_bd_file(filename):
+    p1 = os.path.join(BD_LOCAL, filename)
+    if os.path.exists(p1):
+        return p1
+    p2 = os.path.join(BD_FALLBACK, filename)
+    if os.path.exists(p2):
+        return p2
+    return p1
+
 def fetch_logs_from_api(students_df=None):
     print("Buscando logs de uso via API InfectoCast Academy...")
     token = 'idIsYOe8egEasc4xwhxmwu2uSZyWy3oEhWzE3kEHakhcPJzQpp7kGLmYrk7lcrMQ'
@@ -171,8 +184,8 @@ def optimize_payload_for_dashboard(data):
     return data
 
 def main():
-    cursos_path = r'C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\CURSOS.xlsx'
-    log_uso_path = r'C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\Log de uso.xlsx'
+    cursos_path = get_bd_file('CURSOS.xlsx')
+    log_uso_path = get_bd_file('Log de uso.xlsx')
     template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'template.html')
     
     print("Carregando logs de uso da plataforma Academy...")
@@ -190,7 +203,7 @@ def main():
     hoje = df_log['Data log'].max().date() + datetime.timedelta(days=1) if not df_log['Data log'].dropna().empty else datetime.date.today()
     inscritos = df_log['E-mail'].dropna().unique()
     
-    mensagens_path = r'C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\Registro de mensagens.xlsx'
+    mensagens_path = get_bd_file('Registro de mensagens.xlsx')
     mensagens_recentes = {}
     if os.path.exists(mensagens_path):
         df_msgs = pd.read_excel(mensagens_path)
@@ -278,7 +291,7 @@ def main():
     academy_cache_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'academy_logs_cache.json')
     academy_api_logs = []
     
-    inscricoes_path = r'C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\Inscrições.xlsx'
+    inscricoes_path = get_bd_file('Inscrições.xlsx')
     if os.path.exists(inscricoes_path):
         try:
             df_insc = pd.read_excel(inscricoes_path)
@@ -574,7 +587,7 @@ def main():
     # ============================================
     # PROCESSAMENTO WA LOGS
     # ============================================
-    wa_log_path = r'C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\Log mensagems.csv'
+    wa_log_path = get_bd_file('Log mensagems.csv')
     wa_history = {}
     wa_chats = {}
     if os.path.exists(wa_log_path):
@@ -653,7 +666,7 @@ def main():
     # ============================================
     # LEITURA LOGRD.CSV & DICAS DE CURSO
     # ============================================
-    logrd_path = r'C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\LogRD.csv'
+    logrd_path = get_bd_file('LogRD.csv')
     rd_events_map = {}
     rd_course_hints = {}
     
@@ -997,7 +1010,7 @@ def main():
     # ============================================
     # FUNIL DE LEADS — Processamento LogRD.csv
     # ============================================
-    logrd_path = r'C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\LogRD.csv'
+    logrd_path = get_bd_file('LogRD.csv')
     funil_data = {}
     
     if os.path.exists(logrd_path):
