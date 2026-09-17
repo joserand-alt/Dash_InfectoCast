@@ -68,15 +68,15 @@
 
     /* KPI Clickable Pulse Style */
     .kpi-card-sync-24h {
-      cursor: pointer;
+      cursor: pointer !important;
       position: relative;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      border-color: rgba(16, 185, 129, 0.4) !important;
+      border-color: rgba(0, 255, 157, 0.4) !important;
     }
     .kpi-card-sync-24h:hover {
       transform: translateY(-3px) scale(1.02);
-      border-color: #10b981 !important;
-      box-shadow: 0 8px 30px rgba(16, 185, 129, 0.3), 0 0 20px rgba(16, 185, 129, 0.2) !important;
+      border-color: #00ff9d !important;
+      box-shadow: 0 8px 30px rgba(0, 255, 157, 0.3), 0 0 20px rgba(0, 255, 157, 0.2) !important;
     }
   </style>
 </head>
@@ -271,16 +271,9 @@
 
     // 3. Modals Instances Setup
     const journeyModal = new StudentJourneyModal();
-    journeyModal.render('modals-root');
-
     const syncModal = new SyncStatusModal();
-    syncModal.render('modals-root');
-
     const invoiceModal = new InvoiceListModal();
-    invoiceModal.render('modals-root');
-
     const recentSyncModal = new RecentSyncModal();
-    recentSyncModal.render('modals-root');
 
     // Dados Mock dos alunos sincronizados nas últimas 24h
     const mockSynced24h = [
@@ -306,89 +299,97 @@
       });
     });
 
-    // 4. Render KPIs (Incluindo o novo KPI Interativo de Sincronizações 24h)
+    // 4. Render KPIs (Grade com 5 Cards incluindo Matrículas 24h)
+    const cardAlunosTotal = new KpiCard({
+      id: 'kpi-alunos-total',
+      title: 'Total Matriculados',
+      value: 482,
+      format: 'number',
+      subtitle: 'Base ativa de alunos',
+      color: 'cyan',
+      icon: 'users',
+      trend: { value: '+12%', direction: 'up', label: 'vs. mês anterior' },
+      progress: 96
+    });
+
+    const cardSync24h = new KpiCard({
+      id: 'kpi-sync-24h',
+      title: 'Sincronizados (24h)',
+      value: mockSynced24h.length,
+      format: 'number',
+      subtitle: 'Clique para detalhar ↗',
+      color: 'emerald',
+      icon: 'check',
+      trend: { value: '⚡ LIVE', direction: 'up', label: 'Disparados no RD Station' },
+      progress: 85,
+      interactive: true,
+      onClick: () => {
+        recentSyncModal.open({
+          students: mockSynced24h,
+          lastSync: 'Há 3 minutos',
+          successRate: 100
+        });
+      }
+    });
+
+    const cardEngajamento = new KpiCard({
+      id: 'kpi-engajamento',
+      title: 'Taxa de Engajamento',
+      value: 78.4,
+      format: 'percent',
+      subtitle: 'Alunos sem risco de evasão',
+      color: 'blue',
+      icon: 'chart',
+      trend: { value: '+5.2%', direction: 'up', label: 'últimos 7 dias' },
+      progress: 78
+    });
+
+    const cardMrr = new KpiCard({
+      id: 'kpi-mrr',
+      title: 'Faturamento MRR',
+      value: 142850,
+      format: 'currency',
+      subtitle: 'Meta Q3: R$ 180.000',
+      color: 'purple',
+      icon: 'dollar',
+      trend: { value: '+18.4%', direction: 'up', label: 'recorrência ativa' },
+      progress: 79
+    });
+
+    const cardRisco = new KpiCard({
+      id: 'kpi-risco',
+      title: 'Alunos em Risco',
+      value: 38,
+      format: 'number',
+      subtitle: '38 sob monitoramento',
+      color: 'rose',
+      icon: 'alert',
+      trend: { value: '-4.1%', direction: 'down', label: 'redução de evasão' },
+      progress: 25
+    });
+
     const kpiGrid = new KpiGrid({
       columns: 5,
-      cards: [
-        {
-          title: 'Total Matriculados',
-          value: 482,
-          trend: { value: '+12%', direction: 'up', label: 'vs. mês anterior' },
-          subtitle: 'Base ativa de alunos',
-          color: 'cyan',
-          icon: 'users',
-          progress: 96
-        },
-        {
-          title: 'Sincronizados (24h)',
-          value: mockSynced24h.length,
-          trend: { value: '⚡ LIVE', direction: 'up', label: 'Hoje no RD Station' },
-          subtitle: 'Clique para detalhar ↗',
-          color: 'emerald',
-          icon: 'check',
-          progress: 85,
-          interactive: true,
-          onClick: () => {
-            recentSyncModal.open({
-              students: mockSynced24h,
-              lastSync: 'Há 3 minutos',
-              successRate: 100
-            });
-          }
-        },
-        {
-          title: 'Taxa de Engajamento',
-          value: 78.4,
-          format: 'percent',
-          trend: { value: '+5.2%', direction: 'up', label: 'últimos 7 dias' },
-          subtitle: 'Alunos sem risco de evasão',
-          color: 'blue',
-          icon: 'chart',
-          progress: 78
-        },
-        {
-          title: 'Faturamento MRR',
-          value: 142850,
-          format: 'currency',
-          trend: { value: '+18.4%', direction: 'up', label: 'recorrência ativa' },
-          subtitle: 'Meta Q3: R$ 180.000',
-          color: 'purple',
-          icon: 'dollar',
-          progress: 79
-        },
-        {
-          title: 'Alunos em Risco',
-          value: 38,
-          trend: { value: '-4.1%', direction: 'down', label: 'redução de evasão' },
-          subtitle: '38 sob monitoramento',
-          color: 'rose',
-          icon: 'alert',
-          progress: 25
-        }
-      ]
+      cards: [cardAlunosTotal, cardSync24h, cardEngajamento, cardMrr, cardRisco]
     });
     kpiGrid.mount('#kpi-grid-container');
 
     // Adiciona classe de destaque ao card de sincronização 24h
-    setTimeout(() => {
-      const cards = document.querySelectorAll('.kpi-card');
-      if (cards && cards[1]) {
-        cards[1].classList.add('kpi-card-sync-24h');
-        cards[1].setAttribute('title', 'Clique para ver a lista de alunos sincronizados nas últimas 24h');
-      }
-    }, 100);
+    if (cardSync24h.element) {
+      cardSync24h.element.classList.add('kpi-card-sync-24h');
+    }
 
     // 5. Render Charts
     new HourlyActivityChart({
       hours: Array.from({ length: 24 }, (_, i) => `${i}h`),
       views: [12, 5, 2, 1, 0, 8, 28, 65, 110, 145, 130, 95, 120, 160, 185, 210, 195, 170, 220, 280, 310, 240, 150, 45]
-    }).render('hourly-chart-container');
+    }).mount('#hourly-chart-container');
 
     new RevenueChart({
       months: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out'],
       realizado: [95000, 102000, 110000, 118000, 125000, 132000, 138000, 142850, 0, 0],
       projetado: [95000, 102000, 110000, 118000, 125000, 132000, 138000, 145000, 155000, 168000]
-    }).render('revenue-chart-container');
+    }).mount('#revenue-chart-container');
 
     new FunnelPyramidChart({
       stages: [
@@ -398,13 +399,13 @@
         { label: 'Propostas Enviadas', value: 310, color: '#f59e0b' },
         { label: 'Matrículas Efetivadas', value: 142, color: '#10b981' }
       ]
-    }).render('funnel-chart-container');
+    }).mount('#funnel-chart-container');
 
     new RetentionCurveChart({
       days: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4', 'Semana 6', 'Semana 8', 'Semana 12'],
       turmaA: [100, 92, 88, 84, 79, 76, 74],
       turmaB: [100, 95, 91, 89, 86, 83, 81]
-    }).render('retention-chart-container');
+    }).mount('#retention-chart-container');
 
     // 6. Render StudentTable
     const mockStudents = [
@@ -437,7 +438,7 @@
         });
       }
     });
-    studentTable.render('student-table-container');
+    studentTable.mount('#student-table-container');
 
     // 7. Render LeadsTable (RD Station)
     const mockLeads = [
@@ -456,7 +457,7 @@
         window.open(`https://wa.me/55${tel}?text=${msg}`, '_blank');
       }
     });
-    leadsTable.render('leads-table-container');
+    leadsTable.mount('#leads-table-container');
 
     // 8. Render FinancialTable (Asaas / Vindi)
     const mockInvoices = [
@@ -481,7 +482,7 @@
         });
       }
     });
-    financialTable.render('financial-table-container');
+    financialTable.mount('#financial-table-container');
 
     // 9. Render ModuleEngagementGrid
     const mockModules = [

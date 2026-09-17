@@ -57,7 +57,7 @@ export class BaseModal {
     // Fechar ao clicar no X
     overlay.querySelector('.modal-close-btn').addEventListener('click', () => this.close());
 
-    // Fechar ao clicar no backdrop (fora do diálogo)
+    // Fechar ao clicar no backdrop (fora da caixa de diálogo)
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) this.close();
     });
@@ -69,60 +69,62 @@ export class BaseModal {
     this.bodyEl = overlay.querySelector('.modal-body');
   }
 
-  /** Define o título do cabeçalho */
-  setTitle(title) {
-    this.title = title;
-    const titleEl = this.overlay.querySelector('.modal-title');
-    if (titleEl) titleEl.textContent = title;
-  }
-
-  /** Define o conteúdo interno do modal (HTML ou Elemento) */
-  setContent(content) {
-    if (!this.bodyEl) return;
-    if (content instanceof HTMLElement) {
-      this.bodyEl.innerHTML = '';
-      this.bodyEl.appendChild(content);
-    } else {
-      this.bodyEl.innerHTML = String(content || '');
+  /** Renderiza ou move o modal para um container (compatibilidade) */
+  render(target) {
+    if (target) {
+      const container = typeof target === 'string' ? document.getElementById(target.replace('#', '')) : target;
+      if (container && this.overlay && this.overlay.parentElement !== container) {
+        container.appendChild(this.overlay);
+      }
     }
+    return this.overlay;
   }
 
   /** Abre o modal */
-  open(content = null) {
-    if (content !== null) this.setContent(content);
-
-    this.isOpen = true;
-    this.overlay.classList.add('open');
+  open() {
+    if (!this.overlay) this.create();
+    
+    this.overlay.classList.add('active');
     document.body.classList.add('modal-open');
+    this.isOpen = true;
 
     document.addEventListener('keydown', this._onKeyDown);
 
-    if (typeof this.onOpen === 'function') this.onOpen(this);
-    return this;
+    if (typeof this.onOpen === 'function') {
+      this.onOpen(this);
+    }
   }
 
   /** Fecha o modal */
   close() {
-    if (!this.isOpen) return;
-    this.isOpen = false;
-    this.overlay.classList.remove('open');
+    if (!this.overlay || !this.isOpen) return;
+
+    this.overlay.classList.remove('active');
     document.body.classList.remove('modal-open');
+    this.isOpen = false;
 
     document.removeEventListener('keydown', this._onKeyDown);
 
-    if (typeof this.onClose === 'function') this.onClose(this);
-    return this;
+    if (typeof this.onClose === 'function') {
+      this.onClose(this);
+    }
   }
 
+  /** Trata tecla ESC */
   _onKeyDown(e) {
-    if (e.key === 'Escape') this.close();
+    if (e.key === 'Escape' || e.key === 'Esc') {
+      this.close();
+    }
   }
 
-  /** Destrói o elemento do DOM */
+  /** Destrói o modal do DOM */
   destroy() {
     this.close();
     if (this.overlay && this.overlay.parentNode) {
       this.overlay.parentNode.removeChild(this.overlay);
     }
+    this.overlay = null;
+    this.dialog = null;
+    this.bodyEl = null;
   }
 }
