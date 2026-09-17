@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Sincronizador Inteligente de Matrículas e Pagamentos com o RD Station
-- Lê as matrículas e pagamentos confirmados do Academy / Asaas / Vindi / Cativa
+- Sincroniza alunos e matrículas da Cativa Digital E da Academy / Vindi / Asaas
+- Classifica automaticamente em Pós-Graduação vs Curso Livre e tags do curso
 - Garante idempotência salvando histórico em rd_tagged_matriculas.json
-- Aplica tags automáticas e registra evento de conversão no RD Station
 """
 
 import os
@@ -20,6 +20,7 @@ logger = logging.getLogger("SyncMatriculasRD")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TAGGED_HISTORY_FILE = os.path.join(BASE_DIR, "rd_tagged_matriculas.json")
+CATIVA_CACHE_FILE = os.path.join(BASE_DIR, "cativa_cache.json")
 
 def get_inscricoes_file():
     p1 = os.path.join(BASE_DIR, "BD", "Inscrições.xlsx")
@@ -45,46 +46,111 @@ def save_tagged_history(history):
     with open(TAGGED_HISTORY_FILE, "w", encoding="utf-8") as f:
         json.dump(history, f, indent=2, ensure_ascii=False)
 
+def get_cativa_enrollments():
+    """Extrai lista de alunos e cursos da Cativa Digital"""
+    enrollments = []
+    if not os.path.exists(CATIVA_CACHE_FILE):
+        return enrollments
+        
+    try:
+        with open(CATIVA_CACHE_FILE, "r", encoding="utf-8") as f:
+            cativa = json.load(f)
+            
+        students = cativa.get("students", [])
+        users_meta = cativa.get("users_metadata", {})
+        
+        for s in students:
+            em = str(s.get("email", "")).lower().strip()
+            if not em or "@" not in em or em.endswith("@infectocast.com") or "teste" in em:
+                continue
+                
+            nome = str(s.get("fullName", "")).strip()
+            meta = users_meta.get(em, {})
+            if not nome:
+                fn = meta.get("first_name", "")
+                ln = meta.get("last_name", "")
+                nome = f"{fn} {ln}".strip()
+                
+            courses = s.get("courses", [])
+            if not courses:
+                enrollments.append({
+                    "email": em,
+                    "nome": nome,
+                    "curso": "Pós-Graduação InfectoCast",
+                    "gateway": "Cativa Digital",
+                    "origem": "Cativa"
+                })
+            else:
+                for c in courses:
+                    c_name = c.get("courseName") or "Pós-Graduação InfectoCast"
+                    enrollments.append({
+                        "email": em,
+                        "nome": nome,
+                        "curso": c_name,
+                        "gateway": "Cativa Digital",
+                        "origem": "Cativa"
+                    })
+    except Exception as e:
+        logger.error(f"Erro ao processar alunos da Cativa: {e}")
+        
+    return enrollments
+
 def sync_pending_matriculas(dry_run=False):
     """
-    Identifica matrículas confirmadas que ainda não foram marcadas no RD Station e realiza o disparo.
+    Identifica matrículas confirmadas (Academy + Cativa Digital) que ainda não foram marcadas no RD Station e realiza o disparo.
     """
     history = load_tagged_history()
     novos_tagueados = 0
     erros = 0
+    total_encontrados = 0
 
+    todas_matriculas = []
+
+    # 1. Carregar Inscrições / Matrículas da Academy
     insc_file = get_inscricoes_file()
-    if not os.path.exists(insc_file):
-        logger.warning(f"Arquivo de inscrições não encontrado em {insc_file}. Prosseguindo sem inscrições locais.")
-        return {"status": "skipped", "message": "Arquivo não encontrado"}
+    if os.path.exists(insc_file):
+        try:
+            df_insc = pd.read_excel(insc_file)
+            for idx, row in df_insc.iterrows():
+                em = str(row.get("E-mail") or "").strip().lower()
+                if not em or "@" not in em or em.endswith("@infectocast.com") or "teste" in em:
+                    continue
+                todas_matriculas.append({
+                    "email": em,
+                    "nome": str(row.get("Nome") or "").strip(),
+                    "curso": str(row.get("Curso") or row.get("Pós") or "Pós-Graduação InfectoCast").strip(),
+                    "valor": row.get("Valor") or row.get("Valor Pago") or None,
+                    "gateway": "Academy",
+                    "origem": "Academy",
+                    "id": str(row.get("ID") or f"MAT-AC-{idx+1}").strip()
+                })
+        except Exception as e:
+            logger.error(f"Erro ao ler planilha de inscrições Academy: {e}")
 
-    try:
-        df_insc = pd.read_excel(insc_file)
-    except Exception as e:
-        logger.error(f"Erro ao ler planilha de inscrições: {e}")
-        return {"status": "error", "error": str(e)}
+    # 2. Carregar Matrículas da Cativa Digital
+    cativa_matriculas = get_cativa_enrollments()
+    todas_matriculas.extend(cativa_matriculas)
 
-    logger.info(f"Analisando {len(df_insc)} registros de matrículas...")
+    total_encontrados = len(todas_matriculas)
+    logger.info(f"Analisando total consolidado de {total_encontrados} matrículas (Academy + Cativa Digital)...")
 
-    for idx, row in df_insc.iterrows():
-        email = str(row.get("E-mail") or "").strip().lower()
-        if not email or "@" not in email or email.endswith("@infectocast.com") or "teste" in email:
-            continue
-
-        nome = str(row.get("Nome") or "").strip()
-        curso = str(row.get("Curso") or row.get("Pós") or "Pós-Graduação InfectoCast").strip()
-        valor = row.get("Valor") or row.get("Valor Pago") or None
-        id_matricula = str(row.get("ID") or row.get("Matrícula") or f"MAT-{idx+1}").strip()
+    for idx, m in enumerate(todas_matriculas, 1):
+        email = m["email"]
+        nome = m.get("nome", "")
+        curso = m.get("curso", "Pós-Graduação InfectoCast")
+        valor = m.get("valor")
+        gateway = m.get("gateway", "Cativa Digital")
+        id_matricula = m.get("id", f"MAT-{idx}")
         
         unique_key = f"{email}|{rd_service.slugify_tag(curso)}"
 
         if unique_key in history and history[unique_key].get("status") == "success":
             continue
 
-        logger.info(f"📢 Nova matrícula a taguear no RD: {nome} ({email}) - Curso: {curso}")
+        logger.info(f"📢 [{m['origem']}] Nova matrícula a taguear no RD: {nome} ({email}) - Curso: {curso}")
 
         if dry_run:
-            logger.info(f"   [DRY-RUN] Dispararia tag e conversão para {email}")
+            logger.info(f"   [DRY-RUN] Dispararia tag para {email}")
             novos_tagueados += 1
             continue
 
@@ -94,13 +160,15 @@ def sync_pending_matriculas(dry_run=False):
                 nome=nome,
                 curso=curso,
                 valor=valor,
-                gateway="Academy",
-                id_matricula=id_matricula
+                gateway=gateway,
+                id_matricula=id_matricula,
+                tags_adicionais=["cativa-digital"] if m["origem"] == "Cativa" else ["academy-pago"]
             )
             history[unique_key] = {
                 "email": email,
                 "nome": nome,
                 "curso": curso,
+                "origem": m["origem"],
                 "status": "success",
                 "data_tagueamento": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "tags_aplicadas": res.get("tags_applied", [])
@@ -122,7 +190,7 @@ def sync_pending_matriculas(dry_run=False):
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="Sincronizador de Matrículas RD Station")
+    parser = argparse.ArgumentParser(description="Sincronizador de Matrículas RD Station (Academy + Cativa)")
     parser.add_argument("--dry-run", action="store_true", help="Apenas simula sem enviar para o RD")
     args = parser.parse_args()
     
