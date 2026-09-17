@@ -1032,7 +1032,98 @@ def main():
                 
             students.append(student_data)
         
-    print(f"Total consolidado de estudantes gerados: {len(students)} ({len(set(s['email'] for s in students))} únicos).")
+
+    # =========================================================================
+    # CÁLCULO OFICIAL DE PROGRESSO DOS ALUNOS BASEADO NA GRADE DA API & CURRICULO
+    # =========================================================================
+    print("Calculando progresso curricular individual dos estudantes...")
+
+    curriculo_stats = {}
+    for c_nome, m_list in final_curriculum.items():
+        total_aulas_c = 0
+        aulas_c_set = set()
+        mods_detalhe = []
+        for m in m_list:
+            m_aulas = m.get('aulas', [])
+            total_aulas_c += len(m_aulas)
+            m_aulas_set = set()
+            for a in m_aulas:
+                an_norm = norm_title(a.get('nome', ''))
+                if an_norm:
+                    aulas_c_set.add(an_norm)
+                    m_aulas_set.add(an_norm)
+            mods_detalhe.append({
+                'modulo': m.get('modulo', 'Geral'),
+                'total_aulas': len(m_aulas),
+                'aulas_set': m_aulas_set
+            })
+        curriculo_stats[c_nome] = {
+            'total_aulas': max(1, total_aulas_c),
+            'total_mods': max(1, len(m_list)),
+            'aulas_set': aulas_c_set,
+            'modulos': mods_detalhe
+        }
+
+    for s in students:
+        c_aluno = s.get('curso', 'PLATAFORMA GERAL')
+        c_info = curriculo_stats.get(c_aluno) or curriculo_stats.get('PLATAFORMA GERAL') or {
+            'total_aulas': 50,
+            'total_mods': 4,
+            'aulas_set': set(),
+            'modulos': []
+        }
+
+        aulas_aluno_set = set()
+        for ev_item in s.get('events', []):
+            if ev_item.get('acao') in ['ASSISTIU AULA', 'CONCLUIU AULA', 'AULA ASSISTIDA']:
+                item_name = ev_item.get('item', '')
+                n_k = norm_title(item_name)
+                if n_k:
+                    aulas_aluno_set.add(n_k)
+
+        aulas_assistidas_count = len(aulas_aluno_set)
+        if aulas_assistidas_count == 0 and s.get('aulas_concluidas', 0) > 0:
+            aulas_assistidas_count = min(s.get('aulas_concluidas', 0), c_info['total_aulas'])
+
+        total_aulas_c = c_info['total_aulas']
+        total_mods_c = c_info['total_mods']
+
+        pct_aulas = min(100.0, round((aulas_assistidas_count / max(1, total_aulas_c)) * 100, 1))
+
+        mods_concluidos_count = 0
+        modulos_aluno_status = []
+        for m_item in c_info.get('modulos', []):
+            m_total = m_item['total_aulas']
+            m_assistidas = len(m_item['aulas_set'].intersection(aulas_aluno_set))
+            m_pct = min(100.0, round((m_assistidas / max(1, m_total)) * 100, 1)) if m_total > 0 else 0
+            is_concluido = m_pct >= 100 or (m_total > 0 and m_assistidas == m_total)
+            if is_concluido:
+                mods_concluidos_count += 1
+            modulos_aluno_status.append({
+                'modulo': m_item['modulo'],
+                'aulas_feitas': m_assistidas,
+                'total_aulas': m_total,
+                'pct': m_pct,
+                'concluido': is_concluido
+            })
+
+        if mods_concluidos_count == 0 and pct_aulas > 0 and total_mods_c > 0:
+            mods_concluidos_count = int((pct_aulas / 100.0) * total_mods_c)
+
+        pct_mods = min(100.0, round((mods_concluidos_count / max(1, total_mods_c)) * 100, 1))
+
+        s['aulas_feitas'] = aulas_assistidas_count
+        s['total_aulas'] = total_aulas_c
+        s['aulas_feitas_curric'] = aulas_assistidas_count
+        s['total_aulas_curric'] = total_aulas_c
+        s['pct_aulas'] = pct_aulas
+        s['mods_concluidos'] = mods_concluidos_count
+        s['total_mods'] = total_mods_c
+        s['pct_mods'] = pct_aulas
+        s['progresso'] = pct_aulas
+        s['modulos_detalhe'] = modulos_aluno_status
+
+        print(f"Total consolidado de estudantes gerados: {len(students)} ({len(set(s['email'] for s in students))} únicos).")
         
     # ============================================
     # FUNIL DE LEADS — Processamento LogRD.csv
