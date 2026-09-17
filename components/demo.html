@@ -65,6 +65,19 @@
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    /* KPI Clickable Pulse Style */
+    .kpi-card-sync-24h {
+      cursor: pointer;
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-color: rgba(16, 185, 129, 0.4) !important;
+    }
+    .kpi-card-sync-24h:hover {
+      transform: translateY(-3px) scale(1.02);
+      border-color: #10b981 !important;
+      box-shadow: 0 8px 30px rgba(16, 185, 129, 0.3), 0 0 20px rgba(16, 185, 129, 0.2) !important;
+    }
   </style>
 </head>
 <body>
@@ -226,7 +239,8 @@
     import { 
       StudentJourneyModal, 
       InvoiceListModal, 
-      SyncStatusModal 
+      SyncStatusModal,
+      RecentSyncModal 
     } from './modals/index.js';
     import { ModuleEngagementGrid } from './modules/index.js';
 
@@ -255,47 +269,116 @@
       });
     });
 
-    // 3. Render KPIs
+    // 3. Modals Instances Setup
+    const journeyModal = new StudentJourneyModal();
+    journeyModal.render('modals-root');
+
+    const syncModal = new SyncStatusModal();
+    syncModal.render('modals-root');
+
+    const invoiceModal = new InvoiceListModal();
+    invoiceModal.render('modals-root');
+
+    const recentSyncModal = new RecentSyncModal();
+    recentSyncModal.render('modals-root');
+
+    // Dados Mock dos alunos sincronizados nas últimas 24h
+    const mockSynced24h = [
+      { nome: 'Dra. Camila Vasconcelos', email: 'camila.vasconcelos@med.usp.br', curso: 'Pós Infectologia Clínica', horario: 'Hoje às 10:14', tags: ['aluno-ativo', 'matricula-pos-infectologia', 'academy-pago'] },
+      { nome: 'Dr. Lucas Silveira', email: 'lucas.silveira@einstein.br', curso: 'Pós Infectologia Pediátrica', horario: 'Hoje às 09:32', tags: ['aluno-ativo', 'matricula-pos-infecto-ped', 'academy-pago'] },
+      { nome: 'Dr. Rodrigo Mendes', email: 'rodrigo.mendes@santacasa.sp.gov.br', curso: 'SOS Antibióticos', horario: 'Hoje às 08:45', tags: ['aluno-ativo', 'matricula-sos-atb', 'gateway-asaas'] },
+      { nome: 'Dr. Gabriel Martins', email: 'gabriel.martins@unifesp.br', curso: 'Pós Infectologia Clínica', horario: 'Hoje às 07:20', tags: ['aluno-ativo', 'matricula-pos-infectologia', 'academy-pago'] },
+      { nome: 'Dra. Larissa Toledo', email: 'larissa.toledo@hc.ufg.br', curso: 'Controle de Infecção Hospitalar', horario: 'Ontem às 22:50', tags: ['aluno-ativo', 'matricula-ccih', 'gateway-vindi'] },
+      { nome: 'Dr. Vinícius Siqueira', email: 'vinicius.siqueira@gmail.com', curso: 'SOS Antibióticos', horario: 'Ontem às 19:15', tags: ['aluno-ativo', 'matricula-sos-atb', 'gateway-asaas'] },
+      { nome: 'Dra. Mariana Prado', email: 'mariana.prado@hu.ufba.br', curso: 'Pós Infectologia Clínica', horario: 'Ontem às 16:30', tags: ['aluno-ativo', 'matricula-pos-infectologia', 'gateway-vindi'] },
+      { nome: 'Dr. Marcelo Antunes', email: 'marcelo.antunes@cardio.med.br', curso: 'Pós Infectologia Clínica', horario: 'Ontem às 14:10', tags: ['aluno-ativo', 'matricula-pos-infectologia', 'academy-pago'] }
+    ];
+
+    document.getElementById('btn-open-sync').addEventListener('click', () => {
+      syncModal.open({
+        lastSync: 'Há 4 minutos (10:48)',
+        services: [
+          { name: 'Cativa EAD Platform', status: 'ONLINE', latency: '42ms' },
+          { name: 'RD Station Marketing API', status: 'ONLINE', latency: '128ms' },
+          { name: 'Asaas Payments Gateway', status: 'ONLINE', latency: '85ms' },
+          { name: 'Vindi Recorrência', status: 'ONLINE', latency: '94ms' }
+        ]
+      });
+    });
+
+    // 4. Render KPIs (Incluindo o novo KPI Interativo de Sincronizações 24h)
     const kpiGrid = new KpiGrid({
-      columns: 4,
+      columns: 5,
       cards: [
         {
-          title: 'Alunos Matriculados',
-          value: '482',
-          trend: { value: '+12%', isPositive: true, text: 'vs. mês anterior' },
-          target: { current: 482, max: 500, label: 'Meta Turma 2026' },
+          title: 'Total Matriculados',
+          value: 482,
+          trend: { value: '+12%', direction: 'up', label: 'vs. mês anterior' },
+          subtitle: 'Base ativa de alunos',
           color: 'cyan',
-          icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
+          icon: 'users',
+          progress: 96
         },
         {
-          title: 'Taxa de Engajamento Ativo',
-          value: '78.4%',
-          trend: { value: '+5.2%', isPositive: true, text: 'últimos 7 dias' },
-          target: { current: 78.4, max: 100, label: 'Alunos sem risco' },
+          title: 'Sincronizados (24h)',
+          value: mockSynced24h.length,
+          trend: { value: '⚡ LIVE', direction: 'up', label: 'Hoje no RD Station' },
+          subtitle: 'Clique para detalhar ↗',
           color: 'emerald',
-          icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>'
+          icon: 'check',
+          progress: 85,
+          interactive: true,
+          onClick: () => {
+            recentSyncModal.open({
+              students: mockSynced24h,
+              lastSync: 'Há 3 minutos',
+              successRate: 100
+            });
+          }
         },
         {
-          title: 'Faturamento Mensal (MRR)',
-          value: 'R$ 142.850',
-          trend: { value: '+18.4%', isPositive: true, text: 'recorrência ativa' },
-          target: { current: 142850, max: 180000, label: 'Meta Q3' },
+          title: 'Taxa de Engajamento',
+          value: 78.4,
+          format: 'percent',
+          trend: { value: '+5.2%', direction: 'up', label: 'últimos 7 dias' },
+          subtitle: 'Alunos sem risco de evasão',
+          color: 'blue',
+          icon: 'chart',
+          progress: 78
+        },
+        {
+          title: 'Faturamento MRR',
+          value: 142850,
+          format: 'currency',
+          trend: { value: '+18.4%', direction: 'up', label: 'recorrência ativa' },
+          subtitle: 'Meta Q3: R$ 180.000',
           color: 'purple',
-          icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>'
+          icon: 'dollar',
+          progress: 79
         },
         {
-          title: 'Alunos em Risco / Abandono',
-          value: '38',
-          trend: { value: '-4.1%', isPositive: true, text: 'redução de evasão' },
-          target: { current: 38, max: 482, label: 'Base sob monitoramento' },
-          color: 'crimson',
-          icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+          title: 'Alunos em Risco',
+          value: 38,
+          trend: { value: '-4.1%', direction: 'down', label: 'redução de evasão' },
+          subtitle: '38 sob monitoramento',
+          color: 'rose',
+          icon: 'alert',
+          progress: 25
         }
       ]
     });
-    kpiGrid.render('kpi-grid-container');
+    kpiGrid.mount('#kpi-grid-container');
 
-    // 4. Render Charts
+    // Adiciona classe de destaque ao card de sincronização 24h
+    setTimeout(() => {
+      const cards = document.querySelectorAll('.kpi-card');
+      if (cards && cards[1]) {
+        cards[1].classList.add('kpi-card-sync-24h');
+        cards[1].setAttribute('title', 'Clique para ver a lista de alunos sincronizados nas últimas 24h');
+      }
+    }, 100);
+
+    // 5. Render Charts
     new HourlyActivityChart({
       hours: Array.from({ length: 24 }, (_, i) => `${i}h`),
       views: [12, 5, 2, 1, 0, 8, 28, 65, 110, 145, 130, 95, 120, 160, 185, 210, 195, 170, 220, 280, 310, 240, 150, 45]
@@ -322,28 +405,6 @@
       turmaA: [100, 92, 88, 84, 79, 76, 74],
       turmaB: [100, 95, 91, 89, 86, 83, 81]
     }).render('retention-chart-container');
-
-    // 5. Modals Setup
-    const journeyModal = new StudentJourneyModal();
-    journeyModal.render('modals-root');
-
-    const syncModal = new SyncStatusModal();
-    syncModal.render('modals-root');
-
-    const invoiceModal = new InvoiceListModal();
-    invoiceModal.render('modals-root');
-
-    document.getElementById('btn-open-sync').addEventListener('click', () => {
-      syncModal.open({
-        lastSync: 'Há 4 minutos (18:42)',
-        services: [
-          { name: 'Cativa EAD Platform', status: 'ONLINE', latency: '42ms' },
-          { name: 'RD Station Marketing API', status: 'ONLINE', latency: '128ms' },
-          { name: 'Asaas Payments Gateway', status: 'ONLINE', latency: '85ms' },
-          { name: 'Vindi Recorrência', status: 'ONLINE', latency: '94ms' }
-        ]
-      });
-    });
 
     // 6. Render StudentTable
     const mockStudents = [
