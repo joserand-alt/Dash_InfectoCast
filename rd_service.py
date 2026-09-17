@@ -23,8 +23,8 @@ logger = logging.getLogger("RDService")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TOKENS_FILE = os.path.join(BASE_DIR, "rd_tokens.json")
 
-CLIENT_ID = os.environ.get("RD_CLIENT_ID", "1b4f494f-f173-455b-a496-e26a454be896")
-CLIENT_SECRET = os.environ.get("RD_CLIENT_SECRET", "7ea8940ca58a43628bb948dbbc8bc704")
+CLIENT_ID = os.environ.get("RD_CLIENT_ID", "8dd9632d-c758-44de-ac07-a0c14b0f2a30")
+CLIENT_SECRET = os.environ.get("RD_CLIENT_SECRET", "789fb08d84244d7ca7e3afe4abb911b0")
 REDIRECT_URI = "https://joserand-alt.github.io/Dash_InfectoCast/"
 
 def slugify_tag(text, prefix=""):
