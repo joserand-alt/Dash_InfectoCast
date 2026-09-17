@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+"""
+Serviço Oficial de Integração com a API InfectoCast Academy
+- Extração ao vivo de Cursos, Módulos e Aulas
+- Mapeamento e consolidação curricular automática
+"""
+
+import os
 import urllib.request
 import json
 import logging
@@ -5,6 +13,9 @@ import time
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("AcademyService")
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CACHE_FILE = os.path.join(BASE_DIR, "academy_curriculum_cache.json")
 
 class AcademyService:
     def __init__(self, base_url="https://academy.infectocast.com.br/api", token="idIsYOe8egEasc4xwhxmwu2uSZyWy3oEhWzE3kEHakhcPJzQpp7kGLmYrk7lcrMQ"):
@@ -28,7 +39,6 @@ class AcademyService:
                     return data
                 return data
         except urllib.error.HTTPError as e:
-            # 404 might mean endpoint not yet deployed or course has no sub-items
             logger.warning(f"HTTP {e.code} on {endpoint}: {e.reason}")
             return None
         except Exception as e:
@@ -36,112 +46,97 @@ class AcademyService:
             return None
 
     def get_cursos(self):
-        """
-        GET /cursos
-        Retorna a lista oficial de cursos cadastrados no Academy.
-        """
+        """GET /cursos"""
         data = self._request("/cursos")
         if data and isinstance(data, list):
-            # Filtra cursos de teste ou externos se necessário
             return [c for c in data if "teste" not in str(c.get("nome", "")).lower()]
         return data or []
 
-    def get_turmas(self, id_curso):
-        """
-        GET /cursos/{id_curso}/turmas
-        Retorna todas as turmas cadastradas para um determinado curso.
-        """
-        data = self._request(f"/cursos/{id_curso}/turmas")
-        return data or []
-
-    def get_turma_detalhe(self, id_curso, id_turma):
-        """
-        GET /cursos/{id_curso}/turmas/{id_turma}
-        Retorna o detalhamento completo de uma determinada turma.
-        """
-        return self._request(f"/cursos/{id_curso}/turmas/{id_turma}")
-
     def get_modulos(self, id_curso):
-        """
-        GET /cursos/{id_curso}/modulos
-        Retorna a lista de módulos de um determinado curso.
-        """
+        """GET /cursos/{id_curso}/modulos"""
         data = self._request(f"/cursos/{id_curso}/modulos")
         return data or []
 
     def get_aulas(self, id_curso, id_modulo):
-        """
-        GET /cursos/{id_curso}/modulos/{id_modulo}/aulas
-        Retorna a lista de aulas de um determinado módulo.
-        """
+        """GET /cursos/{id_curso}/modulos/{id_modulo}/aulas"""
         data = self._request(f"/cursos/{id_curso}/modulos/{id_modulo}/aulas")
         return data or []
 
-    def get_curriculo_completo(self, fallback_curriculum=None):
+    def get_curriculo_completo(self, force_refresh=False):
         """
-        Constrói o mapa completo do currículo:
+        Retorna o mapa curricular estruturado de cursos, módulos e aulas:
         {
           "Nome do Curso": [
              {
-               "modulo": "Módulo 1",
-               "n_curric": 10,
+               "id_modulo": 1073,
+               "modulo": "Epidemiologia...",
+               "n_curric": 21,
                "aulas": [
-                  {"id": 123, "nome": "Aula 1", "curriculo": True}, ...
+                  {"id": 100363, "nome": "Introdução...", "ordem": 1, "curriculo": True}, ...
                ]
-             }, ...
+             }
           ]
         }
-        Se os endpoints de módulos/aulas retornarem vazio/404, faz fallback elegante.
         """
+        if not force_refresh and os.path.exists(CACHE_FILE):
+            try:
+                with open(CACHE_FILE, "r", encoding="utf-8") as f:
+                    cached = json.load(f)
+                    if cached and len(cached) > 0:
+                        logger.info(f"Carregados {len(cached)} cursos do cache curricular da Academy.")
+                        return cached
+            except Exception as e:
+                logger.warning(f"Erro ao ler cache curricular: {e}")
+
         cursos = self.get_cursos()
         if not cursos:
-            logger.info("Nenhum curso retornado da API. Usando fallback.")
-            return fallback_curriculum or {}
+            logger.warning("Nenhum curso retornado da API Academy.")
+            return {}
 
         curriculo_dinamico = {}
-        api_has_modules = False
-
         for c in cursos:
             cid = c.get("id")
-            cnome = c.get("nome", "").strip()
+            cnome = str(c.get("nome", "")).strip()
             if not cnome:
                 continue
 
-            modulos = self.get_modulos(cid)
-            if modulos:
-                api_has_modules = True
-                curriculo_dinamico[cnome] = []
-                for m in modulos:
-                    mid = m.get("id")
-                    mnome = m.get("nome") or m.get("titulo") or f"Módulo {mid}"
-                    aulas = self.get_aulas(cid, mid) or []
-                    
-                    aulas_formatadas = []
-                    for a in aulas:
-                        aulas_formatadas.append({
-                            "id": a.get("id"),
-                            "nome": a.get("nome") or a.get("titulo") or "",
-                            "duracao": a.get("duracao", 0),
-                            "ordem": a.get("ordem", 1),
-                            "curriculo": True
-                        })
-                    
-                    curriculo_dinamico[cnome].append({
-                        "modulo": mnome,
-                        "n_curric": len(aulas_formatadas),
-                        "aulas": aulas_formatadas
+            modulos = self.get_modulos(cid) or []
+            if not modulos:
+                continue
+
+            curriculo_dinamico[cnome] = []
+            for m in modulos:
+                mid = m.get("id")
+                mnome = str(m.get("nome") or f"Módulo {mid}").strip()
+                ordem_m = m.get("ordem", 1)
+                
+                aulas = self.get_aulas(cid, mid) or []
+                aulas_formatadas = []
+                for a in aulas:
+                    aulas_formatadas.append({
+                        "id": a.get("id"),
+                        "nome": str(a.get("nome") or "").strip(),
+                        "ordem": a.get("ordem", 1),
+                        "duracao": a.get("duracao", 0),
+                        "curriculo": True
                     })
 
-        if api_has_modules:
-            logger.info(f"Currículo 100% dinâmico gerado via API para {len(curriculo_dinamico)} cursos!")
-            return curriculo_dinamico
-        else:
-            logger.info("Endpoints de módulos/aulas ainda não retornaram dados (HTTP 404). Mantendo fallback de currículo.")
-            return fallback_curriculum or {}
+                curriculo_dinamico[cnome].append({
+                    "id_modulo": mid,
+                    "modulo": mnome,
+                    "ordem": ordem_m,
+                    "n_curric": len(aulas_formatadas),
+                    "aulas": aulas_formatadas
+                })
+            time.sleep(0.05)
+
+        with open(CACHE_FILE, "w", encoding="utf-8") as f:
+            json.dump(curriculo_dinamico, f, indent=2, ensure_ascii=False)
+
+        logger.info(f"Currículo 100% dinâmico da Academy extraído: {len(curriculo_dinamico)} cursos salvos em cache!")
+        return curriculo_dinamico
 
 if __name__ == "__main__":
     service = AcademyService()
-    cursos = service.get_cursos()
-    print(f"Cursos oficiais retornados da API ({len(cursos)}):")
-    for c in cursos:
-        print(f"  [{c.get('id')}] {c.get('nome')} (Tipo: {c.get('tipo')})")
+    curriculo = service.get_curriculo_completo(force_refresh=True)
+    print(f"Currículo completo carregado: {len(curriculo)} cursos.")

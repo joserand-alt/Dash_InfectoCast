@@ -1,0 +1,4030 @@
+{
+  "CCIH - Enfermagem": [
+    {
+      "id_modulo": 1066,
+      "modulo": "Epidemiologia Aplicada ao Controle de Infecção",
+      "ordem": 1,
+      "total_aulas": 31,
+      "aulas": [
+        {
+          "id": 100339,
+          "nome": "Introdução e Conceitos Fundamentais",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100351,
+          "nome": "Como Estruturar o CCIH/SCIH",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100352,
+          "nome": "Implementação de Programas de PCI (OMS)",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100353,
+          "nome": "Cadeia Epidemiológica",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100354,
+          "nome": "Metodologias de vigilância",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100355,
+          "nome": "Como desenhar um programa de vigilância",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100356,
+          "nome": "Dados - coleta, gestão e análise",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100496,
+          "nome": "Fundamentos da busca ativa",
+          "ordem": 9,
+          "ativo": true
+        },
+        {
+          "id": 100497,
+          "nome": "Anatomia das Fontes de Dados",
+          "ordem": 10,
+          "ativo": true
+        },
+        {
+          "id": 100498,
+          "nome": "Sistema de Gatilhos (Triggers)",
+          "ordem": 11,
+          "ativo": true
+        },
+        {
+          "id": 100499,
+          "nome": "Conceitos Operacionais ANVISA NT 03/2026",
+          "ordem": 12,
+          "ativo": true
+        },
+        {
+          "id": 100500,
+          "nome": "Guia visual de dispositivos invasivos",
+          "ordem": 13,
+          "ativo": true
+        },
+        {
+          "id": 100501,
+          "nome": "Aplicação aos Critérios - IPCSL, PAV, ITU-AC",
+          "ordem": 14,
+          "ativo": true
+        },
+        {
+          "id": 100502,
+          "nome": "Aplicação aos Critérios - ISC e Diagnóstico Diferencial",
+          "ordem": 15,
+          "ativo": true
+        },
+        {
+          "id": 100503,
+          "nome": "Vigilância Diferenciada por Perfil de Paciente UTI Terciária",
+          "ordem": 16,
+          "ativo": true
+        },
+        {
+          "id": 100504,
+          "nome": "Rotina Operacional Diária",
+          "ordem": 17,
+          "ativo": true
+        },
+        {
+          "id": 100505,
+          "nome": "Ferramentas e Tecnologia",
+          "ordem": 18,
+          "ativo": true
+        },
+        {
+          "id": 100506,
+          "nome": "Comunicação dos Achados",
+          "ordem": 19,
+          "ativo": true
+        },
+        {
+          "id": 100507,
+          "nome": "Vigilância Pós-Alta e Casos Especiais",
+          "ordem": 20,
+          "ativo": true
+        },
+        {
+          "id": 100508,
+          "nome": "Aspectos Humanos e Sustentabilidade",
+          "ordem": 21,
+          "ativo": true
+        },
+        {
+          "id": 100509,
+          "nome": "Armadilhas, Erros Comuns e Boas Práticas",
+          "ordem": 22,
+          "ativo": true
+        },
+        {
+          "id": 100543,
+          "nome": "Introdução à Investigação de Surtos",
+          "ordem": 23,
+          "ativo": true
+        },
+        {
+          "id": 100544,
+          "nome": "Metodologia de Investigação",
+          "ordem": 25,
+          "ativo": true
+        },
+        {
+          "id": 100545,
+          "nome": "Laboratório e Genômica",
+          "ordem": 26,
+          "ativo": true
+        },
+        {
+          "id": 100546,
+          "nome": "Gestão de Comunicação e Encerramento de Investigações de Surtos",
+          "ordem": 27,
+          "ativo": true
+        },
+        {
+          "id": 100639,
+          "nome": "INVESTIGAÇÃO - Infecção do Trato Urinário (ITU associada a SVD",
+          "ordem": 28,
+          "ativo": true
+        },
+        {
+          "id": 100640,
+          "nome": "INVESTIGAÇÃO - Infecção da Corrente Sanguínea (ICS)",
+          "ordem": 29,
+          "ativo": true
+        },
+        {
+          "id": 100641,
+          "nome": "INVESTIGAÇÃO - Infecção do Trato Respiratório (PAV, PAC, surtos comunitários)",
+          "ordem": 30,
+          "ativo": true
+        },
+        {
+          "id": 100642,
+          "nome": "INVESTIGAÇÃO - Infecção de Sítio Cirúrgico (ISC)",
+          "ordem": 31,
+          "ativo": true
+        },
+        {
+          "id": 100643,
+          "nome": "INVESTIGAÇÃO - Gastrointestinais e Transmitidas por Alimentos",
+          "ordem": 32,
+          "ativo": true
+        },
+        {
+          "id": 100644,
+          "nome": "INVESTIGAÇÃO - Oftalmológicas (surto de endoftalmite/TASS)",
+          "ordem": 33,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1096,
+      "modulo": "Lives",
+      "ordem": 10,
+      "total_aulas": 1,
+      "aulas": [
+        {
+          "id": 100549,
+          "nome": "Controle glicêmico e prevenção de infecções de sítio cirúrgico",
+          "ordem": 1,
+          "ativo": true
+        }
+      ]
+    }
+  ],
+  "CCIH - Farmácia": [
+    {
+      "id_modulo": 1060,
+      "modulo": "Epidemiologia Aplicada ao Controle de Infecção",
+      "ordem": 1,
+      "total_aulas": 22,
+      "aulas": [
+        {
+          "id": 100338,
+          "nome": "Introdução e Conceitos Fundamentais",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100357,
+          "nome": "Como estruturar o CCIH/SCIH",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100358,
+          "nome": "Implementação de Programas de PCI (OMS)",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100359,
+          "nome": "Cadeia Epidemiológica",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100360,
+          "nome": "Metodologias de vigilância",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100361,
+          "nome": "Como desenhar um programa de vigilância",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100362,
+          "nome": "Dados - coleta, gestão e análise",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100491,
+          "nome": "Introdução à Investigação de Surtos",
+          "ordem": 9,
+          "ativo": true
+        },
+        {
+          "id": 100492,
+          "nome": "Metodologia de Investigação",
+          "ordem": 10,
+          "ativo": true
+        },
+        {
+          "id": 100493,
+          "nome": "Laboratório e Genômica",
+          "ordem": 11,
+          "ativo": true
+        },
+        {
+          "id": 100494,
+          "nome": "Gestão de Comunicação e Encerramento de Investigações de Surtos",
+          "ordem": 12,
+          "ativo": true
+        },
+        {
+          "id": 100605,
+          "nome": "O farmacêutico no Serviço de Controle de Infecção Hospitalar",
+          "ordem": 21,
+          "ativo": true
+        },
+        {
+          "id": 100606,
+          "nome": "A atuação do farmacêutico na vigilância e prevenção das IRAS",
+          "ordem": 22,
+          "ativo": true
+        },
+        {
+          "id": 100607,
+          "nome": "Papel do farmacêutico durante a investigação de surtos",
+          "ordem": 24,
+          "ativo": true
+        },
+        {
+          "id": 100608,
+          "nome": "Surtos relacionados a medicamentos e produtos para saúde",
+          "ordem": 25,
+          "ativo": true
+        },
+        {
+          "id": 100609,
+          "nome": "O farmacêutico como integrador entre microbiologia, infectologia e assistência",
+          "ordem": 26,
+          "ativo": true
+        },
+        {
+          "id": 100645,
+          "nome": "INVESTIGAÇÃO - Infecção da Corrente Sanguínea (ICS)",
+          "ordem": 27,
+          "ativo": true
+        },
+        {
+          "id": 100646,
+          "nome": "INVESTIGAÇÃO - Infecção do Trato Respiratório (PAV, PAC, surtos comunitários)",
+          "ordem": 28,
+          "ativo": true
+        },
+        {
+          "id": 100647,
+          "nome": "INVESTIGAÇÃO - Infecção de Sítio Cirúrgico (ISC)",
+          "ordem": 29,
+          "ativo": true
+        },
+        {
+          "id": 100648,
+          "nome": "INVESTIGAÇÃO - Gastrointestinais e Transmitidas por Alimentos",
+          "ordem": 30,
+          "ativo": true
+        },
+        {
+          "id": 100649,
+          "nome": "INVESTIGAÇÃO - Oftalmológicas (surto de endoftalmite/TASS)",
+          "ordem": 31,
+          "ativo": true
+        },
+        {
+          "id": 100650,
+          "nome": "INVESTIGAÇÃO - Oftalmológicas (surto de endoftalmite/TASS)",
+          "ordem": 32,
+          "ativo": true
+        }
+      ]
+    }
+  ],
+  "Curso Teste": [
+    {
+      "id_modulo": 1001,
+      "modulo": "Módulo Teste 01",
+      "ordem": 1,
+      "total_aulas": 4,
+      "aulas": [
+        {
+          "id": 100001,
+          "nome": "Aula teste 01",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100111,
+          "nome": "Aulas teste 02",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100165,
+          "nome": "Aulas 03",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100166,
+          "nome": "Aula 04",
+          "ordem": 4,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1002,
+      "modulo": "Módulo Teste 02",
+      "ordem": 2,
+      "total_aulas": 1,
+      "aulas": [
+        {
+          "id": 100112,
+          "nome": "x1",
+          "ordem": 1,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1003,
+      "modulo": "Módulo Teste 03",
+      "ordem": 3,
+      "total_aulas": 1,
+      "aulas": [
+        {
+          "id": 100113,
+          "nome": "x2",
+          "ordem": 2,
+          "ativo": true
+        }
+      ]
+    }
+  ],
+  "Ferramentas de Qualidade": [
+    {
+      "id_modulo": 1052,
+      "modulo": "Abertura",
+      "ordem": 1,
+      "total_aulas": 1,
+      "aulas": [
+        {
+          "id": 100321,
+          "nome": "Introdução às ferramentas",
+          "ordem": 1,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1053,
+      "modulo": "Etapa 1 - Enxergar o processo e o problema",
+      "ordem": 2,
+      "total_aulas": 5,
+      "aulas": [
+        {
+          "id": 100322,
+          "nome": "Mapeamento de processos",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100323,
+          "nome": "SIPOC",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100324,
+          "nome": "Fluxograma",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100325,
+          "nome": "Gemba Walk",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100326,
+          "nome": "Diagrama de Espaguete",
+          "ordem": 5,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1054,
+      "modulo": "Etapa 2 - Encontrar e priorizar as causas",
+      "ordem": 3,
+      "total_aulas": 6,
+      "aulas": [
+        {
+          "id": 100327,
+          "nome": "Brainstorming",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100328,
+          "nome": "Diagrama de Ishikawa",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100329,
+          "nome": "5 Porquês",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100330,
+          "nome": "Histograma",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100331,
+          "nome": "Gráfico de Pareto",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100332,
+          "nome": "Matriz de Priorização GUT",
+          "ordem": 6,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1055,
+      "modulo": "Etapa 3 - Agir e sustentar",
+      "ordem": 4,
+      "total_aulas": 2,
+      "aulas": [
+        {
+          "id": 100333,
+          "nome": "5W2H",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100334,
+          "nome": "PDCA / PDSA",
+          "ordem": 2,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1079,
+      "modulo": "Templates prontos",
+      "ordem": 5,
+      "total_aulas": 1,
+      "aulas": [
+        {
+          "id": 100370,
+          "nome": "Baixe o conteúdo",
+          "ordem": 1,
+          "ativo": true
+        }
+      ]
+    }
+  ],
+  "Infecções na Gestação": [
+    {
+      "id_modulo": 1088,
+      "modulo": "Fundamentos da infecção na gestação",
+      "ordem": 1,
+      "total_aulas": 3,
+      "aulas": [
+        {
+          "id": 100510,
+          "nome": "Visão geral da gestação e aspectos relevantes para a saúde materna",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100511,
+          "nome": "Infecções sistêmicas e sua influência no desenvolvimento fetal",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100512,
+          "nome": "Princípios do uso de antimicrobianos na gestação",
+          "ordem": 3,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1089,
+      "modulo": "Infecções maternas e transmissão vertical",
+      "ordem": 2,
+      "total_aulas": 11,
+      "aulas": [
+        {
+          "id": 100513,
+          "nome": "Sífilis na gestação",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100514,
+          "nome": "Toxoplasmose e outras infecções protozoárias",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100515,
+          "nome": "Citomegalovírus na gestação",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100516,
+          "nome": "HTLV na gestação",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100517,
+          "nome": "Herpes simples e Varicela na gestação",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100518,
+          "nome": "Papilomavírus humano na gestação",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100520,
+          "nome": "Controle do HIV no pré natal",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100521,
+          "nome": "Gestantes vivendo com HIV",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100519,
+          "nome": "HIV e transmissão vertical",
+          "ordem": 9,
+          "ativo": true
+        },
+        {
+          "id": 100522,
+          "nome": "Hepatites virais na gestação e prevenção da transmissão vertical (Hepatite B)",
+          "ordem": 10,
+          "ativo": true
+        },
+        {
+          "id": 100523,
+          "nome": "Hepatites virais na gestação e prevenção da transmissão vertical (Hepatite C)",
+          "ordem": 11,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1090,
+      "modulo": "Infecções adquiridas durante a gestação",
+      "ordem": 3,
+      "total_aulas": 4,
+      "aulas": [
+        {
+          "id": 100524,
+          "nome": "Infecção do trato urinário na gestação",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100525,
+          "nome": "Dengue na gestação",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100527,
+          "nome": "Outras Arboviroses na gestação",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100528,
+          "nome": "Influenza e Covid 19 na gestação",
+          "ordem": 5,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1091,
+      "modulo": "Prevenção de infecções na gestação",
+      "ordem": 4,
+      "total_aulas": 3,
+      "aulas": [
+        {
+          "id": 100529,
+          "nome": "Prevenção de IST durante a gestação",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100531,
+          "nome": "Vacinação na gestação",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100533,
+          "nome": "Vírus sincicial respiratório na gestação",
+          "ordem": 5,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1092,
+      "modulo": "Infecções obstétricas e sepse",
+      "ordem": 5,
+      "total_aulas": 3,
+      "aulas": [
+        {
+          "id": 100534,
+          "nome": "Corioamnionite",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100535,
+          "nome": "Sepse durante a gestação: diagnóstico precoce e manejo",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100536,
+          "nome": "Prevenção de sepse em gestantes e puérperas",
+          "ordem": 3,
+          "ativo": false
+        }
+      ]
+    },
+    {
+      "id_modulo": 1093,
+      "modulo": "Infecções no puerpério",
+      "ordem": 6,
+      "total_aulas": 2,
+      "aulas": [
+        {
+          "id": 100538,
+          "nome": "Endometrite e outras infecções puerperais",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100539,
+          "nome": "Mastite e infecções mamárias no puerpério",
+          "ordem": 3,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1094,
+      "modulo": "Planejamento reprodutivo e doenças infecciosas",
+      "ordem": 7,
+      "total_aulas": 2,
+      "aulas": [
+        {
+          "id": 100540,
+          "nome": "Planejamento reprodutivo em doenças infecciosas",
+          "ordem": 1,
+          "ativo": false
+        },
+        {
+          "id": 100541,
+          "nome": "Infecções crônicas e sua relação com o planejamento familiar",
+          "ordem": 2,
+          "ativo": false
+        }
+      ]
+    },
+    {
+      "id_modulo": 1095,
+      "modulo": "Integração clínica",
+      "ordem": 8,
+      "total_aulas": 3,
+      "aulas": [
+        {
+          "id": 100542,
+          "nome": "Casos clínicos integrados de infecção e gestação - Caso 1",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100652,
+          "nome": "Casos clínicos integrados de infecção e gestação - Caso 2",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100653,
+          "nome": "Casos clínicos integrados de infecção e gestação - Caso 3",
+          "ordem": 3,
+          "ativo": true
+        }
+      ]
+    }
+  ],
+  "Journal Club - Infecções em Imunodeprimidos": [
+    {
+      "id_modulo": 1017,
+      "modulo": "Journal Club",
+      "ordem": 1,
+      "total_aulas": 18,
+      "aulas": [
+        {
+          "id": 100095,
+          "nome": "Caso clínico - Actinomicose",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100096,
+          "nome": "Caso Clínico - Blastomicose",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100097,
+          "nome": "Caso clínico - Ceftolozane Tazobactam Zerbaxa para ESBL",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100098,
+          "nome": "Caso clínico - Criptococose X Dose única de Anfotericina",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100099,
+          "nome": "Caso clínico - Infecções resistentes por Gran negativos",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100100,
+          "nome": "Caso clínico - Legionella",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100101,
+          "nome": "Caso clínico - Listeria",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100102,
+          "nome": "Caso clínico - Micobactérias não-TB em Imunodeprimidos",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100103,
+          "nome": "Escape - Fungemia e uso de Micafungina em pacientes hematológicos",
+          "ordem": 9,
+          "ativo": true
+        },
+        {
+          "id": 100086,
+          "nome": "Caso clínico - TMO Autólogo",
+          "ordem": 10,
+          "ativo": true
+        },
+        {
+          "id": 100087,
+          "nome": "Biomarcadores de Infecção Fúngica",
+          "ordem": 11,
+          "ativo": true
+        },
+        {
+          "id": 100088,
+          "nome": "Caso clínico - TMO",
+          "ordem": 12,
+          "ativo": true
+        },
+        {
+          "id": 100089,
+          "nome": "Fungemia de Ruptura com Micafungina em Pacientes com Distúrbios Hematológicos",
+          "ordem": 14,
+          "ativo": true
+        },
+        {
+          "id": 100090,
+          "nome": "DFI em TOS",
+          "ordem": 15,
+          "ativo": true
+        },
+        {
+          "id": 100091,
+          "nome": "Caso Clínico - Bastomicose e Paracoco",
+          "ordem": 16,
+          "ativo": true
+        },
+        {
+          "id": 100092,
+          "nome": "Caso clínico - Ecape de profilaxia antifúngica",
+          "ordem": 17,
+          "ativo": true
+        },
+        {
+          "id": 100093,
+          "nome": "IBTK, Temozolamida e doenças fúngicas",
+          "ordem": 18,
+          "ativo": true
+        },
+        {
+          "id": 100094,
+          "nome": "Caso Clínico - Que \"pneumonia\" é essa?",
+          "ordem": 19,
+          "ativo": true
+        }
+      ]
+    }
+  ],
+  "Journal Club - Infecções Ortopédicas e de partes moles": [
+    {
+      "id_modulo": 1007,
+      "modulo": "Journal Club",
+      "ordem": 1,
+      "total_aulas": 1,
+      "aulas": [
+        {
+          "id": 100027,
+          "nome": "Intracellular Staphylococcus Aureus in Bone and Joint",
+          "ordem": 1,
+          "ativo": true
+        }
+      ]
+    }
+  ],
+  "Journal Club - InfectoPediatria": [
+    {
+      "id_modulo": 1056,
+      "modulo": "Journal Club",
+      "ordem": 1,
+      "total_aulas": 3,
+      "aulas": [
+        {
+          "id": 100335,
+          "nome": "Caso clínico - Pneumonia",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100342,
+          "nome": "Caso clínico - Manejo clínico de Bacteremia por S. aureus",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100550,
+          "nome": "Caso Clínico - Linfonodomegalias em região submentoniana, pré-auricular e cervical",
+          "ordem": 3,
+          "ativo": true
+        }
+      ]
+    }
+  ],
+  "Lives - CCIH": [
+    {
+      "id_modulo": 1103,
+      "modulo": "Lives - CCIH",
+      "ordem": 1,
+      "total_aulas": 2,
+      "aulas": [
+        {
+          "id": 100559,
+          "nome": "Live - Controle glicêmico e prevenção de infecções de sítio cirúrgico",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100656,
+          "nome": "Live - Diretriz Brasileira de Candidemia",
+          "ordem": 2,
+          "ativo": true
+        }
+      ]
+    }
+  ],
+  "Lives - CCIH Enfermagem": [
+    {
+      "id_modulo": 1097,
+      "modulo": "Lives",
+      "ordem": 1,
+      "total_aulas": 1,
+      "aulas": [
+        {
+          "id": 100561,
+          "nome": "Controle glicêmico e prevenção de infecções de sítio cirúrgico",
+          "ordem": 1,
+          "ativo": true
+        }
+      ]
+    }
+  ],
+  "Lives - CCIH Farmácia": [
+    {
+      "id_modulo": 1099,
+      "modulo": "Lives",
+      "ordem": 1,
+      "total_aulas": 2,
+      "aulas": [
+        {
+          "id": 100600,
+          "nome": "Stewardship em TOS",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100631,
+          "nome": "Atualizações Sarampo 2026",
+          "ordem": 2,
+          "ativo": true
+        }
+      ]
+    }
+  ],
+  "Lives - Infecções em Imunodeprimidos": [
+    {
+      "id_modulo": 1101,
+      "modulo": "Lives",
+      "ordem": 1,
+      "total_aulas": 1,
+      "aulas": [
+        {
+          "id": 100655,
+          "nome": "Diretriz Brasileira de Candidemia",
+          "ordem": 1,
+          "ativo": true
+        }
+      ]
+    }
+  ],
+  "Lives - Infecções Ortopédicas e de pele e partes moles": [
+    {
+      "id_modulo": 1102,
+      "modulo": "Lives",
+      "ordem": 1,
+      "total_aulas": 1,
+      "aulas": [
+        {
+          "id": 100560,
+          "nome": "Controle glicêmico e prevenção de infecções de sítio cirúrgico",
+          "ordem": 1,
+          "ativo": true
+        }
+      ]
+    }
+  ],
+  "Lives - Infectopediatria": [
+    {
+      "id_modulo": 1087,
+      "modulo": "Lives",
+      "ordem": 1,
+      "total_aulas": 5,
+      "aulas": [
+        {
+          "id": 100495,
+          "nome": "Highlights ESPID 2026",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100548,
+          "nome": "Exposição vertical ao HTLV",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100599,
+          "nome": "Sífilis congênita",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100630,
+          "nome": "Atualizações Sarampo 2026",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100654,
+          "nome": "Artigo PediCAP",
+          "ordem": 5,
+          "ativo": true
+        }
+      ]
+    }
+  ],
+  "Nutrify Connect": [
+    {
+      "id_modulo": 1023,
+      "modulo": "Ômegas",
+      "ordem": 1,
+      "total_aulas": 5,
+      "aulas": [
+        {
+          "id": 100158,
+          "nome": "O que são os Ômegas e Por que são Importantes?",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100307,
+          "nome": "Ômega 3",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100308,
+          "nome": "DHA 1000",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100309,
+          "nome": "Ômega Beat",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100310,
+          "nome": "Dicas de Venda",
+          "ordem": 5,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1051,
+      "modulo": "Creatinas",
+      "ordem": 2,
+      "total_aulas": 7,
+      "aulas": [
+        {
+          "id": 100311,
+          "nome": "O que é Creatina e Por que é Importante?",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100312,
+          "nome": "100% Creatine - Monoidratada Pura",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100313,
+          "nome": "100% Creatina em Cápsulas",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100314,
+          "nome": "Creatine Creapure",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100316,
+          "nome": "Creatine Tasty",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100317,
+          "nome": "Creatine HMB",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100336,
+          "nome": "Dicas de Venda",
+          "ordem": 7,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1024,
+      "modulo": "Aminoácidos",
+      "ordem": 3,
+      "total_aulas": 2,
+      "aulas": [
+        {
+          "id": 100337,
+          "nome": "Glutamina",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100340,
+          "nome": "Dicas de Venda",
+          "ordem": 2,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1072,
+      "modulo": "Vitaminas e minerais",
+      "ordem": 4,
+      "total_aulas": 9,
+      "aulas": [
+        {
+          "id": 100343,
+          "nome": "Vitamina B12",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100344,
+          "nome": "Vit B Complex",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100345,
+          "nome": "Vitamina D3",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100346,
+          "nome": "Magnésio",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100347,
+          "nome": "Mag 5 Complex",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100348,
+          "nome": "Magnesium Inositol",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100349,
+          "nome": "Zinco",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100350,
+          "nome": "Multi All",
+          "ordem": 9,
+          "ativo": true
+        },
+        {
+          "id": 100651,
+          "nome": "Dicas de Venda",
+          "ordem": 10,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1022,
+      "modulo": "Colágenos",
+      "ordem": 5,
+      "total_aulas": 5,
+      "aulas": [
+        {
+          "id": 100378,
+          "nome": "Collagen Derm",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100379,
+          "nome": "Collagen Renew",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100380,
+          "nome": "Collagen II",
+          "ordem": 4,
+          "ativo": false
+        },
+        {
+          "id": 100381,
+          "nome": "ArtroAid",
+          "ordem": 5,
+          "ativo": false
+        },
+        {
+          "id": 100382,
+          "nome": "Collagen Drink",
+          "ordem": 6,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1040,
+      "modulo": "Antioxidantes",
+      "ordem": 6,
+      "total_aulas": 3,
+      "aulas": [
+        {
+          "id": 100610,
+          "nome": "Coenzima Q10",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100611,
+          "nome": "Immune up",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100612,
+          "nome": "Pure ox",
+          "ordem": 4,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1041,
+      "modulo": "Supernutrientes",
+      "ordem": 7,
+      "total_aulas": 4,
+      "aulas": [
+        {
+          "id": 100620,
+          "nome": "O que são super nutrientes",
+          "ordem": 1,
+          "ativo": false
+        },
+        {
+          "id": 100621,
+          "nome": "Good Mood",
+          "ordem": 2,
+          "ativo": false
+        },
+        {
+          "id": 100622,
+          "nome": "Natural Sleep",
+          "ordem": 3,
+          "ativo": false
+        },
+        {
+          "id": 100623,
+          "nome": "Dicas de Venda",
+          "ordem": 4,
+          "ativo": false
+        }
+      ]
+    },
+    {
+      "id_modulo": 1042,
+      "modulo": "Proteínas",
+      "ordem": 8,
+      "total_aulas": 7,
+      "aulas": [
+        {
+          "id": 100613,
+          "nome": "O que são Proteinas",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100614,
+          "nome": "Clean Pro Whey",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100615,
+          "nome": "Clean Pro Whey zero lactose",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100616,
+          "nome": "Collagen Pro",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100617,
+          "nome": "Vegan Pro",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100618,
+          "nome": "Vegan Tasty",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100619,
+          "nome": "Dicas de vendas",
+          "ordem": 7,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1021,
+      "modulo": "Institucional Nutrify",
+      "ordem": 11,
+      "total_aulas": 7,
+      "aulas": [
+        {
+          "id": 100154,
+          "nome": "História da Nutrify e Grupo BRG",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100155,
+          "nome": "Missão, Visão e Valores (Nutrify e BRG)",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100156,
+          "nome": "Essência e Branding",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100250,
+          "nome": "Público-alvo e posicionamento",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100251,
+          "nome": "Estrutura Fabril: CT House, DACON, Fazendinha, GR x GLP",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100252,
+          "nome": "Ações Sociais (Saúde em Dia, Social Idoso, Academia de Música)",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100253,
+          "nome": "Vídeos institucionais das três marcas e vídeo \"40 anos BRG\"",
+          "ordem": 7,
+          "ativo": true
+        }
+      ]
+    }
+  ],
+  "Pós-Graduação em Infecções em Imunodeprimidos": [
+    {
+      "id_modulo": 1011,
+      "modulo": "Fundamentos e avaliação inicial: imunossupressão e profilaxias",
+      "ordem": 1,
+      "total_aulas": 46,
+      "aulas": [
+        {
+          "id": 100032,
+          "nome": "Imunologia 101",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100033,
+          "nome": "Live: Aula de Abertura - Discussão de Caso Clínico",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100034,
+          "nome": "Live: Dicionário e Plantão de Dúvidas de Hematologia - Parte 1",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100035,
+          "nome": "Live: Plantão de Dúvidas e Dicionário da Hematologia - Parte 2",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100036,
+          "nome": "Visão do hemato - Mieloma Múltiplo",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100037,
+          "nome": "PDVI Mieloma",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100038,
+          "nome": "Live: Infecções com novas terapias - Mieloma Múltiplo",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100039,
+          "nome": "Visão do hemato - Linfoma de Hodgkin",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100040,
+          "nome": "PDVI Linfoma de Hodgkin",
+          "ordem": 9,
+          "ativo": true
+        },
+        {
+          "id": 100041,
+          "nome": "Visão do hemato - Leucemias Agudas",
+          "ordem": 10,
+          "ativo": true
+        },
+        {
+          "id": 100042,
+          "nome": "PDVI Leucemias agudas",
+          "ordem": 11,
+          "ativo": true
+        },
+        {
+          "id": 100043,
+          "nome": "Visão do hemato - Linfomas Indolentes",
+          "ordem": 12,
+          "ativo": true
+        },
+        {
+          "id": 100044,
+          "nome": "Visão do hemato - Leucemia Linfocítica Crônica (LLC)",
+          "ordem": 13,
+          "ativo": true
+        },
+        {
+          "id": 100045,
+          "nome": "Visão do hemato - Linfoma Não-Hodgkin Difuso de Grandes Células B (LNHDGCB)",
+          "ordem": 14,
+          "ativo": true
+        },
+        {
+          "id": 100046,
+          "nome": "Visão do hemato - Alquilantes QT Aula 1",
+          "ordem": 15,
+          "ativo": true
+        },
+        {
+          "id": 100047,
+          "nome": "PDVI Alquilantes",
+          "ordem": 16,
+          "ativo": true
+        },
+        {
+          "id": 100048,
+          "nome": "Visão do hemato - QT Análogos de Nucleosídeos",
+          "ordem": 17,
+          "ativo": true
+        },
+        {
+          "id": 100049,
+          "nome": "Visão do hemato - Inibidores Topoisomerase",
+          "ordem": 18,
+          "ativo": true
+        },
+        {
+          "id": 100050,
+          "nome": "Visão do hemato - Agentes de Platina",
+          "ordem": 19,
+          "ativo": true
+        },
+        {
+          "id": 100051,
+          "nome": "Visão do hemato - QT Anticorpos Monoclonais",
+          "ordem": 20,
+          "ativo": true
+        },
+        {
+          "id": 100052,
+          "nome": "Visão do hemato - QT Biespecíficos",
+          "ordem": 21,
+          "ativo": true
+        },
+        {
+          "id": 100053,
+          "nome": "PDVI - Biespecíficos",
+          "ordem": 22,
+          "ativo": true
+        },
+        {
+          "id": 100054,
+          "nome": "Visão do hemato - QT Miscelânea",
+          "ordem": 23,
+          "ativo": true
+        },
+        {
+          "id": 100055,
+          "nome": "PDVI - QT miscelânea",
+          "ordem": 24,
+          "ativo": true
+        },
+        {
+          "id": 100056,
+          "nome": "Visão do onco - Oncologia - Quimioterapia",
+          "ordem": 25,
+          "ativo": true
+        },
+        {
+          "id": 100057,
+          "nome": "PDVI - Oncologia - Quimioterapia",
+          "ordem": 26,
+          "ativo": true
+        },
+        {
+          "id": 100058,
+          "nome": "Visão do onco - Oncologia - Terapia Alvo",
+          "ordem": 27,
+          "ativo": true
+        },
+        {
+          "id": 100059,
+          "nome": "PDVI - Oncologia - Terapia Alvo",
+          "ordem": 28,
+          "ativo": true
+        },
+        {
+          "id": 100060,
+          "nome": "Visão do onco - Oncologia - Imunoterapia",
+          "ordem": 29,
+          "ativo": true
+        },
+        {
+          "id": 100061,
+          "nome": "PDVI - Oncologia - Imunoterapia",
+          "ordem": 30,
+          "ativo": true
+        },
+        {
+          "id": 100062,
+          "nome": "Live: Jornada do Paciente Oncológico - Plantão de dúvidas",
+          "ordem": 31,
+          "ativo": true
+        },
+        {
+          "id": 100063,
+          "nome": "Visão do hemato - QT - Profilaxia e tratamento de DECH",
+          "ordem": 32,
+          "ativo": true
+        },
+        {
+          "id": 100064,
+          "nome": "PDVI - Bases de profilaxia e tratamento de DECH",
+          "ordem": 33,
+          "ativo": true
+        },
+        {
+          "id": 100065,
+          "nome": "Infecções Derivadas do Doador",
+          "ordem": 34,
+          "ativo": true
+        },
+        {
+          "id": 100066,
+          "nome": "Live: Imunoglobulina: Quem? Quando? Como?",
+          "ordem": 35,
+          "ativo": true
+        },
+        {
+          "id": 100067,
+          "nome": "Visão do reumato - Reumatologia e Infectologia - Parte 1",
+          "ordem": 36,
+          "ativo": true
+        },
+        {
+          "id": 100068,
+          "nome": "Visão do reumato - Reumatologia e Infectologia - Parte 2",
+          "ordem": 37,
+          "ativo": true
+        },
+        {
+          "id": 100069,
+          "nome": "PDVI - Reumatologia e Infectologia - Parte 1",
+          "ordem": 38,
+          "ativo": true
+        },
+        {
+          "id": 100551,
+          "nome": "PDVI - Reumatologia e Infectologia - Parte 2",
+          "ordem": 39,
+          "ativo": true
+        },
+        {
+          "id": 100552,
+          "nome": "Live - Jornada do Paciente Reumatológico - Plantão de Dúvidas em Reumatologia",
+          "ordem": 40,
+          "ativo": true
+        },
+        {
+          "id": 100553,
+          "nome": "Vacinação em imunossuprimidos 101",
+          "ordem": 41,
+          "ativo": false
+        },
+        {
+          "id": 100554,
+          "nome": "Tuberculose latente em Imunodeprimidos",
+          "ordem": 42,
+          "ativo": true
+        },
+        {
+          "id": 100555,
+          "nome": "PDVI - Tuberculose latente",
+          "ordem": 43,
+          "ativo": true
+        },
+        {
+          "id": 100556,
+          "nome": "Patogênese do HIV",
+          "ordem": 44,
+          "ativo": true
+        },
+        {
+          "id": 100557,
+          "nome": "Atendimento PVHA",
+          "ordem": 45,
+          "ativo": true
+        },
+        {
+          "id": 100558,
+          "nome": "Profilaxias em HIV",
+          "ordem": 46,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1012,
+      "modulo": "Infecções fúngicas invasivas",
+      "ordem": 2,
+      "total_aulas": 22,
+      "aulas": [
+        {
+          "id": 100657,
+          "nome": "Introdução às doenças fúngicas invasivas",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100077,
+          "nome": "PDVI - Fisiopatologia e Risco de DFI",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100658,
+          "nome": "Antifungigrama",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100084,
+          "nome": "Antifúngicos - PK/PD",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100085,
+          "nome": "PDVI - Antifúngicos - PK/PD",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100074,
+          "nome": "Candidemia",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100078,
+          "nome": "Candidíase Intra-abdominal",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100076,
+          "nome": "Endocardite por Cândida",
+          "ordem": 9,
+          "ativo": true
+        },
+        {
+          "id": 100070,
+          "nome": "Mucormicose",
+          "ordem": 10,
+          "ativo": true
+        },
+        {
+          "id": 100071,
+          "nome": "PDVI - Mucormicose",
+          "ordem": 11,
+          "ativo": true
+        },
+        {
+          "id": 100072,
+          "nome": "Fusariose",
+          "ordem": 12,
+          "ativo": true
+        },
+        {
+          "id": 100073,
+          "nome": "PDVI - Fusariose",
+          "ordem": 13,
+          "ativo": true
+        },
+        {
+          "id": 100659,
+          "nome": "Infecção fúngica em SNC",
+          "ordem": 14,
+          "ativo": true
+        },
+        {
+          "id": 100079,
+          "nome": "DFI em Transplante de Órgãos Sólidos",
+          "ordem": 15,
+          "ativo": true
+        },
+        {
+          "id": 100660,
+          "nome": "Live: Infecção fúngica em TOS",
+          "ordem": 16,
+          "ativo": true
+        },
+        {
+          "id": 100661,
+          "nome": "Live: Rinossinusite fúngica",
+          "ordem": 17,
+          "ativo": true
+        },
+        {
+          "id": 100662,
+          "nome": "Live: DFI Pulmonar em Onco-Hemato",
+          "ordem": 18,
+          "ativo": true
+        },
+        {
+          "id": 100075,
+          "nome": "Histoplasmose em HIV",
+          "ordem": 19,
+          "ativo": true
+        },
+        {
+          "id": 100080,
+          "nome": "Paracoccidioidomicose em Imunodeprimidos",
+          "ordem": 20,
+          "ativo": true
+        },
+        {
+          "id": 100081,
+          "nome": "Profilaxia Antifúngica",
+          "ordem": 21,
+          "ativo": true
+        },
+        {
+          "id": 100082,
+          "nome": "Escape de Profilaxia Antifúngica",
+          "ordem": 22,
+          "ativo": true
+        },
+        {
+          "id": 100663,
+          "nome": "Infecções fúngicas invasivas: Casos clínicos",
+          "ordem": 23,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1013,
+      "modulo": "Infecções bacterianas",
+      "ordem": 3,
+      "total_aulas": 7,
+      "aulas": [
+        {
+          "id": 100104,
+          "nome": "Neutropenia febril - Parte 1",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100105,
+          "nome": "Neutropenia febril - Parte 2",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100106,
+          "nome": "Profilaxia antifúngica em pacientes onco-hematológicos (Avançado)",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100107,
+          "nome": "Resistência Bacteriana",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100108,
+          "nome": "Diagnóstico Microbiológico",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100109,
+          "nome": "Testes de Suscetibilidade aos Antimicrobianos",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100110,
+          "nome": "Teste de Detecção de Resistência",
+          "ordem": 7,
+          "ativo": true
+        }
+      ]
+    }
+  ],
+  "Pós-graduação em Infecções ortopédicas e de partes moles": [
+    {
+      "id_modulo": 1005,
+      "modulo": "I - Fundamentos e conceitos básicos em infectologia, ortopedia e radiologia",
+      "ordem": 1,
+      "total_aulas": 26,
+      "aulas": [
+        {
+          "id": 100021,
+          "nome": "Ortopedia: o que o infectologista precisa saber",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100002,
+          "nome": "Anatomia e Fisiologia da Pele",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100003,
+          "nome": "Imunologia da Pele",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100006,
+          "nome": "Staphylococcus aureus - Patogenicidade e Fatores de Virulência",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100007,
+          "nome": "Staphylococcus aureus e o problema da colonização",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100015,
+          "nome": "CA-MRSA - Virulência e Epidemiologia",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100016,
+          "nome": "CA-MRSA - Opções de Tratamento",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100008,
+          "nome": "Staphylococcus coagulase-negativo (SCN)",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100010,
+          "nome": "Streptococcus spp",
+          "ordem": 9,
+          "ativo": true
+        },
+        {
+          "id": 100009,
+          "nome": "Enterococcus spp e as Infecções Musculoesqueléticas",
+          "ordem": 10,
+          "ativo": true
+        },
+        {
+          "id": 100011,
+          "nome": "Cutibacterium acnes nas Infecções Musculoesqueléticas",
+          "ordem": 11,
+          "ativo": true
+        },
+        {
+          "id": 100012,
+          "nome": "Bactéria com Gram Negativo na Infecção Ortopédica",
+          "ordem": 12,
+          "ativo": true
+        },
+        {
+          "id": 100019,
+          "nome": "Bactérias Anaeróbias na Infecção Ortopédica",
+          "ordem": 13,
+          "ativo": true
+        },
+        {
+          "id": 100017,
+          "nome": "Biofilme em Infecções Musculoesqueléticas - Parte I",
+          "ordem": 14,
+          "ativo": true
+        },
+        {
+          "id": 100018,
+          "nome": "Biofilme em Infecções Musculoesqueléticas - Parte II",
+          "ordem": 15,
+          "ativo": true
+        },
+        {
+          "id": 100601,
+          "nome": "Fundamentos do Diagnóstico em Doenças Infecciosas",
+          "ordem": 16,
+          "ativo": true
+        },
+        {
+          "id": 100602,
+          "nome": "Diagnóstico de Infecções Osteoarticulares e de Partes Moles",
+          "ordem": 17,
+          "ativo": true
+        },
+        {
+          "id": 100014,
+          "nome": "Culturas em Infecções Ortopédicas",
+          "ordem": 18,
+          "ativo": true
+        },
+        {
+          "id": 100603,
+          "nome": "Padronização da Coleta Microbiológica em Infecções Ortopédicas",
+          "ordem": 19,
+          "ativo": true
+        },
+        {
+          "id": 100604,
+          "nome": "Gestão de Amostras (Pré-analítico)",
+          "ordem": 20,
+          "ativo": true
+        },
+        {
+          "id": 100026,
+          "nome": "Sonicação",
+          "ordem": 21,
+          "ativo": true
+        },
+        {
+          "id": 100022,
+          "nome": "Diagnóstico Molecular",
+          "ordem": 22,
+          "ativo": true
+        },
+        {
+          "id": 100020,
+          "nome": "Exames Laboratoriais no Diagnóstico de Infecções Ortopédicas",
+          "ordem": 23,
+          "ativo": true
+        },
+        {
+          "id": 100024,
+          "nome": "A Imagem das Infecções Musculoesqueléticas",
+          "ordem": 24,
+          "ativo": true
+        },
+        {
+          "id": 100025,
+          "nome": "Como a Ultrassonografia Dermatológica pode auxiliar nas complicações estéticas?",
+          "ordem": 25,
+          "ativo": true
+        },
+        {
+          "id": 100023,
+          "nome": "Antibióticos que agem no Osso",
+          "ordem": 26,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1006,
+      "modulo": "II - Aspectos Ortopédicos das Infecções Musculoesqueléticas",
+      "ordem": 2,
+      "total_aulas": 30,
+      "aulas": [
+        {
+          "id": 100004,
+          "nome": "Artrite Séptica",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100005,
+          "nome": "Artroplastias Pós Artrite Séptica",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100114,
+          "nome": "Infecção Relacionada a Fratura",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100115,
+          "nome": "Osteomielite",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100116,
+          "nome": "Espondilodiscite e Infecção em Cirurgia de Coluna",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100117,
+          "nome": "Scores para predizer a chance de sucesso de DAIR nas PJIs",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100118,
+          "nome": "Ciprofloxacino",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100119,
+          "nome": "Artroplastia em Imunocomprometido",
+          "ordem": 9,
+          "ativo": true
+        },
+        {
+          "id": 100120,
+          "nome": "Delafloxacino",
+          "ordem": 10,
+          "ativo": true
+        },
+        {
+          "id": 100121,
+          "nome": "Quinolonas",
+          "ordem": 11,
+          "ativo": true
+        },
+        {
+          "id": 100122,
+          "nome": "Cefalosporinas",
+          "ordem": 12,
+          "ativo": true
+        },
+        {
+          "id": 100123,
+          "nome": "Daptomicina",
+          "ordem": 13,
+          "ativo": true
+        },
+        {
+          "id": 100124,
+          "nome": "Linezolida",
+          "ordem": 14,
+          "ativo": true
+        },
+        {
+          "id": 100125,
+          "nome": "Tuberculose em Coluna Vertebral",
+          "ordem": 15,
+          "ativo": true
+        },
+        {
+          "id": 100126,
+          "nome": "Prevenção de Infecções em Ortopedia",
+          "ordem": 16,
+          "ativo": true
+        },
+        {
+          "id": 100127,
+          "nome": "DAIR nas PJIs",
+          "ordem": 17,
+          "ativo": true
+        },
+        {
+          "id": 100128,
+          "nome": "Revisão da Artroplastia na PJI",
+          "ordem": 18,
+          "ativo": true
+        },
+        {
+          "id": 100129,
+          "nome": "Diagnóstico de Infecção Periprotetica (PJI)",
+          "ordem": 19,
+          "ativo": true
+        },
+        {
+          "id": 100130,
+          "nome": "Biomateriais em PJI",
+          "ordem": 20,
+          "ativo": true
+        },
+        {
+          "id": 100131,
+          "nome": "Tetraciclinas",
+          "ordem": 21,
+          "ativo": true
+        },
+        {
+          "id": 100132,
+          "nome": "IRRICEPT",
+          "ordem": 22,
+          "ativo": true
+        },
+        {
+          "id": 100133,
+          "nome": "Pé Diabético",
+          "ordem": 23,
+          "ativo": true
+        },
+        {
+          "id": 100134,
+          "nome": "Uso de Bactrim em Infecções Ósseas e Musculoesqueléticas",
+          "ordem": 24,
+          "ativo": true
+        },
+        {
+          "id": 100135,
+          "nome": "Desafios no Tratamento de Infecções da Coluna",
+          "ordem": 25,
+          "ativo": true
+        },
+        {
+          "id": 100136,
+          "nome": "Tumor Ósseo - Endoprotese",
+          "ordem": 26,
+          "ativo": true
+        },
+        {
+          "id": 100137,
+          "nome": "Rifampicina",
+          "ordem": 27,
+          "ativo": true
+        },
+        {
+          "id": 100138,
+          "nome": "Fixadores Externos",
+          "ordem": 28,
+          "ativo": true
+        },
+        {
+          "id": 100139,
+          "nome": "Manejo do Espaço Morto",
+          "ordem": 29,
+          "ativo": true
+        },
+        {
+          "id": 100140,
+          "nome": "Não União de Fraturas",
+          "ordem": 30,
+          "ativo": true
+        },
+        {
+          "id": 100141,
+          "nome": "Clindamicina",
+          "ordem": 31,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1019,
+      "modulo": "III - Infectologia Aplicada às Infecções Musculoesqueléticas",
+      "ordem": 3,
+      "total_aulas": 8,
+      "aulas": [
+        {
+          "id": 100142,
+          "nome": "Pé Diabético",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100143,
+          "nome": "Microbiologia das Infecções Relacionadas à Fratura",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100144,
+          "nome": "Terapia Endovenosa X Via Oral",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100145,
+          "nome": "Fungos na Ortopedia",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100146,
+          "nome": "Retirar ou não o Meterial de Síntese",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100147,
+          "nome": "Microbiologia das PJI",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100148,
+          "nome": "Infecção Odontogênica - Parte 1",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100149,
+          "nome": "Infecção odontogênica - Parte 2",
+          "ordem": 8,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1020,
+      "modulo": "IV - Miscelânea: do Diagnóstico ao Tratamento",
+      "ordem": 4,
+      "total_aulas": 4,
+      "aulas": [
+        {
+          "id": 100150,
+          "nome": "Fundamentos de Oxigenoterapia Hiperba´rica",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100151,
+          "nome": "Uso de OHB em Infecc¸o~es O´sseas",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100152,
+          "nome": "Indicac¸o~es e Contra-Indicac¸o~es",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100153,
+          "nome": "Uso da OHB em infecções de partes moles",
+          "ordem": 4,
+          "ativo": true
+        }
+      ]
+    }
+  ],
+  "Pós-Graduação em InfectoPediatria": [
+    {
+      "id_modulo": 1032,
+      "modulo": "INFECÇÕES COMUNITÁRIAS",
+      "ordem": 1,
+      "total_aulas": 25,
+      "aulas": [
+        {
+          "id": 100210,
+          "nome": "Pneumonia atípica e Mycoplasma",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100203,
+          "nome": "Faringites",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100181,
+          "nome": "Meningites",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100224,
+          "nome": "Encefalites",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100167,
+          "nome": "Pneumonias - Live",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100182,
+          "nome": "Abscesso cerebral, empiemas, etc",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100177,
+          "nome": "Sinusite bacteriana",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100254,
+          "nome": "Celulite orbitária",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100204,
+          "nome": "Mononucleose",
+          "ordem": 9,
+          "ativo": true
+        },
+        {
+          "id": 100175,
+          "nome": "OMA - Live",
+          "ordem": 10,
+          "ativo": true
+        },
+        {
+          "id": 100193,
+          "nome": "ITU: Febril, Cistite e Profilaxia em ITU recorrente (quando indicar)",
+          "ordem": 11,
+          "ativo": true
+        },
+        {
+          "id": 100295,
+          "nome": "10 passos para o uso de ATB",
+          "ordem": 12,
+          "ativo": true
+        },
+        {
+          "id": 100183,
+          "nome": "Infecções de peles e partes moles - Live",
+          "ordem": 13,
+          "ativo": true
+        },
+        {
+          "id": 100191,
+          "nome": "Sepse de origem comunitária",
+          "ordem": 14,
+          "ativo": true
+        },
+        {
+          "id": 100173,
+          "nome": "Síndromes virais respiratórias: Bronquiolite",
+          "ordem": 15,
+          "ativo": true
+        },
+        {
+          "id": 100188,
+          "nome": "Infecções osteoarticulares - Live",
+          "ordem": 16,
+          "ativo": true
+        },
+        {
+          "id": 100171,
+          "nome": "Síndrome gripal em pediatria",
+          "ordem": 17,
+          "ativo": true
+        },
+        {
+          "id": 100179,
+          "nome": "Coqueluche",
+          "ordem": 18,
+          "ativo": true
+        },
+        {
+          "id": 100190,
+          "nome": "Gastroenterite",
+          "ordem": 19,
+          "ativo": true
+        },
+        {
+          "id": 100209,
+          "nome": "Red flags para suspeita de imunodeficiências",
+          "ordem": 20,
+          "ativo": true
+        },
+        {
+          "id": 100206,
+          "nome": "Febre sem sinais localizatórios",
+          "ordem": 21,
+          "ativo": true
+        },
+        {
+          "id": 100196,
+          "nome": "Doenças exantemáticas",
+          "ordem": 22,
+          "ativo": true
+        },
+        {
+          "id": 100341,
+          "nome": "Adenomegalias",
+          "ordem": 23,
+          "ativo": true
+        },
+        {
+          "id": 100172,
+          "nome": "COVID-19 em pediatria",
+          "ordem": 24,
+          "ativo": true
+        },
+        {
+          "id": 100174,
+          "nome": "Crise de sibilância e associação com infecções",
+          "ordem": 25,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1033,
+      "modulo": "INFECÇÕES CONGÊNITAS E NEONATAIS",
+      "ordem": 2,
+      "total_aulas": 12,
+      "aulas": [
+        {
+          "id": 100218,
+          "nome": "CMV - Live",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100220,
+          "nome": "Sepse neonatal precoce",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100221,
+          "nome": "Sepse neonatal tardia",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100219,
+          "nome": "Hepatites congênitas",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100213,
+          "nome": "Varicela congênita e perinatal",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100214,
+          "nome": "Zika congênita",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100215,
+          "nome": "Chagas congênita",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100216,
+          "nome": "HIV - profilaxia e seguimento do recém-nascido exposto",
+          "ordem": 9,
+          "ativo": true
+        },
+        {
+          "id": 100222,
+          "nome": "Tuberculose perinatal",
+          "ordem": 10,
+          "ativo": true
+        },
+        {
+          "id": 100223,
+          "nome": "Toxoplasmose Congênita",
+          "ordem": 11,
+          "ativo": true
+        },
+        {
+          "id": 100664,
+          "nome": "CMV congênito",
+          "ordem": 12,
+          "ativo": true
+        },
+        {
+          "id": 100212,
+          "nome": "Herpes simples congênito (HSV)",
+          "ordem": 18,
+          "ativo": false
+        }
+      ]
+    }
+  ],
+  "Pós-Graduação em Prevenção e Controle de Infecção Hospitalar (CCIH)": [
+    {
+      "id_modulo": 1073,
+      "modulo": "Epidemiologia Aplicada ao Controle de Infecção",
+      "ordem": 1,
+      "total_aulas": 21,
+      "aulas": [
+        {
+          "id": 100363,
+          "nome": "Introdução e Conceitos Fundamentais",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100364,
+          "nome": "Como Estruturar o CCIH/SCIH",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100365,
+          "nome": "Implementação de Programas de PCI (OMS)",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100366,
+          "nome": "Cadeia Epidemiológica",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100367,
+          "nome": "Metodologias de vigilância",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100368,
+          "nome": "Como desenhar um programa de vigilância",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100369,
+          "nome": "Dados - coleta, gestão e análise",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100371,
+          "nome": "Critérios diagnósticos: IPCSL",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100372,
+          "nome": "Critérios diagnósticos: ITU",
+          "ordem": 9,
+          "ativo": true
+        },
+        {
+          "id": 100373,
+          "nome": "Critérios diagnósticos: PAV",
+          "ordem": 10,
+          "ativo": true
+        },
+        {
+          "id": 100374,
+          "nome": "Critérios diagnósticos: ISC",
+          "ordem": 11,
+          "ativo": true
+        },
+        {
+          "id": 100375,
+          "nome": "Introdução à Investigação de Surtos",
+          "ordem": 12,
+          "ativo": true
+        },
+        {
+          "id": 100376,
+          "nome": "Metodologia de Investigação",
+          "ordem": 13,
+          "ativo": true
+        },
+        {
+          "id": 100377,
+          "nome": "Laboratório e Genômica",
+          "ordem": 14,
+          "ativo": true
+        },
+        {
+          "id": 100547,
+          "nome": "Gestão de Comunicação e Encerramento de Investigações de Surtos",
+          "ordem": 15,
+          "ativo": true
+        },
+        {
+          "id": 100632,
+          "nome": "INVESTIGAÇÃO - Gastrointestinais e Transmitidas por Alimentos",
+          "ordem": 16,
+          "ativo": true
+        },
+        {
+          "id": 100633,
+          "nome": "INVESTIGAÇÃO - Oftalmológicas (surto de endoftalmite/TASS)",
+          "ordem": 17,
+          "ativo": true
+        },
+        {
+          "id": 100634,
+          "nome": "INVESTIGAÇÃO - Infecção do Trato Urinário (ITU associada a SVD)",
+          "ordem": 18,
+          "ativo": true
+        },
+        {
+          "id": 100636,
+          "nome": "INVESTIGAÇÃO - Infecção da Corrente Sanguínea (ICS)",
+          "ordem": 19,
+          "ativo": true
+        },
+        {
+          "id": 100637,
+          "nome": "INVESTIGAÇÃO - Infecção de Sítio Cirúrgico (ISC)",
+          "ordem": 20,
+          "ativo": true
+        },
+        {
+          "id": 100638,
+          "nome": "INVESTIGAÇÃO - Infecção do Trato Respiratório (PAV, PAC, surtos comunitários)",
+          "ordem": 21,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1074,
+      "modulo": "Microbiologia e Farmacologia Aplicada ao Controle de Infecção",
+      "ordem": 2,
+      "total_aulas": 36,
+      "aulas": [
+        {
+          "id": 100562,
+          "nome": "Resistência Bacteriana",
+          "ordem": 1,
+          "ativo": false
+        },
+        {
+          "id": 100563,
+          "nome": "Diagnóstico Microbiológico nas infecções",
+          "ordem": 2,
+          "ativo": false
+        },
+        {
+          "id": 100564,
+          "nome": "Antifungigrama - Metodologias e resistências",
+          "ordem": 3,
+          "ativo": false
+        },
+        {
+          "id": 100565,
+          "nome": "Introdução as infecções fúngicas invasivas",
+          "ordem": 4,
+          "ativo": false
+        },
+        {
+          "id": 100567,
+          "nome": "IFIS por fungos filamentosos",
+          "ordem": 5,
+          "ativo": false
+        },
+        {
+          "id": 100568,
+          "nome": "Metologia para teste de susceptibilidade aos antimicrobianos",
+          "ordem": 6,
+          "ativo": false
+        },
+        {
+          "id": 100569,
+          "nome": "Principais infecções fúngicas invasivas",
+          "ordem": 7,
+          "ativo": false
+        },
+        {
+          "id": 100570,
+          "nome": "Antibiótico terapia em queimados",
+          "ordem": 8,
+          "ativo": false
+        },
+        {
+          "id": 100571,
+          "nome": "Antibioticoterapia em Hipoalbuminemia",
+          "ordem": 9,
+          "ativo": false
+        },
+        {
+          "id": 100572,
+          "nome": "Antibioticoterapia em Imunossuprimidos NÃO-HIV",
+          "ordem": 10,
+          "ativo": false
+        },
+        {
+          "id": 100573,
+          "nome": "Antibioticoterapia em Sepse",
+          "ordem": 11,
+          "ativo": false
+        },
+        {
+          "id": 100574,
+          "nome": "Antibioticoterapia em Idosos",
+          "ordem": 12,
+          "ativo": false
+        },
+        {
+          "id": 100575,
+          "nome": "Antibioticoterapia em diabéticos e doentes renais crônicos",
+          "ordem": 13,
+          "ativo": false
+        },
+        {
+          "id": 100576,
+          "nome": "Antibioticoterapia em Gestantes e puérperas",
+          "ordem": 14,
+          "ativo": false
+        },
+        {
+          "id": 100577,
+          "nome": "Antibiograma de Enterococcus spp",
+          "ordem": 15,
+          "ativo": false
+        },
+        {
+          "id": 100578,
+          "nome": "Antibiograma de Enterobactérias",
+          "ordem": 16,
+          "ativo": false
+        },
+        {
+          "id": 100579,
+          "nome": "Fundamentos do Diagnóstico em Doenças Infecciosas",
+          "ordem": 17,
+          "ativo": false
+        },
+        {
+          "id": 100580,
+          "nome": "Gestão de Amostras (Preanalítico)",
+          "ordem": 18,
+          "ativo": false
+        },
+        {
+          "id": 100581,
+          "nome": "Introdução ao Guideline de Tratamento de Infecções por Bacilos Gram-Negativos",
+          "ordem": 19,
+          "ativo": false
+        },
+        {
+          "id": 100582,
+          "nome": "Tratamento de ESBL-E",
+          "ordem": 20,
+          "ativo": false
+        },
+        {
+          "id": 100583,
+          "nome": "Tratamento de Acinetobacter Baumannii Resistente a Carbapenêmicos (CRAB)",
+          "ordem": 21,
+          "ativo": false
+        },
+        {
+          "id": 100584,
+          "nome": "Tratamento de BGN Produtor de NDM (Classe B)",
+          "ordem": 22,
+          "ativo": false
+        },
+        {
+          "id": 100585,
+          "nome": "Tratamento de Pseudonomas Aeroginosa Resistente a Carbapenêmicos (PARC)",
+          "ordem": 23,
+          "ativo": false
+        },
+        {
+          "id": 100586,
+          "nome": "Tratamento de ERC Produtor de KPC (Classe A)",
+          "ordem": 24,
+          "ativo": false
+        },
+        {
+          "id": 100587,
+          "nome": "Antibiograma de Staphylococcus aureus",
+          "ordem": 25,
+          "ativo": false
+        },
+        {
+          "id": 100588,
+          "nome": "Antibiograma de Pseudomonas aeruginosa",
+          "ordem": 26,
+          "ativo": false
+        },
+        {
+          "id": 100589,
+          "nome": "Coleta de Culturas",
+          "ordem": 27,
+          "ativo": false
+        },
+        {
+          "id": 100590,
+          "nome": "Diagnóstico de Infecções da Corrente Sanguínea e Cardiovasculares",
+          "ordem": 28,
+          "ativo": false
+        },
+        {
+          "id": 100591,
+          "nome": "Diagnóstico de Infecções Osteoarticulares e de Partes Moles",
+          "ordem": 29,
+          "ativo": false
+        },
+        {
+          "id": 100592,
+          "nome": "Princípios da cultura de vigilância",
+          "ordem": 30,
+          "ativo": false
+        },
+        {
+          "id": 100593,
+          "nome": "Cultura de vigilância de VRE e MRSA",
+          "ordem": 31,
+          "ativo": false
+        },
+        {
+          "id": 100594,
+          "nome": "Cultura de vigilância de ERC e ESBL",
+          "ordem": 32,
+          "ativo": false
+        },
+        {
+          "id": 100595,
+          "nome": "Cultura de vigilância de não fermentadores MDR",
+          "ordem": 33,
+          "ativo": false
+        },
+        {
+          "id": 100596,
+          "nome": "Diagnóstico de Infecções Respiratórias",
+          "ordem": 34,
+          "ativo": false
+        },
+        {
+          "id": 100597,
+          "nome": "Infecções Gastrointestinais e Intra-abdominais",
+          "ordem": 35,
+          "ativo": false
+        },
+        {
+          "id": 100598,
+          "nome": "Infecções Urinárias e Genitais",
+          "ordem": 36,
+          "ativo": false
+        }
+      ]
+    }
+  ],
+  "S.O.S Antibiótico - Avançado": [
+    {
+      "id_modulo": 1030,
+      "modulo": "Os principais patógenos em Infectologia",
+      "ordem": 1,
+      "total_aulas": 8,
+      "aulas": [
+        {
+          "id": 100384,
+          "nome": "Características gerais",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100385,
+          "nome": "Staphylococcus",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100386,
+          "nome": "Streptococcus",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100387,
+          "nome": "Enterococcus",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100388,
+          "nome": "Enterobactérias",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100389,
+          "nome": "Pseudomonas",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100390,
+          "nome": "Acinetobacter",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100391,
+          "nome": "Anaeróbios",
+          "ordem": 8,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1029,
+      "modulo": "As principais classes de antimicrobianos",
+      "ordem": 2,
+      "total_aulas": 14,
+      "aulas": [
+        {
+          "id": 100392,
+          "nome": "Princípios do uso de antibióticos",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100393,
+          "nome": "Penicilinas",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100394,
+          "nome": "Inibidores de betalactamase",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100395,
+          "nome": "Cefalosporinas",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100396,
+          "nome": "Carbapenêmicos",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100397,
+          "nome": "Glicopeptídeos",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100398,
+          "nome": "Oxazolidinonas",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100399,
+          "nome": "Aminoglicosídeos",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100400,
+          "nome": "Polimixinas",
+          "ordem": 9,
+          "ativo": true
+        },
+        {
+          "id": 100401,
+          "nome": "Macrolídeos",
+          "ordem": 10,
+          "ativo": true
+        },
+        {
+          "id": 100402,
+          "nome": "Metronidazol e Clindamicina",
+          "ordem": 11,
+          "ativo": true
+        },
+        {
+          "id": 100403,
+          "nome": "Quinolonas",
+          "ordem": 12,
+          "ativo": true
+        },
+        {
+          "id": 100404,
+          "nome": "Tetraciclinas",
+          "ordem": 13,
+          "ativo": true
+        },
+        {
+          "id": 100405,
+          "nome": "Antagonistas do ácido fólico",
+          "ordem": 14,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1010,
+      "modulo": "Síndromes Clínicas",
+      "ordem": 3,
+      "total_aulas": 18,
+      "aulas": [
+        {
+          "id": 100406,
+          "nome": "Faringoamigdalites",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100407,
+          "nome": "Rinossinusites",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100408,
+          "nome": "Pneumonias",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100409,
+          "nome": "Infecção de Pele e Partes Moles",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100410,
+          "nome": "Pé Diabético",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100411,
+          "nome": "Artrite Séptica",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100412,
+          "nome": "Infecção do trato urinário",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100413,
+          "nome": "Infecções intra-abdominais",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100414,
+          "nome": "Sepse",
+          "ordem": 9,
+          "ativo": true
+        },
+        {
+          "id": 100415,
+          "nome": "Meningites",
+          "ordem": 10,
+          "ativo": true
+        },
+        {
+          "id": 100416,
+          "nome": "Abscesso cerebral",
+          "ordem": 11,
+          "ativo": true
+        },
+        {
+          "id": 100417,
+          "nome": "Endocardite",
+          "ordem": 12,
+          "ativo": true
+        },
+        {
+          "id": 100418,
+          "nome": "Endoftalmites",
+          "ordem": 13,
+          "ativo": true
+        },
+        {
+          "id": 100419,
+          "nome": "Pneumonia associada à ventilação mecânica",
+          "ordem": 14,
+          "ativo": true
+        },
+        {
+          "id": 100420,
+          "nome": "Infecção do trato urinário associada a cateter (ITU-AC)",
+          "ordem": 15,
+          "ativo": true
+        },
+        {
+          "id": 100421,
+          "nome": "Infecção de corrente sanguínea",
+          "ordem": 16,
+          "ativo": true
+        },
+        {
+          "id": 100422,
+          "nome": "Colite pseudomembranosa",
+          "ordem": 17,
+          "ativo": true
+        },
+        {
+          "id": 100423,
+          "nome": "Neutropenia febril",
+          "ordem": 18,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1080,
+      "modulo": "Da coleta ao antibiograma",
+      "ordem": 4,
+      "total_aulas": 7,
+      "aulas": [
+        {
+          "id": 100424,
+          "nome": "Coleta de Culturas",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100425,
+          "nome": "Diagnóstico Microbiológico",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100426,
+          "nome": "Resistência Bacteriana",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100427,
+          "nome": "Testes de Detecção de Resistência",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100428,
+          "nome": "Testes de Suscetibilidade aos Antimicrobianos",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100429,
+          "nome": "Interpretação do Antibiograma",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100430,
+          "nome": "Casos Clínicos Aplicados",
+          "ordem": 7,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1009,
+      "modulo": "Novos antimicrobianos e situações especiais",
+      "ordem": 5,
+      "total_aulas": 10,
+      "aulas": [
+        {
+          "id": 100431,
+          "nome": "Ceftazidima-Avibactam",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100432,
+          "nome": "Ceftalozone-Tazobactam",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100433,
+          "nome": "Imipenem-Relebactam",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100434,
+          "nome": "Aztreonam",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100435,
+          "nome": "Tigeciclina",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100436,
+          "nome": "Daptomicina",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100437,
+          "nome": "Delafloxacino",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100438,
+          "nome": "ATBs que agem no SNC",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100439,
+          "nome": "ATB intratecal",
+          "ordem": 9,
+          "ativo": true
+        },
+        {
+          "id": 100440,
+          "nome": "ATBs que agem no osso",
+          "ordem": 11,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1027,
+      "modulo": "Tratamento de infecções por agentes MDR",
+      "ordem": 6,
+      "total_aulas": 9,
+      "aulas": [
+        {
+          "id": 100441,
+          "nome": "Introdução ao Guideline de Tratamento de Infecções por Bacilos Gram-Negativos",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100442,
+          "nome": "Tratamento de AMPC-E",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100443,
+          "nome": "Tratamento de ESBL-E",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100444,
+          "nome": "Tratamento de ERC Produtor de KPC (Classe A)",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100445,
+          "nome": "Tratamento de BGN Produtor de NDM (Classe B)",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100446,
+          "nome": "Tratamento de Pseudonomas Aeroginosa Resistente a Carbapenêmicos (PARC)",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100447,
+          "nome": "Tratamento de Acinetobacter Baumannii Resistente a Carbapenêmicos (CRAB)",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100448,
+          "nome": "Stenotrophomonas maltophilia",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100449,
+          "nome": "Tratamento de Gram-positivos",
+          "ordem": 9,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1028,
+      "modulo": "Infecções fúngicas invasivas e antifúngicos",
+      "ordem": 7,
+      "total_aulas": 12,
+      "aulas": [
+        {
+          "id": 100460,
+          "nome": "Introdução as infecções fúngicas invasivas - Micologia",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100461,
+          "nome": "Principais IFI´s",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100462,
+          "nome": "Fungos filamentosos - visão geral clínica e terapêutica",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100463,
+          "nome": "Poliênicos",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100464,
+          "nome": "Azólicos",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100465,
+          "nome": "Equinocandinas",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100466,
+          "nome": "Antimetabólitos",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100467,
+          "nome": "PK/PD de Antifúngicos",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100468,
+          "nome": "Antifungigrama",
+          "ordem": 9,
+          "ativo": true
+        },
+        {
+          "id": 100469,
+          "nome": "Tratamento de candidemia",
+          "ordem": 10,
+          "ativo": false
+        },
+        {
+          "id": 100470,
+          "nome": "Infecções Fúngicas Invasivas - Casos Clínicos",
+          "ordem": 11,
+          "ativo": true
+        },
+        {
+          "id": 100471,
+          "nome": "Profilaxia Antifúngica",
+          "ordem": 12,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1082,
+      "modulo": "ATB em populações específicas",
+      "ordem": 8,
+      "total_aulas": 6,
+      "aulas": [
+        {
+          "id": 100454,
+          "nome": "Antibioticoterapia em queimados",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100455,
+          "nome": "Antibioticoterapia em Hipoalbuminemia",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100456,
+          "nome": "Antibioticoterapia em Imunossuprimidos NÃO-HIV",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100457,
+          "nome": "Antibioticoterapia em Idosos",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100458,
+          "nome": "Antibioticoterapia em diabéticos e doentes renais crônicos",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100459,
+          "nome": "Antibioticoterapia em Gestantes e puérperas",
+          "ordem": 7,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1081,
+      "modulo": "Tuberculose",
+      "ordem": 9,
+      "total_aulas": 4,
+      "aulas": [
+        {
+          "id": 100450,
+          "nome": "Meios de Cultura para Tuberculose",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100451,
+          "nome": "Esquema básico de tuberculose",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100452,
+          "nome": "Novos Fármacos em Tuberculose",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100453,
+          "nome": "Atualização das recomendações de tratamento da tuberculose drogarresistente",
+          "ordem": 4,
+          "ativo": true
+        }
+      ]
+    }
+  ],
+  "S.O.S Antibiótico - Internos": [
+    {
+      "id_modulo": 1049,
+      "modulo": "Os principais patógenos em Infectologia",
+      "ordem": 1,
+      "total_aulas": 8,
+      "aulas": [
+        {
+          "id": 100273,
+          "nome": "Características gerais",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100274,
+          "nome": "Staphylococcus",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100275,
+          "nome": "Streptococcus",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100276,
+          "nome": "Enterococcus",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100277,
+          "nome": "Enterobactérias",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100278,
+          "nome": "Pseudomonas",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100279,
+          "nome": "Acinetobacter",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100280,
+          "nome": "Anaeróbios",
+          "ordem": 8,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1050,
+      "modulo": "As principais classes de antimicrobianos",
+      "ordem": 2,
+      "total_aulas": 14,
+      "aulas": [
+        {
+          "id": 100281,
+          "nome": "Princípios no uso de antibióticos",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100282,
+          "nome": "Penicilinas",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100283,
+          "nome": "Inibidores de betalactamase",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100284,
+          "nome": "Cefalosporinas",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100285,
+          "nome": "Carbapenêmicos",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100286,
+          "nome": "Glicopeptídeos",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100287,
+          "nome": "Oxazolidinonas",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100288,
+          "nome": "Aminoglicosídeos",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100289,
+          "nome": "Polimixinas",
+          "ordem": 9,
+          "ativo": true
+        },
+        {
+          "id": 100290,
+          "nome": "Macrolídeos",
+          "ordem": 10,
+          "ativo": true
+        },
+        {
+          "id": 100291,
+          "nome": "Metronidazol e Clindamicina",
+          "ordem": 11,
+          "ativo": true
+        },
+        {
+          "id": 100292,
+          "nome": "Quinolonas",
+          "ordem": 12,
+          "ativo": true
+        },
+        {
+          "id": 100293,
+          "nome": "Tetraciclinas",
+          "ordem": 13,
+          "ativo": true
+        },
+        {
+          "id": 100294,
+          "nome": "Antagonistas do ácido fólico",
+          "ordem": 14,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1048,
+      "modulo": "Síndromes clínicas",
+      "ordem": 3,
+      "total_aulas": 18,
+      "aulas": [
+        {
+          "id": 100255,
+          "nome": "Faringoamigdalites",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100256,
+          "nome": "Rinossinusites",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100257,
+          "nome": "Pneumonias",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100258,
+          "nome": "Infecção de Pele e Partes Moles",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100259,
+          "nome": "Pé Diabético",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100260,
+          "nome": "Artrite Séptica",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100261,
+          "nome": "Infecção do trato urinário",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100262,
+          "nome": "Infecções intra-abdominais",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100263,
+          "nome": "Sepse",
+          "ordem": 9,
+          "ativo": true
+        },
+        {
+          "id": 100264,
+          "nome": "Meningites",
+          "ordem": 10,
+          "ativo": true
+        },
+        {
+          "id": 100265,
+          "nome": "Abscesso cerebral",
+          "ordem": 11,
+          "ativo": true
+        },
+        {
+          "id": 100266,
+          "nome": "Endocardite",
+          "ordem": 12,
+          "ativo": true
+        },
+        {
+          "id": 100267,
+          "nome": "Endoftalmites",
+          "ordem": 13,
+          "ativo": true
+        },
+        {
+          "id": 100268,
+          "nome": "Pneumonia associada à ventilação mecânica",
+          "ordem": 14,
+          "ativo": true
+        },
+        {
+          "id": 100269,
+          "nome": "Infecção do trato urinário associada a cateter (ITU-AC)",
+          "ordem": 15,
+          "ativo": true
+        },
+        {
+          "id": 100270,
+          "nome": "Infecção de corrente sanguínea",
+          "ordem": 16,
+          "ativo": true
+        },
+        {
+          "id": 100271,
+          "nome": "Colite pseudomembranosa",
+          "ordem": 17,
+          "ativo": true
+        },
+        {
+          "id": 100272,
+          "nome": "Neutropenia febril",
+          "ordem": 18,
+          "ativo": true
+        }
+      ]
+    }
+  ],
+  "S.O.S Antibiótico - MDR": [
+    {
+      "id_modulo": 1045,
+      "modulo": "Da coleta ao antibiograma",
+      "ordem": 1,
+      "total_aulas": 7,
+      "aulas": [
+        {
+          "id": 100225,
+          "nome": "Coleta de Culturas",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100226,
+          "nome": "Diagnóstico Microbiológico",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100227,
+          "nome": "Resistência Bacteriana",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100228,
+          "nome": "Testes de Detecção de Resistência",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100229,
+          "nome": "Testes de Suscetibilidade aos Antimicrobianos",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100230,
+          "nome": "Interpretação do Antibiograma",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100231,
+          "nome": "Casos Clínicos Aplicados",
+          "ordem": 7,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1046,
+      "modulo": "Novos antimicrobianos e situações especiais",
+      "ordem": 2,
+      "total_aulas": 10,
+      "aulas": [
+        {
+          "id": 100232,
+          "nome": "Ceftazidima-Avibactam",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100233,
+          "nome": "Ceftalozone-Tazobactam",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100234,
+          "nome": "Imipenem-Relebactam",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100235,
+          "nome": "Aztreonam",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100236,
+          "nome": "Tigeciclina",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100237,
+          "nome": "Daptomicina",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100238,
+          "nome": "Delafloxacino",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100239,
+          "nome": "ATBs que agem no SNC",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100240,
+          "nome": "ATB intratecal",
+          "ordem": 9,
+          "ativo": true
+        },
+        {
+          "id": 100320,
+          "nome": "ATBs que agem no osso",
+          "ordem": 10,
+          "ativo": true
+        }
+      ]
+    },
+    {
+      "id_modulo": 1047,
+      "modulo": "Tratamento de infecções por agentes MDR",
+      "ordem": 3,
+      "total_aulas": 9,
+      "aulas": [
+        {
+          "id": 100244,
+          "nome": "Introdução ao Guideline de Tratamento de Infecções por Bacilos Gram-Negativos",
+          "ordem": 1,
+          "ativo": true
+        },
+        {
+          "id": 100245,
+          "nome": "Tratamento de AmpC-E",
+          "ordem": 2,
+          "ativo": true
+        },
+        {
+          "id": 100246,
+          "nome": "Tratamento de ESBL",
+          "ordem": 3,
+          "ativo": true
+        },
+        {
+          "id": 100247,
+          "nome": "Tratamento de ERC Produtor de KPC (Classe A)",
+          "ordem": 4,
+          "ativo": true
+        },
+        {
+          "id": 100318,
+          "nome": "Tratamento de BGN Produtor de NDM (Classe B)",
+          "ordem": 5,
+          "ativo": true
+        },
+        {
+          "id": 100248,
+          "nome": "Tratamento de Pseudonomas Aeroginosa Resistente a Carbapenêmicos (PARC)",
+          "ordem": 6,
+          "ativo": true
+        },
+        {
+          "id": 100319,
+          "nome": "Tratamento de Acinetobacter Baumannii Resistente a Carbapenêmicos (CRAB)",
+          "ordem": 7,
+          "ativo": true
+        },
+        {
+          "id": 100249,
+          "nome": "Stenotrophomonas maltophilia",
+          "ordem": 8,
+          "ativo": true
+        },
+        {
+          "id": 100243,
+          "nome": "Tratamento de Gram-positivos",
+          "ordem": 9,
+          "ativo": true
+        }
+      ]
+    }
+  ]
+}

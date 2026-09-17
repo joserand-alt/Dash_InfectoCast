@@ -512,6 +512,33 @@ def main():
                 if m_curso not in course_modules: course_modules[m_curso] = set()
                 course_modules[m_curso].add(m_nome)
 
+    # Integrar grade curricular oficial em tempo real da API InfectoCast Academy
+    try:
+        from academy_service import AcademyService
+        acad_serv = AcademyService()
+        acad_curric = acad_serv.get_curriculo_completo()
+        
+        for c_orig_nome, c_mods in acad_curric.items():
+            c_canon = canonicalize_curso(c_orig_nome)
+            if c_canon not in course_modules:
+                course_modules[c_canon] = set()
+            if c_canon not in course_lessons:
+                course_lessons[c_canon] = {}
+                
+            for m_obj in c_mods:
+                m_nome = clean_module_name(m_obj.get('modulo', 'Geral'))
+                course_modules[c_canon].add(m_nome)
+                
+                for a_obj in m_obj.get('aulas', []):
+                    a_nome = a_obj.get('nome', '')
+                    n_key = norm_title(a_nome)
+                    if n_key:
+                        course_lesson_to_module[(c_canon, n_key)] = m_nome
+                        course_lessons[c_canon][n_key] = a_nome
+        print(f"Grade curricular da API Academy integrada com sucesso: {len(acad_curric)} cursos.")
+    except Exception as e_curric:
+        print(f"Aviso ao carregar grade da API Academy: {e_curric}")
+
     for _, row in df_cativa_logs.iterrows():
         c = row['Curso']
         m = clean_module_name(row['Modulo'])
