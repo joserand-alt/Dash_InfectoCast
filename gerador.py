@@ -186,9 +186,11 @@ def optimize_payload_for_dashboard(data):
 def main():
     template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'template.html')
     
-    print("Carregando logs de uso da plataforma Academy (100% API & Cache)...")
+    print("Carregando logs de uso e telemetria (Academy API + Cativa API)...")
     academy_cache_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'academy_logs_cache.json')
     log_records = []
+    
+    # 1. Logs da Academy API
     if os.path.exists(academy_cache_path):
         try:
             with open(academy_cache_path, 'r', encoding='utf-8') as f_l:
@@ -201,14 +203,27 @@ def main():
                         'Ação / Local': item.get('Ação / Local', 'AÇÃO'),
                         'ID Item': item.get('ID Item', ''),
                         'Desc. Item': item.get('Desc. Item', ''),
+                        'Modulo': item.get('Modulo', 'Geral'),
+                        'Curso': item.get('Curso', 'PLATAFORMA GERAL'),
                         'Plataforma': 'Academy'
                     })
         except Exception as e:
             print(f"[ACADEMY LOGS] Erro ao carregar cache de logs: {e}")
 
-    df_log = pd.DataFrame(log_records) if log_records else pd.DataFrame(columns=['Data log', 'Nome aluno', 'E-mail', 'Ação / Local', 'ID Item', 'Desc. Item', 'Plataforma'])
+    # 2. Telemetria e Logs de Aulas da Cativa Digital API
+    try:
+        import cativa_api
+        cativa_logs = cativa_api.get_cativa_telemetry_logs()
+        log_records.extend(cativa_logs)
+        print(f"[CATIVA LOGS] Integrados {len(cativa_logs)} eventos de telemetria da Cativa Digital.")
+    except Exception as e_cat_log:
+        print(f"[CATIVA LOGS] Erro ao carregar logs da Cativa: {e_cat_log}")
+
+    df_log = pd.DataFrame(log_records) if log_records else pd.DataFrame(columns=['Data log', 'Nome aluno', 'E-mail', 'Ação / Local', 'ID Item', 'Desc. Item', 'Modulo', 'Curso', 'Plataforma'])
     
-    # Currículo 100% dinâmico via API / Cache da Academy
+    # ============================================
+    # CURRÍCULO UNIFICADO (Academy API + Cativa API)
+    # ============================================
     curric_cache_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'academy_curriculum_cache.json')
     curric_data = {}
     if os.path.exists(curric_cache_path):
@@ -220,6 +235,22 @@ def main():
             curric_data = AcademyService().get_curriculo_completo()
         except Exception:
             curric_data = {}
+
+    # Integrar Currículo da Cativa API
+    try:
+        import cativa_api
+        cativa_curric = cativa_api.get_cativa_curriculum()
+        for c_cat_name, m_cat_list in cativa_curric.items():
+            if c_cat_name not in curric_data:
+                curric_data[c_cat_name] = m_cat_list
+            else:
+                existing_mod_names = set(m.get('modulo') for m in curric_data[c_cat_name])
+                for m_c in m_cat_list:
+                    if m_c.get('modulo') not in existing_mod_names:
+                        curric_data[c_cat_name].append(m_c)
+        print(f"[CATIVA CURRÍCULO] Integrados cursos e módulos da Cativa API.")
+    except Exception as e_cat_cur:
+        print(f"[CATIVA CURRÍCULO] Erro ao carregar currículo da Cativa: {e_cat_cur}")
 
     mods_records = []
     aulas_records = []

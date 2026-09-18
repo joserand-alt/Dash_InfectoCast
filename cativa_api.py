@@ -4,12 +4,14 @@ import json
 import os
 import time
 import unicodedata
+import pandas as pd
 from concurrent.futures import ThreadPoolExecutor
 
 TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb3NlcmFuZGNvc3RhIiwianRpIjoiYTdiMzg2Y2MtYTYwYi00NGRmLWQ0NWYtMDhkZTEwYmRmODVkIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQWRtaW4iLCJodHRwOi8vcGxhaC5zb2NpYWwvY2xhaW1zL2N1c3RvbWVyL2lkIjoiZjA5NGYxZTctZWY5MC00Mzc3LTlkYjYtMDhkY2E3NjQ4Y2IzIiwiaHR0cDovL3BsYWguc29jaWFsL2NsYWltcy9jdXN0b21lci9uYW1lIjoiaW5mZWN0b3hwZXJ0IiwiaHR0cDovL3BsYWguc29jaWFsL2NsYWltcy91c2VyL2VtYWlsQ29uZmlybWVkIjoidHJ1ZSIsImh0dHA6Ly9wbGFoLnNvY2lhbC9jbGFpbXMvYXBpL2tleSI6ImYzOWExMTU5LTM3NDMtNGEwMi1hNmI1LTBmMzU1OWU4NGE5MSIsImh0dHBzOi8vY2F0aXZhLmRpZ2l0YWwvY2xhaW1zL3VzZXIvYmFkZ2UiOiI1ZTM4YTI5YS01M2I3LTQyNTEtOWM1ZS0wOGRlMjc1ODg0OGMiLCJleHAiOjIxMDQ0MTc3NjIsImlzcyI6InBsYWgtYXBpIiwiYXVkIjoicGxhaC1hcGkifQ.FuDmRu_dzMZfw6bmeJlhm53FqJuZkipJP_z77Dwy0qI"
 CUSTOMER = "infectoxpert"
 BASE_URL = "https://backoffice.cativalab.digital/api"
 CACHE_FILE = r"C:\Users\DELL\Desktop\Dash_InfectoCast\cativa_cache.json"
+CURRICULUM_CACHE_FILE = r"C:\Users\DELL\Desktop\Dash_InfectoCast\cativa_curriculum_cache.json"
 
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
@@ -45,6 +47,28 @@ def canonicalize_cativa_curso(cname):
         return 'S.O.S ANTIBIOTICO'
     return norm
 
+def fetch_cativa_courses_api():
+    """Busca cursos cadastrados diretamente na API Cativa"""
+    url = f"{BASE_URL}/course?pageNumber=1&pageSize=50"
+    req = urllib.request.Request(url, headers=HEADERS)
+    try:
+        with urllib.request.urlopen(req, context=ctx, timeout=15) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+            return data.get('items', [])
+    except Exception as e:
+        print(f"[CATIVA API] Erro ao buscar cursos da API: {e}")
+        return []
+
+def fetch_cativa_course_modules(course_id):
+    """Busca módulos de um curso diretamente na API Cativa"""
+    url = f"{BASE_URL}/course/{course_id}/modules"
+    req = urllib.request.Request(url, headers=HEADERS)
+    try:
+        with urllib.request.urlopen(req, context=ctx, timeout=15) as resp:
+            return json.loads(resp.read().decode('utf-8'))
+    except Exception as e:
+        return []
+
 def fetch_all_cativa_data(force_refresh=False):
     cached_data = {}
     if os.path.exists(CACHE_FILE):
@@ -59,7 +83,7 @@ def fetch_all_cativa_data(force_refresh=False):
         print(f"[CATIVA CACHE] Carregados {st_count} alunos da Cativa do cache local.")
         return cached_data
 
-    print("[CATIVA API] Buscando relatorio completo de aulas assistidas via API...")
+    print("[CATIVA API] Buscando relatorio completo de telemetria e aulas assistidas via API...")
     page_size = 25
     all_students_report = []
 
@@ -98,7 +122,7 @@ def fetch_all_cativa_data(force_refresh=False):
         all_students_report = cached_data['students']
 
     # Fetch users for phone numbers and last login
-    print("[CATIVA API] Buscando cadastro de usuarios em tempo real...")
+    print("[CATIVA API] Buscando cadastro de usuarios e ultimo login em tempo real...")
     users_dict = dict(cached_data.get('users_metadata', {}))
     users_page = 1
     while True:
@@ -140,8 +164,126 @@ def fetch_all_cativa_data(force_refresh=False):
 
     return result
 
+def get_cativa_telemetry_logs():
+    """
+    Retorna todos os logs de telemetria de acesso e visualizações de aulas da Cativa Digital formatados para o DataFrame de logs.
+    """
+    data = fetch_all_cativa_data(force_refresh=False)
+    students = data.get('students', [])
+    users_meta = data.get('users_metadata', {})
+
+    logs = []
+    for s in students:
+        em = str(s.get('email', '')).lower().strip()
+        if not em or '@' not in em or em.endswith('@infectocast.com') or 'teste' in em:
+            continue
+            
+        nome = str(s.get('fullName') or '').strip()
+        meta = users_meta.get(em, {})
+        if not nome:
+            fn = meta.get('first_name', '')
+            ln = meta.get('last_name', '')
+            nome = f"{fn} {ln}".strip() or em
+
+        # 1. Log de Último Login na Cativa
+        last_login = meta.get('last_login_at')
+        if last_login:
+            logs.append({
+                'Data log': pd.to_datetime(last_login, errors='coerce'),
+                'Nome aluno': nome,
+                'E-mail': em,
+                'Ação / Local': 'Login Plataforma Cativa',
+                'ID Item': 'LOGIN',
+                'Desc. Item': 'Acesso à Plataforma Cativa Digital',
+                'Modulo': 'Geral',
+                'Curso': 'PLATAFORMA GERAL',
+                'Plataforma': 'Cativa'
+            })
+
+        # 2. Telemetria de Cada Aula Assistida na Cativa
+        for c in s.get('courses', []):
+            c_name = canonicalize_cativa_curso(c.get('courseName', ''))
+            for l in c.get('lessons', []):
+                w_at = l.get('watchedAt')
+                if w_at:
+                    mod_name = str(l.get('moduleName') or 'Geral').strip()
+                    les_name = str(l.get('lessonName') or 'Aula Cativa').strip()
+                    les_id = str(l.get('lessonId') or '')
+                    logs.append({
+                        'Data log': pd.to_datetime(w_at, errors='coerce'),
+                        'Nome aluno': nome,
+                        'E-mail': em,
+                        'Ação / Local': 'Assistiu Aula (Cativa)',
+                        'ID Item': les_id,
+                        'Desc. Item': les_name,
+                        'Modulo': mod_name,
+                        'Curso': c_name,
+                        'Plataforma': 'Cativa'
+                    })
+
+    print(f"[CATIVA TELEMETRIA] Carregados {len(logs)} eventos de telemetria e aulas assistidas da Cativa Digital.")
+    return logs
+
+def get_cativa_curriculum():
+    """
+    Retorna a estrutura curricular completa de cursos, módulos e aulas hospedados na Cativa Digital.
+    """
+    data = fetch_all_cativa_data(force_refresh=False)
+    students = data.get('students', [])
+
+    curriculum = {}
+    for s in students:
+        for c in s.get('courses', []):
+            c_raw = c.get('courseName', '')
+            c_name = canonicalize_cativa_curso(c_raw)
+            if not c_name: continue
+            
+            if c_name not in curriculum:
+                curriculum[c_name] = {}
+                
+            for l in c.get('lessons', []):
+                mod_name = str(l.get('moduleName') or 'Geral').strip()
+                les_name = str(l.get('lessonName') or '').strip()
+                les_id = l.get('lessonId')
+                dur = l.get('duration', 0)
+                
+                if mod_name not in curriculum[c_name]:
+                    curriculum[c_name][mod_name] = {}
+                    
+                if les_name and les_name not in curriculum[c_name][mod_name]:
+                    curriculum[c_name][mod_name][les_name] = {
+                        'id': les_id,
+                        'duracao': dur
+                    }
+
+    formatted_curriculum = {}
+    for c_name, mods in curriculum.items():
+        formatted_curriculum[c_name] = []
+        for m_idx, (m_name, aulas_dict) in enumerate(mods.items(), 1):
+            aulas_list = []
+            for a_idx, (a_name, a_info) in enumerate(aulas_dict.items(), 1):
+                aulas_list.append({
+                    'id': a_info.get('id'),
+                    'nome': a_name,
+                    'ordem': a_idx,
+                    'duracao': a_info.get('duracao', 0),
+                    'curriculo': True
+                })
+            formatted_curriculum[c_name].append({
+                'id_modulo': f"CAT-MOD-{m_idx}",
+                'modulo': m_name,
+                'ordem': m_idx,
+                'n_curric': len(aulas_list),
+                'aulas': aulas_list
+            })
+
+    return formatted_curriculum
+
 if __name__ == '__main__':
-    data = fetch_all_cativa_data(force_refresh=True)
-    print(f"\nResumo:")
-    print(f"Total alunos com aulas na Cativa: {len(data['students'])}")
-    print(f"Total cadastros com metadados: {len(data['users_metadata'])}")
+    logs = get_cativa_telemetry_logs()
+    curric = get_cativa_curriculum()
+    print(f"\nResumo Cativa:")
+    print(f"Total Logs Telemetria: {len(logs)}")
+    print(f"Total Cursos Curriculo Cativa: {len(curric)}")
+    for c, mods in curric.items():
+        print(f"  - {c}: {len(mods)} módulos")
