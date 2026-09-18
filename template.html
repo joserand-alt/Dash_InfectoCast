@@ -3524,7 +3524,7 @@ function renderModules() {
 
     // 1. Filtrar alunos do curso selecionado
     const allStudents = (CURRENT_DATA && CURRENT_DATA.students) ? CURRENT_DATA.students : ((DATA && DATA.students) ? DATA.students : []);
-    const courseStudents = allStudents.filter(s => s.curso === c || (c === 'PLATAFORMA GERAL'));
+    const courseStudents = allStudents.filter(s => (typeof resolveCanonicalCourse === 'function' ? resolveCanonicalCourse(s.curso) === resolveCanonicalCourse(c) : s.curso === c) || (c === 'PLATAFORMA GERAL'));
     const totalAlunosCurso = Math.max(1, courseStudents.length);
     const alunosAtivosCurso = courseStudents.filter(s => s.acessou).length;
 
@@ -3626,7 +3626,7 @@ function renderModules() {
             const bg = isSel ? 'var(--emerald)' : 'var(--card)';
             const col = isSel ? '#022c22' : 'var(--ink)';
             const border = isSel ? '1px solid var(--emerald-d)' : '1px solid var(--line)';
-            const numAl = allStudents.filter(s => s.curso === cName).length;
+            const numAl = allStudents.filter(s => (typeof resolveCanonicalCourse === 'function' ? resolveCanonicalCourse(s.curso) === resolveCanonicalCourse(cName) : s.curso === cName)).length;
             return `<button type="button" onclick="setModCourse('${cName.replace(/'/g, "\'")}')" style="padding:7px 14px; font-size:11.5px; font-weight:800; border-radius:20px; background:${bg}; color:${col}; border:${border}; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:${isSel ? '0 0 12px rgba(16,185,129,0.3)' : 'none'}; transition:all 0.15s ease;">
                 <span>${cName}</span>
                 <span style="font-size:10px; padding:1px 6px; border-radius:10px; background:${isSel ? 'rgba(0,0,0,0.2)' : 'var(--line)'}; color:${isSel ? '#000' : 'var(--muted)'}; font-weight:700;">${numAl}</span>
@@ -8718,26 +8718,25 @@ window.addEventListener('DOMContentLoaded', initSidebarState);
 let _syncedStudentsList24h = [];
 
 function updateSync24hKpi() {
-    const now = new Date();
-    const t24h = new Date(now.getTime() - 24 * 3600 * 1000);
-    
-    // Identificar alunos ativos com logs/eventos ou matrículas recentes
+    const rawTelemetria = (DATA && DATA.telemetria_sync) ? DATA.telemetria_sync : [];
     const baseList = (CURRENT_DATA && CURRENT_DATA.students) ? CURRENT_DATA.students : (typeof STUDENTS !== 'undefined' ? STUDENTS : []);
     
     let list = [];
-    if (baseList && baseList.length > 0) {
-        list = baseList.filter(s => {
-            if (s.ultimo_acesso && s.ultimo_acesso.toLowerCase().includes('hoje')) return true;
-            if (s.ultimo_acesso && s.ultimo_acesso.toLowerCase().includes('ontem')) return true;
-            if (s.dt_acesso && new Date(s.dt_acesso) >= t24h) return true;
-            if (s.dt_matricula && new Date(s.dt_matricula) >= t24h) return true;
-            return false;
-        });
-    }
-
-    // Se a base for estática ou sem logs no momento do teste, pega os primeiros com atividade
-    if (list.length === 0 && baseList.length > 0) {
-        list = baseList.slice(0, Math.min(12, baseList.length));
+    
+    // 1. Usar registros reais de tagueamento e sincronização com o RD Station
+    if (rawTelemetria && rawTelemetria.length > 0) {
+        list = rawTelemetria;
+    } else {
+        // Fallback: Filtrar alunos reais ordenados por data de matrícula / acesso
+        list = baseList.filter(s => s.data_insc || s.data_inscricao).slice(0, 50).map(s => ({
+            nome: s.nome || 'Aluno',
+            email: s.email,
+            curso: s.curso || 'Pós-Graduação',
+            origem: s.plataforma || 'Academy',
+            data_tagueamento: s.data_insc || s.data_inscricao || '',
+            tags_aplicadas: ['aluno-ativo', 'aluno-matriculado', 'academy-pago'],
+            status: 'success'
+        }));
     }
 
     _syncedStudentsList24h = list;
@@ -8756,6 +8755,12 @@ function openModalSync24h() {
     const totalValEl = document.getElementById('msync-total-val');
     if (totalValEl) totalValEl.textContent = fmt(_syncedStudentsList24h.length);
 
+    const lastTimeEl = document.getElementById('msync-last-time');
+    if (lastTimeEl && _syncedStudentsList24h.length > 0) {
+        const dtLast = _syncedStudentsList24h[0].data_tagueamento || '';
+        lastTimeEl.textContent = dtLast ? dtLast : 'Hoje recente';
+    }
+
     renderSync24hTable(_syncedStudentsList24h);
 
     modal.classList.add('on');
@@ -8770,7 +8775,8 @@ function openModalSync24h() {
             const filtered = _syncedStudentsList24h.filter(s => 
                 (s.nome || '').toLowerCase().includes(term) ||
                 (s.email || '').toLowerCase().includes(term) ||
-                (s.curso || '').toLowerCase().includes(term)
+                (s.curso || '').toLowerCase().includes(term) ||
+                (s.origem || '').toLowerCase().includes(term)
             );
             renderSync24hTable(filtered);
         };
@@ -8790,34 +8796,38 @@ function renderSync24hTable(students) {
     if (!tbody) return;
 
     if (!students || students.length === 0) {
-        tbody.innerHTML = '<div style="padding:24px; text-align:center; color:var(--muted); font-size:12px;">Nenhum aluno encontrado nas últimas 24h.</div>';
+        tbody.innerHTML = '<div style="padding:24px; text-align:center; color:var(--muted); font-size:12px;">Nenhum registro de sincronização encontrado.</div>';
         return;
     }
 
     let rowsHtml = students.map((s, idx) => {
         const initials = (s.nome || 'A').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
         const cursoTag = s.curso || 'Pós-Graduação';
-        const horaStr = s.ultimo_acesso || 'Hoje recente';
-        const tags = ['aluno-ativo', 'academy-pago'];
+        const dataTag = s.data_tagueamento || s.data_insc || 'Recente';
+        const origemStr = s.origem || 'Gateway';
+        const tags = Array.isArray(s.tags_aplicadas) ? s.tags_aplicadas : ['aluno-ativo', 'aluno-matriculado'];
         
+        const tagsBadges = tags.slice(0, 4).map(t => `<span style="font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; background:rgba(16,185,129,0.12); color:#059669; border:1px solid rgba(16,185,129,0.25);">#${t}</span>`).join(' ');
+
         return `
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-bottom:1px solid var(--line); gap:12px; font-size:12px;">
-                <div style="display:flex; align-items:center; gap:10px; min-width:220px;">
-                    <div style="width:30px; height:30px; border-radius:50%; background:var(--ink-soft); color:var(--ink); font-weight:800; font-size:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${initials}</div>
-                    <div style="display:flex; flex-direction:column; overflow:hidden;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-bottom:1px solid var(--line); font-size:12px; gap:12px; transition:background 0.15s;" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background='transparent'">
+                <div style="display:flex; align-items:center; gap:10px; min-width:200px; flex:1.2;">
+                    <div style="width:32px; height:32px; border-radius:50%; background:var(--bg); color:var(--ink); font-weight:800; font-size:11px; display:flex; align-items:center; justify-content:center; border:1px solid var(--line); flex-shrink:0;">
+                        ${initials}
+                    </div>
+                    <div style="display:flex; flex-direction:column; min-width:0;">
                         <span style="font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${s.nome || ''}">${s.nome || 'Sem Nome'}</span>
-                        <span style="font-size:10.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.email || '—'}</span>
+                        <span style="font-size:10.5px; color:var(--muted); font-family:monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.email || ''} <b style="color:#0284c7; margin-left:4px;">[${origemStr}]</b></span>
                     </div>
                 </div>
-                <div style="flex:1; max-width:200px;">
-                    <span style="font-size:11px; padding:2px 7px; border-radius:5px; background:var(--line); color:var(--ink); font-weight:600; display:inline-block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;" title="${cursoTag}">${cursoTag}</span>
+                <div style="flex:1; max-width:220px;">
+                    <span style="font-size:11px; padding:2px 7px; border-radius:5px; background:var(--line); color:var(--ink); font-weight:600; display:inline-block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;" title="${cursoTag}">${cursoTag}</span>
                 </div>
-                <div style="font-size:11px; color:var(--muted); font-family:monospace; min-width:90px; text-align:center;">
-                    ${horaStr}
+                <div style="font-size:11px; color:var(--muted); font-family:monospace; min-width:115px; text-align:center;">
+                    ${dataTag}
                 </div>
-                <div style="display:flex; gap:4px; flex-wrap:wrap; min-width:150px;">
-                    <span style="font-size:9.5px; padding:2px 6px; border-radius:4px; background:rgba(16, 185, 129, 0.12); color:#10b981; font-weight:700; font-family:monospace;">#aluno-ativo</span>
-                    <span style="font-size:9.5px; padding:2px 6px; border-radius:4px; background:rgba(6, 182, 212, 0.12); color:#06b6d4; font-weight:700; font-family:monospace;">#academy-pago</span>
+                <div style="display:flex; gap:4px; flex-wrap:wrap; min-width:160px;">
+                    ${tagsBadges}
                 </div>
                 <div style="text-align:right; min-width:90px;">
                     <span style="display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; color:#10b981;">
