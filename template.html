@@ -4974,7 +4974,7 @@ function computeUnifiedFinancialDataset(gatewayFilter) {
     globalObj.proj_12m = globalObj.projecao_mensal.slice(1, 13).reduce((a, b) => a + (b.previsto || 0), 0) || (globalObj.mrr * 12);
 
     // Ticket Médio Oficial: (Total Recebido nos últimos 180 dias / Clientes Pagantes dentro dos últimos 180 dias) / 6
-    const d180Ref = new Date(2026, 8, 15).getTime() - (180 * 24 * 3600 * 1000);
+    const d180Ref = new Date().getTime() - (180 * 24 * 3600 * 1000);
     let gRec180 = 0;
     const gPagantes180 = new Set();
     faturasList.forEach(f => {
@@ -8116,8 +8116,10 @@ function drawCursoView(courseName, force) {
         faturas_tabela: []
     });
 
-    // 5. Indicadores de Matrícula (Totais, 30d recentes, 30d anteriores, evolução mensal)
-    const refDate = new Date(2026, 8, 15); // Data base de referência do fechamento
+    // 5. Indicadores de Matrícula (Totais, 30d recentes, 30d anteriores, evolução mensal) - 100% DINÂMICO
+    const now = new Date();
+    const t30d = new Date(now.getTime() - 30 * 24 * 3600 * 1000);
+    const t60d = new Date(now.getTime() - 60 * 24 * 3600 * 1000);
     let matriculas30d = 0;
     let matriculas30dAnt = 0;
     const enrollMonthlyMap = {};
@@ -8125,27 +8127,31 @@ function drawCursoView(courseName, force) {
     cStudents.forEach(s => {
         const dtStr = (s.data_insc || s.data_inscricao || s.inscricao || '').toString().trim();
         if (dtStr) {
-            let dt = null;
-            if (dtStr.includes('/')) {
-                const p = dtStr.split('/');
-                if (p.length === 3) {
-                    const yr = parseInt(p[2].length === 2 ? '20' + p[2] : p[2], 10);
-                    dt = new Date(yr, parseInt(p[1], 10) - 1, parseInt(p[0], 10));
+            const dt = typeof parseDateUniversal === 'function' ? parseDateUniversal(dtStr) : (function(str) {
+                if (str.includes('/')) {
+                    const p = str.split('/');
+                    if (p.length === 3) {
+                        const yr = parseInt(p[2].length === 2 ? '20' + p[2] : p[2], 10);
+                        return new Date(yr, parseInt(p[1], 10) - 1, parseInt(p[0], 10));
+                    }
+                } else if (str.includes('-')) {
+                    const p = str.slice(0, 10).split('-');
+                    if (p.length === 3) {
+                        return new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+                    }
                 }
-            } else if (dtStr.includes('-')) {
-                const p = dtStr.slice(0, 10).split('-');
-                if (p.length === 3) {
-                    dt = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
-                }
-            }
+                const d = new Date(str);
+                return isNaN(d.getTime()) ? null : d;
+            })(dtStr);
+
             if (dt && !isNaN(dt.getTime())) {
                 const ym = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0');
                 enrollMonthlyMap[ym] = (enrollMonthlyMap[ym] || 0) + 1;
 
-                const diffDays = Math.floor((refDate - dt) / (1000 * 60 * 60 * 24));
-                if (diffDays >= 0 && diffDays <= 30) {
+                // Janela D-30 a Hoje (com tolerância D+1 para fuso horário e execuções no mesmo dia)
+                if (dt >= t30d && dt <= new Date(now.getTime() + 24 * 3600 * 1000)) {
                     matriculas30d++;
-                } else if (diffDays >= 31 && diffDays <= 60) {
+                } else if (dt >= t60d && dt < t30d) {
                     matriculas30dAnt++;
                 }
             }
