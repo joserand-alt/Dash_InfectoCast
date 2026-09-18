@@ -5027,6 +5027,70 @@ function fN(val) {
 function isPosPos(v) {
     return Number(v) >= 0 ? 'var(--emerald-d)' : '#DC2626';
 }
+function parseDateUniversal(dStr) {
+    if (!dStr) return null;
+    if (dStr instanceof Date) return isNaN(dStr.getTime()) ? null : dStr;
+    const s = String(dStr).trim();
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+        const dt = new Date(s.replace(' ', 'T'));
+        if (!isNaN(dt.getTime())) return dt;
+    }
+    if (/^\d{2}\/\d{2}\/\d{4}/.test(s)) {
+        const parts = s.split(' ')[0].split('/');
+        const timePart = s.split(' ')[1] || '00:00:00';
+        const dt = new Date(`${parts[2]}-${parts[1]}-${parts[0]}T${timePart}`);
+        if (!isNaN(dt.getTime())) return dt;
+    }
+    const dt = new Date(s);
+    return isNaN(dt.getTime()) ? null : dt;
+}
+
+function getSync24hData() {
+    const rawTelemetria = (DATA && DATA.telemetria_sync) ? DATA.telemetria_sync : [];
+    const baseList = (CURRENT_DATA && CURRENT_DATA.students) ? CURRENT_DATA.students : (typeof STUDENTS !== 'undefined' ? STUDENTS : []);
+    
+    const now = new Date();
+    const t24h = new Date(now.getTime() - 24 * 3600 * 1000);
+    
+    let list24h = [];
+    if (rawTelemetria && rawTelemetria.length > 0) {
+        list24h = rawTelemetria.filter(t => {
+            const dt = parseDateUniversal(t.data_tagueamento);
+            return dt && dt >= t24h;
+        });
+    } else {
+        list24h = baseList.filter(s => {
+            const dtM = parseDateUniversal(s.data_insc || s.data_inscricao || s.dt_matricula);
+            const dtA = parseDateUniversal(s.dt_acesso);
+            return (dtM && dtM >= t24h) || (dtA && dtA >= t24h);
+        }).map(s => ({
+            nome: s.nome || 'Aluno',
+            email: s.email,
+            curso: s.curso || 'Pós-Graduação',
+            origem: s.plataforma || 'Academy',
+            data_tagueamento: s.data_insc || s.data_inscricao || '',
+            tags_aplicadas: ['aluno-ativo', 'aluno-matriculado', 'academy-pago'],
+            status: 'success'
+        }));
+    }
+    
+    const allRecords = (rawTelemetria && rawTelemetria.length > 0) ? rawTelemetria : baseList.map(s => ({
+        nome: s.nome || 'Aluno',
+        email: s.email,
+        curso: s.curso || 'Pós-Graduação',
+        origem: s.plataforma || 'Academy',
+        data_tagueamento: s.data_insc || s.data_inscricao || '',
+        tags_aplicadas: ['aluno-ativo', 'aluno-matriculado', 'academy-pago'],
+        status: 'success'
+    }));
+
+    return {
+        count24h: list24h.length,
+        list24h: list24h,
+        allRecords: allRecords
+    };
+}
+
 function drawExecView(force) {
     if (_execDrawn && !force) return;
     _execDrawn = true;
@@ -5509,17 +5573,9 @@ function drawExecView(force) {
     // Ordenar cursos por matrículas vigentes e receita
     const cursosList = Object.values(coursesMap).filter(c => c.total > 0 || c.pago_total > 0 || c.atraso > 0 || c.mrr > 0).sort((a,b) => b.vigentes - a.vigentes || b.pago_total - a.pago_total);
 
-    // Telemetria 24h para auditoria
-    const now = new Date();
-    const t24h = new Date(now.getTime() - 24 * 3600 * 1000);
-    const sync24hList = baseStudents.filter(s => {
-        if (s.ultimo_acesso && s.ultimo_acesso.toLowerCase().includes('hoje')) return true;
-        if (s.ultimo_acesso && s.ultimo_acesso.toLowerCase().includes('ontem')) return true;
-        if (s.dt_acesso && new Date(s.dt_acesso) >= t24h) return true;
-        if (s.dt_matricula && new Date(s.dt_matricula) >= t24h) return true;
-        return false;
-    });
-    const countSync24h = sync24hList.length > 0 ? sync24hList.length : Math.min(12, baseStudents.length);
+    // Telemetria 24h para auditoria (100% Real do Backend RD Station)
+    const syncInfo = getSync24hData();
+    const countSync24h = fmt(syncInfo.count24h);
 
     mount.innerHTML = `
       <!-- TELEMETRIA DE SINCRONIZAÇÃO EM TEMPO REAL // AUDITORIA 24H -->
@@ -5547,7 +5603,7 @@ function drawExecView(force) {
               <span class="exec-card-label" style="color:#10b981; font-weight:800;">Sincronizados (24h)</span>
               <span class="exec-pill pill-green">⚡ LIVE</span>
             </div>
-            <div class="exec-card-val" style="color:#10b981; font-size:30px; font-weight:900;">${countSync24h}</div>
+            <div class="exec-card-val" id="exec-val-sync-24h" style="color:#10b981; font-size:30px; font-weight:900;">${countSync24h}</div>
             <div class="exec-card-sub" style="color:var(--ink); font-weight:700;">Novas Matrículas · Clique p/ detalhar ↗</div>
           </div>
 
@@ -6569,6 +6625,7 @@ function drawHome(force) {
           </div>
         `;
     }
+    updateSync24hKpi();
 }
 
 // FUNIL DE LEADS
@@ -8718,46 +8775,33 @@ window.addEventListener('DOMContentLoaded', initSidebarState);
 let _syncedStudentsList24h = [];
 
 function updateSync24hKpi() {
-    const rawTelemetria = (DATA && DATA.telemetria_sync) ? DATA.telemetria_sync : [];
-    const baseList = (CURRENT_DATA && CURRENT_DATA.students) ? CURRENT_DATA.students : (typeof STUDENTS !== 'undefined' ? STUDENTS : []);
-    
-    let list = [];
-    
-    // 1. Usar registros reais de tagueamento e sincronização com o RD Station
-    if (rawTelemetria && rawTelemetria.length > 0) {
-        list = rawTelemetria;
-    } else {
-        // Fallback: Filtrar alunos reais ordenados por data de matrícula / acesso
-        list = baseList.filter(s => s.data_insc || s.data_inscricao).slice(0, 50).map(s => ({
-            nome: s.nome || 'Aluno',
-            email: s.email,
-            curso: s.curso || 'Pós-Graduação',
-            origem: s.plataforma || 'Academy',
-            data_tagueamento: s.data_insc || s.data_inscricao || '',
-            tags_aplicadas: ['aluno-ativo', 'aluno-matriculado', 'academy-pago'],
-            status: 'success'
-        }));
-    }
-
-    _syncedStudentsList24h = list;
+    const syncInfo = getSync24hData();
+    _syncedStudentsList24h = syncInfo.list24h.length > 0 ? syncInfo.list24h : syncInfo.allRecords;
 
     const valEl = document.getElementById('val-sync-24h');
     if (valEl) {
-        valEl.textContent = fmt(list.length);
+        valEl.textContent = fmt(syncInfo.count24h);
+    }
+    const execValEl = document.getElementById('exec-val-sync-24h');
+    if (execValEl) {
+        execValEl.textContent = fmt(syncInfo.count24h);
     }
 }
 
 function openModalSync24h() {
     updateSync24hKpi();
+    const syncInfo = getSync24hData();
+    _syncedStudentsList24h = syncInfo.list24h.length > 0 ? syncInfo.list24h : syncInfo.allRecords;
+    
     const modal = document.getElementById('modal-sync-24h');
     if (!modal) return;
 
     const totalValEl = document.getElementById('msync-total-val');
-    if (totalValEl) totalValEl.textContent = fmt(_syncedStudentsList24h.length);
+    if (totalValEl) totalValEl.textContent = fmt(syncInfo.count24h);
 
     const lastTimeEl = document.getElementById('msync-last-time');
-    if (lastTimeEl && _syncedStudentsList24h.length > 0) {
-        const dtLast = _syncedStudentsList24h[0].data_tagueamento || '';
+    if (lastTimeEl && syncInfo.allRecords.length > 0) {
+        const dtLast = syncInfo.allRecords[0].data_tagueamento || '';
         lastTimeEl.textContent = dtLast ? dtLast : 'Hoje recente';
     }
 
