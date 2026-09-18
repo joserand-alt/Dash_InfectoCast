@@ -4574,28 +4574,29 @@ function isInvalidOrInternal(s) {
 
 function resolveCanonicalCourse(name) {
     const n = (name || '').toString().toUpperCase().trim();
-    if (n.includes('CCIH') || n.includes('PREVENCAO') || n.includes('CONTROLE DE INFECCAO')) {
+    if (!n || n === 'SEM CURSO' || n === 'NONE' || n === 'NAN') return 'PLATAFORMA GERAL';
+    if (n.includes('CCIH') || n.includes('PREVENCAO') || n.includes('PREVENÇÃO') || n.includes('CONTROLE DE INFEC') || n.includes('HOSPITALAR')) {
         return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)';
     }
-    if (n.includes('IMUNODEPRIMIDO')) {
+    if (n.includes('IMUNO') || n.includes('INUNO') || n.includes('IMUNODEPRIMIDO') || n.includes('INUNODEPRIMIDO') || n.includes('TRANSPLANT')) {
         return 'POS-GRADUACAO EM INFECTOLOGIA DO PACIENTE IMUNODEPRIMIDO';
     }
-    if (n.includes('ORTOPED') || n.includes('MOLES')) {
+    if (n.includes('ORTOPED') || n.includes('MOLES') || n.includes('PELE') || n.includes('MUSCULO')) {
         return 'POS-GRADUACAO EM INFECCOES ORTOPEDICAS E DE PARTES MOLES';
     }
-    if (n.includes('INFECTOPED') || n.includes('PEDIATR')) {
+    if (n.includes('INFECTOPED') || n.includes('PEDIATR') || n.includes('PEDIÁTR') || n.includes('CRIANCA') || n.includes('NEONATAL')) {
         return 'POS-GRADUACAO EM INFECTOPEDIATRIA';
     }
     if (n.includes('MULTI-R') || n.includes('MULTIR') || n.includes('JORNADA')) {
         return 'JORNADA MULTI-R';
     }
-    if (n.includes('FUNGO') || n.includes('ANTIFUNGICO')) {
+    if (n.includes('FUNGO') || n.includes('ANTIFUNGICO') || n.includes('ANTIFÚNGICO')) {
         return 'DO FUNGO AO ANTIFUNGICO';
     }
-    if (n.includes('SOS') || n.includes('ANTIBIOTICO') || n.includes('S.O.S')) {
+    if (n.includes('SOS') || n.includes('ANTIBIOTICO') || n.includes('ANTIBIÓTICO') || n.includes('S.O.S')) {
         return 'S.O.S ANTIBIOTICO';
     }
-    if (n.includes('INFECTOXPERT')) {
+    if (n.includes('INFECTOXPERT') || n.includes('EXPERT')) {
         return 'INFECTOXPERT';
     }
     return 'PLATAFORMA GERAL';
@@ -5118,33 +5119,34 @@ function drawExecView(force) {
 
     // Resolução canônica de cursos para agrupar 100% de forma precisa
     const resolveCanonicalCourse = name => {
-        const n = (name || '').toString().toUpperCase().trim();
-        if (n.includes('CCIH') || n.includes('PREVENCAO') || n.includes('CONTROLE DE INFECCAO')) {
-            return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)';
-        }
-        if (n.includes('IMUNODEPRIMIDO')) {
-            return 'POS-GRADUACAO EM INFECTOLOGIA DO PACIENTE IMUNODEPRIMIDO';
-        }
-        if (n.includes('ORTOPED') || n.includes('MOLES')) {
-            return 'POS-GRADUACAO EM INFECCOES ORTOPEDICAS E DE PARTES MOLES';
-        }
-        if (n.includes('INFECTOPED') || n.includes('PEDIATR')) {
-            return 'POS-GRADUACAO EM INFECTOPEDIATRIA';
-        }
-        if (n.includes('MULTI-R') || n.includes('MULTIR') || n.includes('JORNADA')) {
-            return 'JORNADA MULTI-R';
-        }
-        if (n.includes('FUNGO') || n.includes('ANTIFUNGICO')) {
-            return 'DO FUNGO AO ANTIFUNGICO';
-        }
-        if (n.includes('SOS') || n.includes('ANTIBIOTICO') || n.includes('S.O.S')) {
-            return 'S.O.S ANTIBIOTICO';
-        }
-        if (n.includes('INFECTOXPERT')) {
-            return 'INFECTOXPERT';
-        }
-        return 'PLATAFORMA GERAL';
-    };
+    const n = (name || '').toString().toUpperCase().trim();
+    if (!n || n === 'SEM CURSO' || n === 'NONE' || n === 'NAN') return 'PLATAFORMA GERAL';
+    if (n.includes('CCIH') || n.includes('PREVENCAO') || n.includes('PREVENÇÃO') || n.includes('CONTROLE DE INFEC') || n.includes('HOSPITALAR')) {
+        return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)';
+    }
+    if (n.includes('IMUNO') || n.includes('INUNO') || n.includes('IMUNODEPRIMIDO') || n.includes('INUNODEPRIMIDO') || n.includes('TRANSPLANT')) {
+        return 'POS-GRADUACAO EM INFECTOLOGIA DO PACIENTE IMUNODEPRIMIDO';
+    }
+    if (n.includes('ORTOPED') || n.includes('MOLES') || n.includes('PELE') || n.includes('MUSCULO')) {
+        return 'POS-GRADUACAO EM INFECCOES ORTOPEDICAS E DE PARTES MOLES';
+    }
+    if (n.includes('INFECTOPED') || n.includes('PEDIATR') || n.includes('PEDIÁTR') || n.includes('CRIANCA') || n.includes('NEONATAL')) {
+        return 'POS-GRADUACAO EM INFECTOPEDIATRIA';
+    }
+    if (n.includes('MULTI-R') || n.includes('MULTIR') || n.includes('JORNADA')) {
+        return 'JORNADA MULTI-R';
+    }
+    if (n.includes('FUNGO') || n.includes('ANTIFUNGICO') || n.includes('ANTIFÚNGICO')) {
+        return 'DO FUNGO AO ANTIFUNGICO';
+    }
+    if (n.includes('SOS') || n.includes('ANTIBIOTICO') || n.includes('ANTIBIÓTICO') || n.includes('S.O.S')) {
+        return 'S.O.S ANTIBIOTICO';
+    }
+    if (n.includes('INFECTOXPERT') || n.includes('EXPERT')) {
+        return 'INFECTOXPERT';
+    }
+    return 'PLATAFORMA GERAL';
+};
 
     // Usar CURRENT_DATA.students ou rawStudents enriquecido (sempre excluindo testes e contas internas)
     const validRawStudents = rawStudents.filter(s => !isInvalidOrInternal(s));
@@ -7894,33 +7896,34 @@ function drawCursoView(courseName, force) {
     };
 
     const resolveCanonicalCourse = name => {
-        const n = (name || '').toString().toUpperCase().trim();
-        if (n.includes('CCIH') || n.includes('PREVENCAO') || n.includes('CONTROLE DE INFECCAO')) {
-            return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)';
-        }
-        if (n.includes('IMUNODEPRIMIDO')) {
-            return 'POS-GRADUACAO EM INFECTOLOGIA DO PACIENTE IMUNODEPRIMIDO';
-        }
-        if (n.includes('ORTOPED') || n.includes('MOLES')) {
-            return 'POS-GRADUACAO EM INFECCOES ORTOPEDICAS E DE PARTES MOLES';
-        }
-        if (n.includes('INFECTOPED') || n.includes('PEDIATR')) {
-            return 'POS-GRADUACAO EM INFECTOPEDIATRIA';
-        }
-        if (n.includes('MULTI-R') || n.includes('MULTIR') || n.includes('JORNADA')) {
-            return 'JORNADA MULTI-R';
-        }
-        if (n.includes('FUNGO') || n.includes('ANTIFUNGICO')) {
-            return 'DO FUNGO AO ANTIFUNGICO';
-        }
-        if (n.includes('SOS') || n.includes('ANTIBIOTICO') || n.includes('S.O.S')) {
-            return 'S.O.S ANTIBIOTICO';
-        }
-        if (n.includes('INFECTOXPERT')) {
-            return 'INFECTOXPERT';
-        }
-        return 'PLATAFORMA GERAL';
-    };
+    const n = (name || '').toString().toUpperCase().trim();
+    if (!n || n === 'SEM CURSO' || n === 'NONE' || n === 'NAN') return 'PLATAFORMA GERAL';
+    if (n.includes('CCIH') || n.includes('PREVENCAO') || n.includes('PREVENÇÃO') || n.includes('CONTROLE DE INFEC') || n.includes('HOSPITALAR')) {
+        return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)';
+    }
+    if (n.includes('IMUNO') || n.includes('INUNO') || n.includes('IMUNODEPRIMIDO') || n.includes('INUNODEPRIMIDO') || n.includes('TRANSPLANT')) {
+        return 'POS-GRADUACAO EM INFECTOLOGIA DO PACIENTE IMUNODEPRIMIDO';
+    }
+    if (n.includes('ORTOPED') || n.includes('MOLES') || n.includes('PELE') || n.includes('MUSCULO')) {
+        return 'POS-GRADUACAO EM INFECCOES ORTOPEDICAS E DE PARTES MOLES';
+    }
+    if (n.includes('INFECTOPED') || n.includes('PEDIATR') || n.includes('PEDIÁTR') || n.includes('CRIANCA') || n.includes('NEONATAL')) {
+        return 'POS-GRADUACAO EM INFECTOPEDIATRIA';
+    }
+    if (n.includes('MULTI-R') || n.includes('MULTIR') || n.includes('JORNADA')) {
+        return 'JORNADA MULTI-R';
+    }
+    if (n.includes('FUNGO') || n.includes('ANTIFUNGICO') || n.includes('ANTIFÚNGICO')) {
+        return 'DO FUNGO AO ANTIFUNGICO';
+    }
+    if (n.includes('SOS') || n.includes('ANTIBIOTICO') || n.includes('ANTIBIÓTICO') || n.includes('S.O.S')) {
+        return 'S.O.S ANTIBIOTICO';
+    }
+    if (n.includes('INFECTOXPERT') || n.includes('EXPERT')) {
+        return 'INFECTOXPERT';
+    }
+    return 'PLATAFORMA GERAL';
+};
 
     // 1. Enriquecimento Robusto da Base Completa de Alunos (538 alunos não-internos)
     const rawStudents = (DATA && DATA.students) ? DATA.students.filter(s => !isInvalidOrInternal(s)) : [];

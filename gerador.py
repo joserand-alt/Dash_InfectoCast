@@ -333,7 +333,7 @@ def main():
                 return normalize_curso('POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH) - ENFERMAGEM')
             else:
                 return normalize_curso('POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)')
-        if any(k in t_norm for k in ['IMUNO', 'INUNO', 'TRANSPLANT']):
+        if any(k in t_norm for k in ['IMUNO', 'INUNO', 'IMUNODEPRIMIDO', 'INUNODEPRIMIDO', 'TRANSPLANT']):
             return normalize_curso('POS-GRADUACAO EM INFECTOLOGIA DO PACIENTE IMUNODEPRIMIDO')
         if any(k in t_norm for k in ['FUNGO', 'ANTIFUNGIC']):
             return normalize_curso('DO FUNGO AO ANTIFUNGICO')
@@ -2134,6 +2134,46 @@ def main():
             s['data_insc'] = dt_str
             s['data_inscricao'] = dt_str
             s['inscricao'] = dt_str
+
+
+    # =========================================================================
+    # AUTO-HEALING DE CURSOS: Recuperar alunos de PLATAFORMA GERAL via Vindi/RD/Asaas/Cativa
+    # =========================================================================
+    for s in students:
+        em_clean = str(s.get('email', '')).lower().strip()
+        cur_raw = str(s.get('curso', '')).strip().upper()
+        if cur_raw in ['PLATAFORMA GERAL', '', 'SEM CURSO', 'NONE', 'NAN']:
+            # 1. Checar Plano Vindi
+            v_plano = ''
+            if s.get('vindi') and isinstance(s['vindi'], dict):
+                v_plano = s['vindi'].get('plano', '')
+            elif 'vindi_map' in locals() and em_clean in vindi_map:
+                v_plano = vindi_map[em_clean].get('plano', '')
+                
+            c_from_v = canonicalize_curso(v_plano, em_clean)
+            if c_from_v and c_from_v != normalize_curso('PLATAFORMA GERAL'):
+                s['curso'] = c_from_v
+                s['curso_inferido'] = True
+                s['curso_origem'] = 'Plano Vindi'
+                continue
+                
+            # 2. Checar RD Tagged
+            if 'rd_tagged_courses' in locals() and em_clean in rd_tagged_courses:
+                c_from_rd = canonicalize_curso(rd_tagged_courses[em_clean], em_clean)
+                if c_from_rd and c_from_rd != normalize_curso('PLATAFORMA GERAL'):
+                    s['curso'] = c_from_rd
+                    s['curso_inferido'] = True
+                    s['curso_origem'] = 'RD Station (Tag)'
+                    continue
+                    
+            # 3. Checar RD Hints
+            if 'rd_course_hints' in locals() and em_clean in rd_course_hints:
+                c_from_hints = canonicalize_curso(rd_course_hints[em_clean], em_clean)
+                if c_from_hints and c_from_hints != normalize_curso('PLATAFORMA GERAL'):
+                    s['curso'] = c_from_hints
+                    s['curso_inferido'] = True
+                    s['curso_origem'] = 'RD Station (Histórico)'
+                    continue
 
     data = {
         "meta": {
