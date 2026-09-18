@@ -1820,12 +1820,27 @@ def main():
         # 2. Adicionar alunos do Asaas/Academy API que ainda não estavam na lista de estudantes
         existing_emails = set(str(s.get('email', '')).lower().strip() for s in students if s.get('email'))
         added_from_api = 0
+        tagged_hist_file = os.path.join(BASE_DIR, 'rd_tagged_matriculas.json')
+        rd_tagged_courses = {}
+        if os.path.exists(tagged_hist_file):
+            try:
+                with open(tagged_hist_file, 'r', encoding='utf-8') as f_th:
+                    t_data = json.load(f_th)
+                    for k, v in t_data.items():
+                        if isinstance(v, dict) and v.get('email') and v.get('curso'):
+                            rd_tagged_courses[v['email'].lower().strip()] = normalize_curso(v['curso'])
+            except Exception:
+                pass
+
         def _infer_curso_from_asaas(asaas_st, email):
-            """Tenta resolver o curso do aluno Asaas usando student_course_map, RD Station ou descrição da fatura.
+            """Tenta resolver o curso do aluno Asaas usando student_course_map, RD Station, preço ou descrição da fatura.
             Retorna: (curso_nome, is_inferred, origem_str)"""
             if email in student_course_map and student_course_map[email] != normalize_curso('PLATAFORMA GERAL'):
                 return student_course_map[email], False, "Oficial"
             
+            if email in rd_tagged_courses:
+                return rd_tagged_courses[email], False, "RD Station (Matrícula)"
+
             if 'rd_course_hints' in locals() and email in rd_course_hints:
                 return rd_course_hints[email], True, "RD Station"
             
@@ -1834,6 +1849,11 @@ def main():
             c_res = canonicalize_curso(desc_text, email)
             if c_res and c_res != normalize_curso('PLATAFORMA GERAL'):
                 return c_res, True, "Fatura Asaas"
+
+            # Detecção por preço / produto oficial
+            tot_pago = float(asaas_st.get('total_pago') or 0)
+            if abs(tot_pago - 487.0) < 5 or any(abs(float(ft.get('valor') or 0) - 487.0) < 5 for ft in faturas):
+                return normalize_curso('S.O.S ANTIBIÓTICO'), True, "Preço Asaas (R$ 487,00)"
             
             return normalize_curso('PLATAFORMA GERAL'), False, "Geral" 
 
