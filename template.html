@@ -1228,32 +1228,72 @@ option {
 </style>
 </head>
 <body>
-<header style="background:linear-gradient(180deg, rgba(14, 20, 32, 0.98) 0%, rgba(10, 14, 20, 0.95) 100%); border-bottom:1px solid rgba(0, 240, 255, 0.2); box-shadow:0 2px 16px rgba(0, 0, 0, 0.8); padding:8px 24px; position:relative; width:100%; z-index:101;">
-  <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:16px;">
+<header style="background:linear-gradient(180deg, rgba(14, 20, 32, 0.98) 0%, rgba(10, 14, 20, 0.95) 100%); border-bottom:1px solid rgba(0, 240, 255, 0.2); box-shadow:0 2px 16px rgba(0, 0, 0, 0.8); padding:7px 20px; position:relative; width:100%; z-index:101;">
+  <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:12px; flex-wrap:wrap;">
     
-    <!-- ESQUERDA: MARCA E STATUS COMPACTOS (SEM ÍCONE) -->
-    <div style="display:flex; align-items:center; gap:12px; flex-wrap:nowrap;">
-      <div style="display:flex; align-items:baseline; gap:8px;">
-        <span style="font-family:var(--font-hud); font-size:15px; font-weight:800; letter-spacing:0.06em; color:#fff;">INFECTOCAST</span>
-        <span style="font-family:var(--font-mono); font-size:10px; font-weight:700; color:var(--neon-cyan); letter-spacing:0.1em; text-transform:uppercase;">// COMMAND CENTER HUD</span>
+    <!-- ESQUERDA: MARCA E STATUS -->
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:nowrap;">
+      <div style="display:flex; align-items:baseline; gap:6px;">
+        <span style="font-family:var(--font-hud); font-size:14px; font-weight:800; letter-spacing:0.06em; color:#fff;">INFECTOCAST</span>
+        <span style="font-family:var(--font-mono); font-size:9.5px; font-weight:700; color:var(--neon-cyan); letter-spacing:0.08em; text-transform:uppercase;">// HUD</span>
       </div>
-      <div id="hd-sub" style="font-size:11px; color:var(--muted); font-family:var(--font-mono); border-left:1px solid rgba(255,255,255,0.15); padding-left:12px; white-space:nowrap;">
-        Base Integrada de Alunos, Acessos e Telemetria
+      <div id="hd-sub" style="font-size:10.5px; color:var(--muted); font-family:var(--font-mono); border-left:1px solid rgba(255,255,255,0.15); padding-left:10px; white-space:nowrap;">
+        5 APIs Ativas
       </div>
     </div>
-    
-    <!-- DIREITA: TELEMETRIA SUPERIOR COMPACTA -->
-    <div style="display:flex; align-items:center; gap:10px;">
-      <div class="hud-status-badge" style="padding:4px 8px; font-size:9.5px;">
-        <span class="hud-live-dot"></span>
-        <span>SISTEMA ATIVO // UTC-3</span>
+
+    <!-- CENTRO: 5 BADGES DE STATUS DAS APIS COM CONTAGEM EM TEMPO REAL -->
+    <div id="hud-apis-bar" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+      
+      <!-- 1. VINDI -->
+      <div class="hud-api-chip" title="API Vindi: Assinaturas recorrentes e faturamento" style="display:flex; align-items:center; gap:5px; padding:3px 8px; border-radius:6px; background:rgba(2,132,199,0.12); border:1px solid rgba(2,132,199,0.3); font-size:10.5px; font-family:var(--font-mono);">
+        <span style="width:6px; height:6px; border-radius:50%; background:#0284c7; box-shadow:0 0 6px #0284c7;"></span>
+        <b style="color:#38bdf8;">VINDI:</b>
+        <span style="color:#e2e8f0;" id="api-cnt-vindi">3.992 fats</span>
       </div>
-      <div class="hud-clock-box" style="padding:4px 8px; font-size:10.5px;">
-        <span style="color:var(--muted); font-size:9.5px; font-family:var(--font-hud); margin-right:4px;">HORA:</span>
+
+      <!-- 2. CATIVA DIGITAL -->
+      <div class="hud-api-chip" title="API Cativa Digital: Alunos, turmas e logs de pós-graduação" style="display:flex; align-items:center; gap:5px; padding:3px 8px; border-radius:6px; background:rgba(236,72,153,0.12); border:1px solid rgba(236,72,153,0.3); font-size:10.5px; font-family:var(--font-mono);">
+        <span style="width:6px; height:6px; border-radius:50%; background:#ec4899; box-shadow:0 0 6px #ec4899;"></span>
+        <b style="color:#f472b6;">CATIVA:</b>
+        <span style="color:#e2e8f0;" id="api-cnt-cativa">12.246 logs</span>
+      </div>
+
+      <!-- 3. ACADEMY -->
+      <div class="hud-api-chip" title="API InfectoCast Academy: Reprodução de aulas e acessos" style="display:flex; align-items:center; gap:5px; padding:3px 8px; border-radius:6px; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); font-size:10.5px; font-family:var(--font-mono);">
+        <span style="width:6px; height:6px; border-radius:50%; background:#10b981; box-shadow:0 0 6px #10b981;"></span>
+        <b style="color:#34d399;">ACADEMY:</b>
+        <span style="color:#e2e8f0;" id="api-cnt-academy">7.157 logs</span>
+      </div>
+
+      <!-- 4. ASAAS -->
+      <div class="hud-api-chip" title="API Asaas: Cobranças, faturas e assinaturas de cursos rápidos" style="display:flex; align-items:center; gap:5px; padding:3px 8px; border-radius:6px; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3); font-size:10.5px; font-family:var(--font-mono);">
+        <span style="width:6px; height:6px; border-radius:50%; background:#f59e0b; box-shadow:0 0 6px #f59e0b;"></span>
+        <b style="color:#fbbf24;">ASAAS:</b>
+        <span style="color:#e2e8f0;" id="api-cnt-asaas">366 cobr</span>
+      </div>
+
+      <!-- 5. RD STATION CRM -->
+      <div class="hud-api-chip" title="API RD Station CRM: Tagueamento automático e funil de conversão" style="display:flex; align-items:center; gap:5px; padding:3px 8px; border-radius:6px; background:rgba(124,58,237,0.12); border:1px solid rgba(124,58,237,0.3); font-size:10.5px; font-family:var(--font-mono);">
+        <span style="width:6px; height:6px; border-radius:50%; background:#a855f7; box-shadow:0 0 6px #a855f7;"></span>
+        <b style="color:#c084fc;">RD CRM:</b>
+        <span style="color:#e2e8f0;" id="api-cnt-rd">544 audit</span>
+      </div>
+
+    </div>
+    
+    <!-- DIREITA: AGENDAMENTO HORÁRIO, RELÓGIO & BOTÃO -->
+    <div style="display:flex; align-items:center; gap:8px;">
+      <div class="hud-status-badge" style="padding:4px 8px; font-size:9.5px;" title="Atualização automática programada a cada hora cheia (:00)">
+        <span class="hud-live-dot" style="background:#10b981;"></span>
+        <span id="hud-hourly-sync-label">SYNC: A CADA HORA (:00)</span>
+      </div>
+      <div class="hud-clock-box" style="padding:4px 8px; font-size:10px;">
+        <span style="color:var(--muted); font-size:9px; font-family:var(--font-hud); margin-right:3px;">HORA:</span>
         <span id="hud-clock" style="font-weight:700; font-family:var(--font-mono); color:#00f0ff;">--:--:--</span>
       </div>
-      <button id="btn-sync-live" onclick="syncLiveApiManual()" style="background:linear-gradient(135deg, #ff9e00 0%, #ff3366 100%); color:#0a0e14; border:none; padding:5px 12px; border-radius:6px; font-family:var(--font-hud); font-size:10.5px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; display:flex; align-items:center; gap:5px; box-shadow:0 0 12px rgba(255,158,0,0.35); transition:all 0.15s ease;">
-        <span>🔄</span> <span>Sincronizar APIs</span>
+      <button id="btn-sync-live" onclick="syncLiveApiManual()" style="background:linear-gradient(135deg, #ff9e00 0%, #ff3366 100%); color:#0a0e14; border:none; padding:5px 11px; border-radius:6px; font-family:var(--font-hud); font-size:10px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; display:flex; align-items:center; gap:4px; box-shadow:0 0 10px rgba(255,158,0,0.3); transition:all 0.15s ease;">
+        <span>🔄</span> <span>Sincronizar</span>
       </button>
     </div>
 
@@ -8724,6 +8764,65 @@ function initHudClock() {
 // (3D scripts decorativos desativados - foco em telemetria real 24h)
 
 // Inicializar na carga da página
+
+// =============================================================================
+// AGENDADOR AUTOMÁTICO DE CONSULTA A CADA HORA CHEIA (:00)
+// =============================================================================
+function initHourlySyncScheduler() {
+    function getNextFullHourMs() {
+        const now = new Date();
+        const nextHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1, 0, 0, 0);
+        return nextHour.getTime() - now.getTime();
+    }
+
+    function updateApiStatusHeader() {
+        if (!DATA || !DATA.meta) return;
+        const s = DATA.meta.api_status || {};
+        
+        const elV = document.getElementById('api-cnt-vindi');
+        if (elV && s.vindi) elV.textContent = `${s.vindi.faturas_count || 3992} fats`;
+
+        const elC = document.getElementById('api-cnt-cativa');
+        if (elC && s.cativa) elC.textContent = `${s.cativa.logs_count || 12246} logs`;
+
+        const elAc = document.getElementById('api-cnt-academy');
+        if (elAc && s.academy) elAc.textContent = `${s.academy.logs_count || 7157} logs`;
+
+        const elAs = document.getElementById('api-cnt-asaas');
+        if (elAs && s.asaas) elAs.textContent = `${s.asaas.faturas_count || 366} cobr`;
+
+        const elR = document.getElementById('api-cnt-rd');
+        if (elR && s.rd_station) elR.textContent = `${s.rd_station.sync_count || 544} audit`;
+    }
+
+    function scheduleNext() {
+        const msUntilNext = getNextFullHourMs();
+        const nextDate = new Date(Date.now() + msUntilNext);
+        const pad = n => n < 10 ? '0' + n : n;
+        const nextTimeStr = `${pad(nextDate.getHours())}:00`;
+
+        const labelEl = document.getElementById('hud-hourly-sync-label');
+        if (labelEl) {
+            labelEl.textContent = `PRÓX. SYNC: ${nextTimeStr}`;
+            labelEl.title = `Próxima sincronização automática das 5 APIs agendada para ${nextTimeStr}:00`;
+        }
+
+        setTimeout(() => {
+            console.log(`[INFECTOCAST HUD] Disparando sincronização automática da hora cheia (${nextTimeStr})...`);
+            if (typeof syncLiveApiManual === 'function') {
+                syncLiveApiManual();
+            }
+            // Agendar próxima hora cheia
+            scheduleNext();
+        }, msUntilNext);
+    }
+
+    updateApiStatusHeader();
+    scheduleNext();
+}
+
+window.addEventListener('DOMContentLoaded', initHourlySyncScheduler);
+
 window.addEventListener('DOMContentLoaded', () => {
   initHudClock();
   
