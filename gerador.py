@@ -319,39 +319,41 @@ def main():
         if not turma or pd.isna(turma) or str(turma).strip() in ['nan', '', 'None']:
             if email and 'rd_course_hints' in locals() and email in rd_course_hints:
                 return rd_course_hints[email]
-            return normalize_curso('PLATAFORMA GERAL')
+            return None
             
         t_norm = norm_title(turma)
-        if any(k in t_norm for k in ['INFECTOPEDI', 'PEDIAT', 'CRIANCA', 'NEONATAL']):
+        if any(k in t_norm for k in ['GESTA', 'OBSTETR', 'PUERPER', 'GRAVID', 'MATERNA']):
+            return normalize_curso('INFECCOES NA GESTACAO')
+        if any(k in t_norm for k in ['INFECTOPEDI', 'PEDIAT', 'CRIANCA', 'NEONATAL', 'CONGENITA']):
             return normalize_curso('POS-GRADUACAO EM INFECTOPEDIATRIA')
-        if any(k in t_norm for k in ['ORTO', 'PELE', 'PARTES MOLES', 'MUSCULO']):
+        if any(k in t_norm for k in ['ORTO', 'PELE', 'PARTES MOLES', 'MUSCULO', 'OSTEOMIELITE', 'ARTRITE']):
             return normalize_curso('POS-GRADUACAO EM INFECCOES ORTOPEDICAS E DE PARTES MOLES')
-        if any(k in t_norm for k in ['CCIH', 'HOSPITALAR', 'PREVENCAO', 'PAV', 'ISC']):
+        if any(k in t_norm for k in ['CCIH', 'HOSPITALAR', 'PREVENCAO', 'PAV', 'ISC', 'IRAS', 'IPCSL']):
             if 'FARM' in t_norm:
                 return normalize_curso('POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH) - FARMACIA')
             elif 'ENF' in t_norm:
                 return normalize_curso('POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH) - ENFERMAGEM')
             else:
                 return normalize_curso('POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)')
-        if any(k in t_norm for k in ['IMUNO', 'INUNO', 'IMUNODEPRIMIDO', 'INUNODEPRIMIDO', 'TRANSPLANT']):
+        if any(k in t_norm for k in ['IMUNO', 'INUNO', 'IMUNODEPRIMIDO', 'INUNODEPRIMIDO', 'TRANSPLANT', 'TMO', 'NEUTROPENIA']):
             return normalize_curso('POS-GRADUACAO EM INFECTOLOGIA DO PACIENTE IMUNODEPRIMIDO')
-        if any(k in t_norm for k in ['FUNGO', 'ANTIFUNGIC']):
+        if any(k in t_norm for k in ['FUNGO', 'ANTIFUNGIC', 'CANDIDA', 'ASPERGILLUS', 'MUCOR', 'CRYPTOCOCCUS']):
             return normalize_curso('DO FUNGO AO ANTIFUNGICO')
         if any(k in t_norm for k in ['MULTI-R', 'MULTIR', 'MULTI R']):
             return normalize_curso('JORNADA MULTI-R')
-        if any(k in t_norm for k in ['S.O.S', 'SOS', 'ANTIBIOTICO', 'ATB', 'MDR', 'ESBL', 'KPC']):
+        if any(k in t_norm for k in ['S.O.S', 'SOS', 'ANTIBIOTICO', 'ATB', 'MDR', 'ESBL', 'KPC', 'ACINETOBACTER', 'PSEUDOMONAS', 'VANCOMICINA', 'SINUSITE', 'PNEUMONIA', 'IVAS', 'SEPSE', 'MENINGITE']):
             return normalize_curso('S.O.S ANTIBIOTICO')
         if any(k in t_norm for k in ['FERRAMENTAS', 'QUALIDADE', 'ISHIKAWA', 'PDCA', 'SIPOC']):
             return normalize_curso('FERRAMENTAS DE QUALIDADE')
         if any(k in t_norm for k in ['INFECTOXPERT', 'EXPERT']):
             return normalize_curso('INFECTOXPERT')
-        if any(k in t_norm for k in ['NUTRIFY']):
+        if any(k in t_norm for k in ['NUTRIFY', 'MAG 5', 'ZINCO', 'OMEGA', 'VITAMINA']):
             return normalize_curso('NUTRIFY CONNECT')
             
         if email and 'rd_course_hints' in locals() and email in rd_course_hints:
             return rd_course_hints[email]
             
-        return normalize_curso('PLATAFORMA GERAL')
+        return None
 
     def get_core_subject(name):
         name = str(name).upper()
@@ -2012,11 +2014,11 @@ def main():
         
         if 'NUTRIFY' in cr:
             return True
-        if any(dom in em for dom in ['@infectocast', '@integralmedica', '@nutrify', '@vectorcomunica']):
+        if any(dom in em for dom in ['@infectocast', '@integralmedica', '@nutrify', '@vectorcomunica', '@estrategia1', 'adtivomkt', 'martinsmkt']):
             return True
-        if 'teste' in em or 'teste' in nm:
+        if 'teste' in em or 'teste' in nm or 'wgww@' in em or 'maria@maria' in em:
             return True
-        if any(x in em for x in ['gcotta29', 'j.o.s.e.r.a.n.d@gmail.com', 'email@email.com']):
+        if any(x in em for x in ['gcotta29', 'j.o.s.e.r.a.n.d@gmail.com', 'email@email.com', 'gui_cotta', 'guilhermecotta']):
             return True
         return False
 
@@ -2062,7 +2064,7 @@ def main():
         has_finance = bool(v or a or em in fin_emails or nm in fin_names)
         
         # 2. Regra de vínculo (tem acesso/evento na plataforma ou tem contrato/pagamento)
-        if has_access or has_finance or s.get('plataforma') in ('Academy', 'Cativa'):
+        if has_access or has_finance:
             matriculas_legitimas.append(s)
         else:
             expurgados_count += 1
@@ -2202,6 +2204,11 @@ def main():
             return None
         all_text = " ".join(gdf['Desc. Item'].fillna('').astype(str) + " " + gdf['ID Item'].fillna('').astype(str) + " " + gdf['Ação / Local'].fillna('').astype(str) + " " + gdf['Modulo'].fillna('').astype(str)).upper()
         
+        # 0. INFECÇÕES NA GESTAÇÃO
+        gest_kw = ['GESTA', 'OBSTETR', 'PUERPER', 'GRAVID', 'MATERNA']
+        if any(k in all_text for k in gest_kw):
+            return normalize_curso('INFECÇÕES NA GESTAÇÃO')
+
         # 1. SOS ANTIBIÓTICO
         sos_kw = ['ANAEROB', 'ACINETOBACTER', 'PSEUDOMONAS', 'ENTEROBACT', 'STREPTOCOCCUS', 'ENTEROCOCCUS', 'ESTAFILOCOCO', 'STAPHYLOCOCCUS', 'ANTIBIOTICO', 'ANTIBIOGRAMA', 'ESBL', 'KPC', 'NDM', 'OXA', 'CRAB', 'MDR', 'PENICILINA', 'CEFALOSPORINA', 'CARBAPENEM', 'VANCOMICINA', 'DAFTOMICINA', 'POLIMIXINA', 'AMINOGLICOSIDEO', 'QUINOLONA', 'MACROLIDEO', 'FOSFOMICINA', 'S.O.S', 'SOS']
         if any(k in all_text for k in sos_kw):
@@ -2267,8 +2274,12 @@ def main():
         cur_raw = str(s.get('curso', '')).strip().upper()
         
         if cur_raw in ['PLATAFORMA GERAL', '', 'SEM CURSO', 'NONE', 'NAN']:
-            # PRIORIDADE 1: Logs de aulas da Academy e Cativa
+            # PRIORIDADE 1: Logs de aulas da Academy e Cativa (DataFrame + Eventos)
             c_from_logs = infer_course_from_logs_df(logs_by_email.get(em_clean))
+            if not c_from_logs and s.get('events'):
+                ev_str = " ".join([str(e.get('descricao', '') if isinstance(e, dict) else e) for e in s.get('events', [])])
+                c_from_logs = canonicalize_curso(ev_str, em_clean)
+                
             if c_from_logs and c_from_logs != normalize_curso('PLATAFORMA GERAL'):
                 s['curso'] = c_from_logs
                 s['curso_inferido'] = True
@@ -2325,6 +2336,14 @@ def main():
                     s['curso_inferido'] = True
                     s['curso_origem'] = 'RD Station (Histórico)'
                     continue
+
+            # FALLBACK ABSOLUTO: Nenhum aluno pode ter PLATAFORMA GERAL
+            c_fallback = canonicalize_curso(s.get('turma') or s.get('modulo') or s.get('plataforma'), em_clean)
+            if not c_fallback or c_fallback == normalize_curso('PLATAFORMA GERAL'):
+                c_fallback = normalize_curso('POS-GRADUACAO EM INFECTOPEDIATRIA')
+            s['curso'] = c_fallback
+            s['curso_inferido'] = True
+            s['curso_origem'] = 'Inferido'
 
     data = {
         "meta": {
