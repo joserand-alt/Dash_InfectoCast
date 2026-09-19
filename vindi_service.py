@@ -96,6 +96,20 @@ def _parse_iso(iso_str):
     except:
         return None
 
+def parse_plan_cycles(plan_name):
+    import re
+    p = str(plan_name or '').upper()
+    m_word = re.search(r'\b(\d+)\s*(?:MESES|PARCELAS|VEZES)\b', p)
+    if m_word:
+        return int(m_word.group(1))
+    if 'RESIDENTES 24' in p or '24X' in p:
+        return 24
+    if 'ANUAL' in p:
+        return 12
+    if 'SEMESTRAL' in p:
+        return 6
+    return 18
+
 def get_vindi_data(force_reload=False):
     """
     Retorna o dicionário completo com dados por aluno e agregações globais da Aba Financeiro.
@@ -105,7 +119,7 @@ def get_vindi_data(force_reload=False):
             with open(CACHE_PATH, 'r', encoding='utf-8') as f:
                 cached = json.load(f)
             cached_at = datetime.fromisoformat(cached.get('cached_at', '2000-01-01'))
-            if datetime.now() - cached_at < timedelta(hours=CACHE_TTL_HOURS) and 'financeiro' in cached:
+            if datetime.now() - cached_at < timedelta(hours=CACHE_TTL_HOURS) and 'financeiro' in cached and 'subscriptions' in cached:
                 print(f"[VINDI CACHE] Carregados dados da Vindi com financeiro global ({len(cached.get('data', {}))} alunos).")
                 return cached
         except Exception as e:
@@ -277,6 +291,17 @@ def get_vindi_data(force_reload=False):
         valor_atraso = sum(b['valor'] for b in student_overdue_bills)
         dias_atraso = max([b['dias_atraso'] for b in student_overdue_bills], default=0)
 
+        total_cycles = parse_plan_cycles(sub.get('plan', {}).get('name'))
+        paid_cycles = len([b for b in unique_bills if b['status'] == 'pago'])
+        remaining_cycles = max(0, total_cycles - paid_cycles) if sub_status == 'active' else 0
+
+        paid_this_month = any(
+            b['status'] == 'pago' and ('/09/2026' in b.get('data_pagamento', '') or '2026-09' in b.get('data_pagamento_iso', '') or '/09/26' in b.get('data_pagamento', ''))
+            for b in unique_bills
+        )
+        is_next_month = bool(next_b_fmt and ('/10/2026' in next_b_fmt or '2026-10' in (next_b_iso or '') or '/10/26' in next_b_fmt or '/11/2026' in next_b_fmt or '/12/2026' in next_b_fmt))
+        start_m = 1 if (paid_this_month or is_next_month) else 0
+
         if sub_status == 'canceled':
             st_fin = 'cancelado'
             st_lbl = 'Cancelado'
@@ -348,6 +373,11 @@ def get_vindi_data(force_reload=False):
             "status_bg": st_bg,
             "forma_pagamento": sub_pm,
             "valor_parcela": price,
+            "total_cycles": total_cycles,
+            "paid_cycles_count": paid_cycles,
+            "remaining_cycles": remaining_cycles,
+            "paid_this_month": paid_this_month,
+            "start_m": start_m,
             "proximo_vencimento": next_b_fmt,
             "dias_atraso": dias_atraso,
             "valor_atraso": valor_atraso,
@@ -381,11 +411,17 @@ def get_vindi_data(force_reload=False):
             "realizado": round(realizado_val, 2)
         })
 
-    proj_30d = projecao_mensal[0]['previsto'] if len(projecao_mensal) > 0 else mrr_ativo_total
-    proj_60d = sum(p['previsto'] for p in projecao_mensal[:2]) if len(projecao_mensal) >= 2 else (mrr_ativo_total * 2)
-    proj_12m = mrr_ativo_total * 12
+    # Projeções a partir dos meses futuros (M+1: Out/26 em diante)
+    future_proj_months = [p for p in projecao_mensal if p['mes'] > current_ym]
+    proj_30d = future_proj_months[0]['previsto'] if len(future_proj_months) > 0 else (projecao_mensal[0]['previsto'] if projecao_mensal else mrr_ativo_total)
+    proj_60d = sum(p['previsto'] for p in future_proj_months[:2]) if len(future_proj_months) >= 2 else (mrr_ativo_total * 2)
+    proj_3m = sum(p['previsto'] for p in future_proj_months[:3]) if len(future_proj_months) >= 3 else (mrr_ativo_total * 3)
+    proj_6m = sum(p['previsto'] for p in future_proj_months[:6]) if len(future_proj_months) >= 6 else (mrr_ativo_total * 6)
+    proj_12m = sum(p['previsto'] for p in future_proj_months[:12]) if len(future_proj_months) >= 12 else (mrr_ativo_total * 12)
     total_faturado = total_recebido + total_em_atraso
     taxa_adimp = round((total_recebido / total_faturado * 100)) if total_faturado > 0 else 100
+
+    subs_list_exported = list(students_vindi.values())
 
     financeiro_global = {
         "kpis": {
@@ -394,6 +430,10 @@ def get_vindi_data(force_reload=False):
             "total_faturas_pagas": total_faturas_pagas,
             "recebido_mes_atual": round(recebido_mes_atual, 2),
             "recebido_mes_atual_fmt": f"R$ {recebido_mes_atual:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+            "a_vencer_mes_atual": round(projecao_mensal_map.get(current_ym, 0.0), 2),
+            "a_vencer_mes_atual_fmt": f"R$ {projecao_mensal_map.get(current_ym, 0.0):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+            "previsto_mes_vigente": round(recebido_mes_atual + projecao_mensal_map.get(current_ym, 0.0), 2),
+            "previsto_mes_vigente_fmt": f"R$ {(recebido_mes_atual + projecao_mensal_map.get(current_ym, 0.0)):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
             "total_em_atraso": round(total_em_atraso, 2),
             "total_em_atraso_fmt": f"R$ {total_em_atraso:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
             "qtd_em_atraso": qtd_em_atraso,
@@ -403,12 +443,18 @@ def get_vindi_data(force_reload=False):
             "projecao_30d_fmt": f"R$ {proj_30d:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
             "projecao_60d": round(proj_60d, 2),
             "projecao_60d_fmt": f"R$ {proj_60d:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+            "projecao_3m": round(proj_3m, 2),
+            "projecao_3m_fmt": f"R$ {proj_3m:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+            "projecao_6m": round(proj_6m, 2),
+            "projecao_6m_fmt": f"R$ {proj_6m:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
             "projecao_12m": round(proj_12m, 2),
             "projecao_12m_fmt": f"R$ {proj_12m:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
             "taxa_adimplencia": taxa_adimp
         },
         "historico_mensal": historico_mensal,
         "projecao_mensal": projecao_mensal,
+        "projecao_mensal_map": projecao_mensal_map,
+        "subscriptions": subs_list_exported,
         "faturas_tabela": faturas_para_tabela_geral,
         "faturas_recentes": faturas_para_tabela_geral[:300]
     }
@@ -417,6 +463,7 @@ def get_vindi_data(force_reload=False):
         "cached_at": now.isoformat(),
         "total_matched": len(students_vindi),
         "data": students_vindi,
+        "subscriptions": subs_list_exported,
         "financeiro": financeiro_global
     }
 

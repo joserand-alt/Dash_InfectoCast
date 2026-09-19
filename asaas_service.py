@@ -531,13 +531,17 @@ def _process(customers, payments):
 
     if a_vencer_mes_atual == 0.0 and len(projecao_mensal) > 0:
         a_vencer_mes_atual = projecao_mensal[0]['previsto']
-    if proj_30d == 0.0:
-        proj_30d = mrr
+    future_proj = [p for p in projecao_mensal if p['mes'] > current_ym]
+    proj_3m = sum(p['previsto'] for p in future_proj[:3]) if len(future_proj) >= 3 else (mrr * 3)
+    proj_6m = sum(p['previsto'] for p in future_proj[:6]) if len(future_proj) >= 6 else (mrr * 6)
+    proj_12m = sum(p['previsto'] for p in future_proj[:12]) if len(future_proj) >= 12 else (mrr * 12)
 
     total_fat = total_recebido + total_em_atraso
     taxa_adimp = round(total_recebido/total_fat*100) if total_fat>0 else 100
 
     def _fmt(v): return f"R$ {v:,.2f}".replace(",","X").replace(".",",").replace("X",".")
+
+    unique_asaas_subs = list({v['customer_id']: v for v in students_asaas.values() if isinstance(v, dict) and v.get('has_asaas')}.values())
 
     financeiro_global = {
         "fonte": "Asaas",
@@ -546,20 +550,22 @@ def _process(customers, payments):
             "total_faturas_pagas": total_pagas,
             "recebido_mes_atual": round(recebido_mes,2), "recebido_mes_fmt": _fmt(recebido_mes),
             "a_vencer_mes_atual": round(a_vencer_mes_atual,2), "a_vencer_mes_atual_fmt": _fmt(a_vencer_mes_atual),
+            "previsto_mes_vigente": round(recebido_mes + a_vencer_mes_atual, 2), "previsto_mes_vigente_fmt": _fmt(recebido_mes + a_vencer_mes_atual),
             "total_em_atraso": round(total_em_atraso,2), "total_em_atraso_fmt": _fmt(total_em_atraso),
             "qtd_em_atraso": qtd_em_atraso,
             "mrr_ativo": round(mrr,2), "mrr_ativo_fmt": _fmt(mrr),
             "projecao_30d": round(proj_30d,2), "projecao_30d_fmt": _fmt(proj_30d),
+            "projecao_3m": round(proj_3m,2), "projecao_3m_fmt": _fmt(proj_3m),
+            "projecao_6m": round(proj_6m,2), "projecao_6m_fmt": _fmt(proj_6m),
+            "projecao_12m": round(proj_12m,2), "projecao_12m_fmt": _fmt(proj_12m),
             "taxa_adimplencia": taxa_adimp,
         },
         "historico_mensal": historico_mensal,
-
         "projecao_mensal": projecao_mensal,
-
+        "projecao_mensal_map": projecao_map,
+        "subscriptions": unique_asaas_subs,
         "faturas_tabela": faturas_tabela,
-
         "faturas_recentes": faturas_tabela[:300],
-
     }
 
     return students_asaas, financeiro_global
@@ -589,8 +595,8 @@ def get_asaas_data(force_reload=False):
     payments  = fetch_all_payments()
 
     students_asaas, financeiro_global = _process(customers, payments)
-
-    result = {"_cached_at": datetime.now().isoformat(), "data": students_asaas, "financeiro": financeiro_global}
+    subs_list_asaas = financeiro_global.get("subscriptions", [])
+    result = {"_cached_at": datetime.now().isoformat(), "data": students_asaas, "subscriptions": subs_list_asaas, "financeiro": financeiro_global}
 
     try:
 

@@ -4692,7 +4692,7 @@ function computeUnifiedFinancialDataset(gatewayFilter) {
 
     const vFaturas = (vindi && vindi.faturas_tabela) ? vindi.faturas_tabela : [];
     const aFaturas = (asaas && asaas.faturas_tabela) ? asaas.faturas_tabela : [];
-    const vSubs = (vindi && vindi.subscriptions) ? vindi.subscriptions : [];
+    const vSubs = (vindi && vindi.subscriptions && vindi.subscriptions.length > 0) ? vindi.subscriptions : Object.values(vindi.data || {});
     const aData = (asaas && asaas.data) ? asaas.data : {};
 
     let faturasList = [];
@@ -4785,34 +4785,34 @@ function computeUnifiedFinancialDataset(gatewayFilter) {
         }
     });
 
-    // Usa parsePlanCycles global
-
     // 3. Assinaturas Vindi (MRR e Simulação Contratual de 18 Meses)
     if (!gatewayFilter || gatewayFilter === 'all' || gatewayFilter === 'vindi') {
         vSubs.forEach(sub => {
-            if (sub.status_financeiro === 'adimplente') {
+            if (sub.status_financeiro === 'adimplente' || sub.status_assinatura === 'active') {
                 const em = (sub.customer_email || '').toString().toLowerCase().trim();
-                const cm = getCourse(sub.curso || emailToCourse[em]);
+                const cm = getCourse(sub.curso || emailToCourse[em] || nameToCourse[(sub.customer_name||'').toLowerCase()]);
                 const price = Number(sub.valor_parcela) || 0;
                 cm.mrr += price;
 
-                const prox = (sub.proximo_vencimento || '').toString();
                 const faturasArr = sub.faturas || [];
-                const paidCount = faturasArr.filter(f => (f.status === 'paid' || f.status === 'pago')).length;
-                const totalCycles = parsePlanCycles(sub.plano);
-                const remainingCycles = Math.max(0, totalCycles - paidCount);
+                const totalCycles = (sub.total_cycles !== undefined) ? sub.total_cycles : parsePlanCycles(sub.plano);
+                const paidCount = (sub.paid_cycles_count !== undefined) ? sub.paid_cycles_count : faturasArr.filter(f => (f.status === 'paid' || f.status === 'pago')).length;
+                const remainingCycles = (sub.remaining_cycles !== undefined) ? sub.remaining_cycles : Math.max(0, totalCycles - paidCount);
 
-                // Identifica se já houve pagamento no mês corrente (Set/26)
-                const paidThisMonth = faturasArr.some(f => {
+                const prox = (sub.proximo_vencimento || '').toString();
+                const paidThisMonth = (sub.paid_this_month !== undefined) ? sub.paid_this_month : faturasArr.some(f => {
                     const dt = (f.data_pagamento || f.data_pagamento_iso || '').toString();
                     return (f.status === 'paid' || f.status === 'pago') && (dt.includes('09/2026') || dt.includes('2026-09') || dt.includes('/09/26'));
                 });
 
-                // Se já pagou no mês atual ou vencimento é para Out/26+, o próximo ciclo a vencer é Outubro (m = 1)
-                let startM = 0;
-                if (paidThisMonth || prox.includes('/10/2026') || prox.includes('2026-10') || prox.includes('/10/26')) {
-                    startM = 1;
-                } else {
+                let startM = (sub.start_m !== undefined) ? sub.start_m : 0;
+                if (sub.start_m === undefined) {
+                    if (paidThisMonth || prox.includes('/10/2026') || prox.includes('2026-10') || prox.includes('/10/26') || prox.includes('/11/2026') || prox.includes('/12/2026')) {
+                        startM = 1;
+                    } else {
+                        cm.proj_mes_atual += price;
+                    }
+                } else if (startM === 0) {
                     cm.proj_mes_atual += price;
                 }
 
@@ -4874,6 +4874,9 @@ function computeUnifiedFinancialDataset(gatewayFilter) {
                     const diffMeses = (dObj.getFullYear() - baseDateRef.getFullYear()) * 12 + (dObj.getMonth() - baseDateRef.getMonth());
                     if (diffMeses >= 0 && diffMeses < 18) {
                         cm.projecao_18m_sim[diffMeses] += val;
+                        if (diffMeses === 0) {
+                            cm.proj_mes_atual += val;
+                        }
                         if (diffMeses === 0 || diffMeses === 1) {
                             asaasCoursePending[cm.curso] = (asaasCoursePending[cm.curso] || 0) + val;
                             asaasTotalPending += val;
@@ -5667,14 +5670,14 @@ function drawExecView(force) {
         subReceitaRealizada = `Vindi (${fM(recVindiPer)}) + Asaas (${fM(recAsaasPer)})`;
     }
 
-    const recMesAtual = (Number(vKpis.recebido_mes_atual) || 0) + (Number(aKpis.recebido_mes_atual) || 0) || (uKpis.recebido_mes_atual || 0);
-    const aVencerMesVigente = uKpis.a_vencer_mes_atual || (Number(aKpis.a_vencer_mes_atual) || 0);
-    const totalPrevistoMesVigente = uKpis.previsto_mes_vigente || (recMesAtual + aVencerMesVigente);
-    const mrrConsolidado = (Number(vKpis.mrr_ativo) || 0) + (Number(aKpis.mrr_ativo) || 0) || (uKpis.mrr_ativo || 0);
-    const proj30d = (Number(vKpis.projecao_30d) || 0) + (Number(aKpis.projecao_30d) || 0) || (uKpis.projecao_30d || 0);
-    const proj3mConsolidada = uKpis.proj_3m || (mrrConsolidado * 3);
-    const proj6mConsolidada = uKpis.proj_6m || (mrrConsolidado * 6);
-    const proj12m = (Number(vKpis.projecao_12m) || 0) + (Number(aKpis.mrr_ativo || 0) * 12) || (mrrConsolidado * 12);
+    const recMesAtual = finUnifiedGlobal.global.pago_mes_atual || ((Number(vKpis.recebido_mes_atual) || 0) + (Number(aKpis.recebido_mes_atual) || 0));
+    const aVencerMesVigente = finUnifiedGlobal.global.proj_mes_atual || ((Number(vKpis.a_vencer_mes_atual) || 0) + (Number(aKpis.a_vencer_mes_atual) || 0));
+    const totalPrevistoMesVigente = finUnifiedGlobal.global.previsto_mes_vigente || (recMesAtual + aVencerMesVigente);
+    const mrrConsolidado = finUnifiedGlobal.global.mrr || ((Number(vKpis.mrr_ativo) || 0) + (Number(aKpis.mrr_ativo) || 0));
+    const proj30d = finUnifiedGlobal.global.proj_1m || ((Number(vKpis.projecao_30d) || 0) + (Number(aKpis.projecao_30d) || 0));
+    const proj3mConsolidada = finUnifiedGlobal.global.proj_3m || (mrrConsolidado * 3);
+    const proj6mConsolidada = finUnifiedGlobal.global.proj_6m || (mrrConsolidado * 6);
+    const proj12m = finUnifiedGlobal.global.proj_12m || (mrrConsolidado * 12);
     const atrasoTotal = (Number(vKpis.total_em_atraso) || 0) + (Number(aKpis.total_em_atraso) || 0);
     const qtdAtrasoTotal = (Number(vKpis.qtd_em_atraso) || 0) + (Number(aKpis.qtd_em_atraso) || 0);
     const taxaAdimplencia = vKpis.taxa_adimplencia || uKpis.taxa_adimplencia || 95;
