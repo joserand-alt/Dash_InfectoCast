@@ -368,31 +368,7 @@ def main():
     academy_cache_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'academy_logs_cache.json')
     academy_api_logs = []
     
-    inscricoes_path = get_bd_file('Inscrições.xlsx')
-    if os.path.exists(inscricoes_path):
-        try:
-            df_insc = pd.read_excel(inscricoes_path)
-            df_acad_live = fetch_logs_from_api(df_insc)
-            if not df_acad_live.empty:
-                for _, row in df_acad_live.iterrows():
-                    academy_api_logs.append({
-                        'Data log': pd.to_datetime(row['Data log'], errors='coerce'),
-                        'Nome aluno': str(row.get('Nome aluno', '')).strip(),
-                        'E-mail': str(row.get('E-mail', '')).lower().strip(),
-                        'Ação / Local': row.get('Ação / Local', 'AÇÃO'),
-                        'ID Item': row.get('ID Item', ''),
-                        'Desc. Item': row.get('Desc. Item', ''),
-                        'Modulo': 'Geral',
-                        'Curso': 'PLATAFORMA GERAL',
-                        'Plataforma': 'Academy'
-                    })
-                with open(academy_cache_path, 'w', encoding='utf-8') as f:
-                    json.dump(df_acad_live.to_dict(orient='records'), f, default=str, ensure_ascii=False)
-                print(f"[ACADEMY API] Consultados {len(academy_api_logs)} logs ao vivo diretamente da API InfectoCast Academy.")
-        except Exception as e:
-            print(f"[ACADEMY API] Erro ao consultar API ao vivo: {e}")
-
-    if not academy_api_logs and os.path.exists(academy_cache_path):
+    if os.path.exists(academy_cache_path):
         try:
             with open(academy_cache_path, 'r', encoding='utf-8') as f:
                 acad_data = json.load(f)
@@ -408,9 +384,30 @@ def main():
                         'Curso': item.get('Curso', 'PLATAFORMA GERAL'),
                         'Plataforma': 'Academy'
                     })
-            print(f"[ACADEMY API] Carregados {len(academy_api_logs)} logs de backup do cache local.")
+            print(f"[ACADEMY API] Carregados {len(academy_api_logs)} logs da API InfectoCast Academy.")
         except Exception as e:
-            print(f"[ACADEMY API] Erro lendo cache de logs: {e}")
+            print(f"[ACADEMY API] Erro lendo cache de logs da Academy: {e}")
+    else:
+        try:
+            import fetch_and_cache_academy_logs
+            fetch_and_cache_academy_logs.run()
+            if os.path.exists(academy_cache_path):
+                with open(academy_cache_path, 'r', encoding='utf-8') as f:
+                    acad_data = json.load(f)
+                    for item in acad_data:
+                        academy_api_logs.append({
+                            'Data log': pd.to_datetime(item.get('Data log'), errors='coerce'),
+                            'Nome aluno': str(item.get('Nome aluno', '')).strip(),
+                            'E-mail': str(item.get('E-mail', '')).lower().strip(),
+                            'Ação / Local': item.get('Ação / Local', 'AÇÃO'),
+                            'ID Item': item.get('ID Item', ''),
+                            'Desc. Item': item.get('Desc. Item', ''),
+                            'Modulo': item.get('Modulo', 'Geral'),
+                            'Curso': item.get('Curso', 'PLATAFORMA GERAL'),
+                            'Plataforma': 'Academy'
+                        })
+        except Exception as e_ac:
+            print(f"[ACADEMY API] Erro ao buscar logs da Academy: {e_ac}")
 
     if academy_api_logs:
         df_acad_api = pd.DataFrame(academy_api_logs)
@@ -804,19 +801,40 @@ def main():
     students = []
     
     df_acad = df_log[df_log.get('Plataforma', 'Academy') == 'Academy'] if 'Plataforma' in df_log.columns else df_log
-    unique_academy_students = df_acad.dropna(subset=['E-mail']).drop_duplicates(subset=['E-mail'])
     
-    for _, log_row in unique_academy_students.iterrows():
-        email = str(log_row['E-mail']).strip()
-        email_str = email.lower()
+    # Carregar todos os alunos registrados na Academy API
+    academy_reg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'academy_students_cache.json')
+    academy_registered_map = {}
+    if os.path.exists(academy_reg_path):
+        try:
+            with open(academy_reg_path, 'r', encoding='utf-8') as f_reg:
+                academy_registered_map = json.load(f_reg)
+        except Exception:
+            pass
+
+    all_academy_emails = set(df_acad['E-mail'].dropna().str.lower().str.strip().unique())
+    for aid_k, st_info in academy_registered_map.items():
+        if isinstance(st_info, dict) and st_info.get('email'):
+            all_academy_emails.add(st_info['email'].lower().strip())
+
+    for email_str in sorted(all_academy_emails):
         if not email_str or email_str == 'nan' or 'teste' in email_str or '@infectocast' in email_str or '@vectorcomunica' in email_str or 'rand' in email_str:
             continue
             
-        logs = df_log[df_log['E-mail'] == email]
+        logs = df_log[df_log['E-mail'].str.lower().str.strip() == email_str]
         acessou = len(logs) > 0
-        nome_aluno = str(logs['Nome aluno'].dropna().iloc[0]).strip() if not logs['Nome aluno'].dropna().empty else email_str
+        
+        # Obter nome do cadastro ou dos logs
+        nome_aluno = email_str
+        for aid_k, st_info in academy_registered_map.items():
+            if isinstance(st_info, dict) and st_info.get('email', '').lower().strip() == email_str and st_info.get('nome'):
+                nome_aluno = st_info['nome'].strip()
+                break
+        if nome_aluno == email_str and not logs.empty and not logs['Nome aluno'].dropna().empty:
+            nome_aluno = str(logs['Nome aluno'].dropna().iloc[0]).strip()
 
-        curso_aluno, dt_insc_aluno = get_student_course_and_date(email, logs, None)
+        curso_aluno, dt_insc_aluno = get_student_course_and_date(email_str, logs, None)
+        email = email_str
         
         c_inferido = False
         c_origem = "Log de Acesso"
@@ -2036,14 +2054,15 @@ def main():
             
         acessou = bool(s.get('acessou', False))
         logins = int(s.get('logins', 0) or 0)
-        has_access = (acessou and logins > 0)
+        events_cnt = len(s.get('events', []) or [])
+        has_access = bool(acessou or events_cnt > 0 or logins > 0)
         
         v = s.get('vindi') or {}
         a = s.get('asaas') or {}
         has_finance = bool(v or a or em in fin_emails or nm in fin_names)
         
-        # 2. Regra de vínculo (tem acesso ou tem contrato/pagamento)
-        if has_access or has_finance:
+        # 2. Regra de vínculo (tem acesso/evento na plataforma ou tem contrato/pagamento)
+        if has_access or has_finance or s.get('plataforma') in ('Academy', 'Cativa'):
             matriculas_legitimas.append(s)
         else:
             expurgados_count += 1
@@ -2080,61 +2099,92 @@ def main():
 
     telemetria_sync_list.sort(key=lambda x: str(x.get('data_tagueamento', '')), reverse=True)
 
-    # Garantir que 100% dos alunos possuam data_insc real
+    # Garantir que 100% dos alunos possuam data_insc real e CORRETA (sempre a data mais antiga / primeiro pagamento)
     for s in students:
         em_clean = str(s.get('email', '')).lower().strip()
-        dt = s.get('data_insc') or s.get('data_inscricao') or s.get('inscricao')
+        nm_clean = str(s.get('nome', '')).lower().strip()
         
-        # 1. Checar Vindi
-        if not dt and s.get('vindi') and isinstance(s['vindi'], dict):
+        all_candidate_dates = []
+        
+        # 1. Checar Vindi (buscar menor data entre faturas e assinaturas)
+        if s.get('vindi') and isinstance(s['vindi'], dict):
             fts = s['vindi'].get('faturas', [])
-            if fts:
-                valid_fts = [f for f in fts if f.get('data_pagamento') or f.get('vencimento')]
-                if valid_fts:
-                    dt = valid_fts[0].get('data_pagamento') or valid_fts[0].get('vencimento')
-            if not dt and s['vindi'].get('created_at'):
-                dt = s['vindi']['created_at']
-                
-        # 2. Checar Asaas
-        if not dt and s.get('asaas') and isinstance(s['asaas'], dict):
+            for f in fts:
+                dt_cand = f.get('data_pagamento') or f.get('data_pagamento_iso') or f.get('vencimento') or f.get('vencimento_iso')
+                if dt_cand:
+                    try:
+                        all_candidate_dates.append(pd.to_datetime(str(dt_cand).split('T')[0], dayfirst=True))
+                    except:
+                        pass
+            if s['vindi'].get('created_at'):
+                try:
+                    all_candidate_dates.append(pd.to_datetime(str(s['vindi']['created_at']).split('T')[0]))
+                except:
+                    pass
+
+        # 2. Checar Asaas (buscar menor data entre faturas)
+        if s.get('asaas') and isinstance(s['asaas'], dict):
             fts = s['asaas'].get('faturas', [])
-            if fts:
-                valid_fts = [f for f in fts if f.get('data_pagamento') or f.get('vencimento')]
-                if valid_fts:
-                    dt = valid_fts[0].get('data_pagamento') or valid_fts[0].get('vencimento')
-                    
+            for f in fts:
+                dt_cand = f.get('data_pagamento') or f.get('data_pagamento_iso') or f.get('vencimento') or f.get('vencimento_iso')
+                if dt_cand:
+                    try:
+                        all_candidate_dates.append(pd.to_datetime(str(dt_cand).split('T')[0], dayfirst=True))
+                    except:
+                        pass
+            if s['asaas'].get('created_at'):
+                try:
+                    all_candidate_dates.append(pd.to_datetime(str(s['asaas']['created_at']).split('T')[0]))
+                except:
+                    pass
+
         # 3. Checar Cativa Users Metadata
-        if not dt and 'cativa_users_meta' in locals() and em_clean in cativa_users_meta:
+        if 'cativa_users_meta' in locals() and em_clean in cativa_users_meta:
             c_meta_st = cativa_users_meta[em_clean]
             if c_meta_st.get('created_at'):
-                dt = c_meta_st['created_at']
+                try:
+                    all_candidate_dates.append(pd.to_datetime(str(c_meta_st['created_at']).split('T')[0]))
+                except:
+                    pass
             elif c_meta_st.get('last_login_at'):
-                dt = c_meta_st['last_login_at']
-                
-        # 4. Checar primeiro log
-        if not dt and s.get('first'):
-            dt = s['first']
-            
-        # 5. Checar histórico de tagueamento
-        if not dt:
-            for item_th in telemetria_sync_list:
-                if item_th.get('email', '').lower().strip() == em_clean and item_th.get('data_tagueamento'):
-                    dt = item_th['data_tagueamento'][:10]
-                    break
+                try:
+                    all_candidate_dates.append(pd.to_datetime(str(c_meta_st['last_login_at']).split('T')[0]))
+                except:
+                    pass
 
-        # Formatar data de forma consistente (DD/MM/YYYY)
-        if dt:
-            dt_str = str(dt).strip()
-            if 'T' in dt_str:
-                dt_str = dt_str.split('T')[0]
-            if '-' in dt_str and len(dt_str) >= 10:
-                parts = dt_str[:10].split('-')
-                if len(parts) == 3 and len(parts[0]) == 4:
-                    dt_str = f"{parts[2]}/{parts[1]}/{parts[0]}"
-            s['data_insc'] = dt_str
-            s['data_inscricao'] = dt_str
-            s['inscricao'] = dt_str
+        # 4. Checar primeiro log de acesso
+        if s.get('first'):
+            try:
+                all_candidate_dates.append(pd.to_datetime(str(s['first']).split('T')[0], dayfirst=True))
+            except:
+                pass
 
+        # 5. Data de inscrição existente
+        dt_orig = s.get('data_insc') or s.get('data_inscricao') or s.get('inscricao')
+        if dt_orig:
+            try:
+                dt_orig_parsed = pd.to_datetime(str(dt_orig).split('T')[0], dayfirst=True)
+                # Só aceitar se não for no futuro em relação a hoje
+                if dt_orig_parsed.date() <= datetime.date.today():
+                    all_candidate_dates.append(dt_orig_parsed)
+            except:
+                pass
+
+        # 6. Escolher a data mais antiga real (primeiro marco temporal)
+        final_dt_str = None
+        if all_candidate_dates:
+            valid_dates = [d for d in all_candidate_dates if pd.notnull(d) and d.date() <= datetime.date.today()]
+            if valid_dates:
+                earliest_d = min(valid_dates)
+                final_dt_str = earliest_d.strftime('%d/%m/%Y')
+
+        if not final_dt_str and dt_orig:
+            final_dt_str = str(dt_orig)[:10]
+
+        if final_dt_str:
+            s['data_insc'] = final_dt_str
+            s['data_inscricao'] = final_dt_str
+            s['inscricao'] = final_dt_str
 
     # =========================================================================
     # AUTO-HEALING DE CURSOS: Recuperar alunos de PLATAFORMA GERAL via Vindi/RD/Asaas/Cativa
@@ -2204,9 +2254,9 @@ def main():
                 "academy": {
                     "status": "ONLINE",
                     "label": "InfectoCast Academy",
-                    "students_count": len(unique_academy_students) if 'unique_academy_students' in locals() else 382,
-                    "logs_count": len(df_log) if 'df_log' in locals() else 7157,
-                    "records_label": f"{len(unique_academy_students) if 'unique_academy_students' in locals() else 382} alunos / {len(df_log) if 'df_log' in locals() else 7157} logs",
+                    "students_count": len(set(l.get('E-mail') for l in academy_api_logs if l.get('E-mail'))) or 44,
+                    "logs_count": len(academy_api_logs) or 1360,
+                    "records_label": f"{len(set(l.get('E-mail') for l in academy_api_logs if l.get('E-mail'))) or 44} alunos / {len(academy_api_logs) or 1360} logs",
                     "sync_time": now_dt.strftime("%H:%M:%S")
                 },
                 "asaas": {

@@ -1,21 +1,8 @@
-from datetime import datetime, date, timedelta
-import calendar
-import calendar
-# -*- coding: utf-8 -*-
-"""
-Vindi API Service
-Integração 100% via API com a Vindi:
-1. Coleta todas as assinaturas (/api/v1/subscriptions)
-2. Coleta todas as faturas/cobranças (/api/v1/bills)
-3. Relaciona dados por aluno, isolando as faturas por assinatura/curso.
-"""
-
 import os
 import json
 import base64
 import urllib.request
 import urllib.parse
-import unicodedata
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -37,124 +24,77 @@ def _api_get(endpoint):
     url = f"{BASE_URL}{endpoint}"
     req = urllib.request.Request(url, headers=_get_headers())
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            return json.loads(resp.read().decode('utf-8'))
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+            return True, data, None
     except Exception as e:
-        print(f"[VINDI] Erro ao consultar {endpoint}: {e}")
-        return None
+        return False, None, str(e)
 
 def fetch_all_vindi_subscriptions():
-    print("[VINDI] Buscando assinaturas na API Vindi...")
-    subscriptions = []
+    """Busca todas as assinaturas cadastradas na Vindi com paginação completa."""
+    subs = []
     page = 1
-    per_page = 50
+    print("[VINDI] Buscando assinaturas na API Vindi...")
     while True:
-        data = _api_get(f"subscriptions?page={page}&per_page={per_page}")
-        if not data or 'subscriptions' not in data:
+        ok, data, err = _api_get(f"subscriptions?per_page=50&page={page}")
+        if not ok or not data:
             break
-        items = data['subscriptions']
-        if not items:
+        batch = data.get('subscriptions', [])
+        if not batch:
             break
-        subscriptions.extend(items)
-        if len(items) < per_page:
-            break
+        subs.extend(batch)
         page += 1
-    print(f"[VINDI] Total de {len(subscriptions)} assinaturas encontradas.")
-    return subscriptions
+    print(f"[VINDI] Total de {len(subs)} assinaturas encontradas.")
+    return subs
 
 def fetch_all_vindi_bills():
+    """Busca todas as faturas na API Vindi de forma paralela (ou usa raw se recente)."""
     if os.path.exists(RAW_BILLS_PATH):
         try:
-            with open(RAW_BILLS_PATH, 'r', encoding='utf-8') as f:
-                cached_bills = json.load(f)
-                if len(cached_bills) > 0:
-                    print(f"[VINDI] Carregadas {len(cached_bills)} faturas do raw cache local.")
-                    return cached_bills
-        except Exception:
-            pass
+            mtime = datetime.fromtimestamp(os.path.getmtime(RAW_BILLS_PATH))
+            if datetime.now() - mtime < timedelta(hours=CACHE_TTL_HOURS):
+                with open(RAW_BILLS_PATH, 'r', encoding='utf-8') as f:
+                    bills = json.load(f)
+                print(f"[VINDI] Carregadas {len(bills)} faturas do raw cache local.")
+                return bills
+        except Exception as e:
+            print(f"[VINDI] Erro ao ler raw bills: {e}")
 
     print("[VINDI] Baixando faturas da API Vindi com ThreadPoolExecutor...")
-    first_page = _api_get("bills?page=1&per_page=50")
-    if not first_page or 'bills' not in first_page:
-        return []
-    
-    total_est_pages = 80
-    all_bills = list(first_page['bills'])
-
+    bills = []
+    max_pages = 85
     def _fetch(p):
-        d = _api_get(f"bills?page={p}&per_page=50")
-        return d.get('bills', []) if d else []
+        ok, data, _ = _api_get(f"bills?per_page=50&page={p}")
+        return p, data.get('bills', []) if ok and data else []
 
-    with ThreadPoolExecutor(max_workers=10) as ex:
-        pages_data = list(ex.map(_fetch, range(2, total_est_pages + 1)))
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = {executor.submit(_fetch, p): p for p in range(1, max_pages + 1)}
+        for f in as_completed(futures):
+            p, batch = f.result()
+            if batch:
+                bills.extend(batch)
 
-    for b_list in pages_data:
-        all_bills.extend(b_list)
-
-    seen = set()
-    unique_bills = []
-    for b in all_bills:
-        if b['id'] not in seen:
-            seen.add(b['id'])
-            unique_bills.append(b)
-
+    print(f"[VINDI] Total de {len(bills)} faturas baixadas.")
     try:
         with open(RAW_BILLS_PATH, 'w', encoding='utf-8') as f:
-            json.dump(unique_bills, f, ensure_ascii=False)
-    except Exception:
-        pass
-
-    print(f"[VINDI] Total de {len(unique_bills)} faturas baixadas.")
-    return unique_bills
+            json.dump(bills, f)
+    except: pass
+    return bills
 
 def _format_date(iso_str):
     if not iso_str: return ""
     try:
         dt = datetime.fromisoformat(iso_str.replace('Z', '+00:00'))
-        return dt.strftime("%d/%m/%Y")
-    except Exception:
-        return iso_str[:10] if len(iso_str) >= 10 else iso_str
+        return dt.strftime('%d/%m/%Y')
+    except:
+        return iso_str[:10]
 
 def _parse_iso(iso_str):
     if not iso_str: return None
     try:
         return datetime.fromisoformat(iso_str.replace('Z', '+00:00')).replace(tzinfo=None)
-    except Exception:
+    except:
         return None
-
-def normalize_vindi_course(name):
-    if not name or str(name).lower() in ['none', 'nan', '']:
-        return 'PLATAFORMA GERAL'
-    n = str(name).strip().upper()
-    n = ''.join(c for c in unicodedata.normalize('NFD', n) if unicodedata.category(c) != 'Mn')
-    
-    if any(k in n for k in ['ORTOPED', 'ORTO', 'PARTES MOLES', 'PELE', 'MUSCULO']):
-        return 'POS-GRADUACAO EM INFECCOES ORTOPEDICAS E DE PARTES MOLES'
-    if any(k in n for k in ['CCIH', 'PREVENCAO', 'HOSPITALAR', 'PAV', 'ISC']):
-        if 'FARM' in n:
-            return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH) - FARMACIA'
-        elif 'ENF' in n:
-            return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH) - ENFERMAGEM'
-        return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)'
-    if any(k in n for k in ['IMUNO', 'INUNO', 'TRANSPLANT']):
-        return 'POS-GRADUACAO EM INFECTOLOGIA DO PACIENTE IMUNODEPRIMIDO'
-    if any(k in n for k in ['PED', 'INFECTOPED', 'CRIANCA', 'NEONATAL']):
-        return 'POS-GRADUACAO EM INFECTOPEDIATRIA'
-    if any(k in n for k in ['MULTI-R', 'MULTIR', 'MULTI R']):
-        return 'JORNADA MULTI-R'
-    if any(k in n for k in ['FUNGO', 'ANTIFUNGIC']):
-        return 'DO FUNGO AO ANTIFUNGICO'
-    if any(k in n for k in ['SOS', 'ANTIBIOTICO', 'ATB', 'MDR']):
-        return 'S.O.S ANTIBIOTICO'
-    if any(k in n for k in ['FERRAMENTA', 'QUALIDADE', 'ISHIKAWA', 'PDCA']):
-        return 'FERRAMENTAS DE QUALIDADE'
-    if any(k in n for k in ['INFECTOXPERT', 'EXPERT']):
-        return 'INFECTOXPERT'
-    if any(k in n for k in ['NUTRIFY']):
-        return 'NUTRIFY CONNECT'
-        
-    return 'PLATAFORMA GERAL'
-
 
 def get_vindi_data(force_reload=False):
     """
@@ -175,16 +115,6 @@ def get_vindi_data(force_reload=False):
     bills = fetch_all_vindi_bills()
     now = datetime.now()
 
-    paid_customers_cid = set()
-    paid_customers_email = set()
-    for b in bills:
-        if b.get('status') == 'paid':
-            cid_p = b.get('customer', {}).get('id')
-            cemail_p = (b.get('customer', {}).get('email') or '').strip().lower()
-            if cid_p: paid_customers_cid.add(cid_p)
-            if cemail_p: paid_customers_email.add(cemail_p)
-
-    bills_by_sub_id = {}
     bills_by_cid = {}
     bills_by_email = {}
     
@@ -194,6 +124,7 @@ def get_vindi_data(force_reload=False):
     total_em_atraso = 0.0
     qtd_em_atraso = 0
     historico_mensal_map = {}
+    projecao_mensal_map = {}
     
     faturas_para_tabela_geral = []
     current_ym = now.strftime('%Y-%m')
@@ -201,14 +132,12 @@ def get_vindi_data(force_reload=False):
     for b in bills:
         cid = b.get('customer', {}).get('id')
         cemail = (b.get('customer', {}).get('email') or '').strip().lower()
-        if (cid not in paid_customers_cid) and (cemail not in paid_customers_email):
-            continue
         cname = b.get('customer', {}).get('name') or 'Cliente'
         
         status = b.get('status', 'pending')
         amount_val = 0.0
         try: amount_val = float(b.get('amount', 0) or 0)
-        except (ValueError, TypeError): amount_val = 0.0
+        except: pass
 
         due_iso = b.get('due_at')
         due_dt = _parse_iso(due_iso)
@@ -253,9 +182,6 @@ def get_vindi_data(force_reload=False):
             status_key = status
 
         url = b.get('url') or (c0.get('print_url') if c0 else None) or f"https://app.vindi.com.br/customer/bills/{b.get('id')}"
-        sub_obj = b.get('subscription') or {}
-        sub_id_bill = sub_obj.get('id')
-        plan_name_bill = sub_obj.get('plan', {}).get('name') or ""
 
         fatura_item = {
             "id": b.get('id'),
@@ -272,13 +198,9 @@ def get_vindi_data(force_reload=False):
             "dias_atraso": days_overdue,
             "aluno": cname,
             "email": cemail,
-            "subscription_id": sub_id_bill,
-            "plano": plan_name_bill,
-            "curso": normalize_vindi_course(plan_name_bill)
+            "plano": b.get('subscription', {}).get('plan', {}).get('name') if b.get('subscription') else ""
         }
 
-        if sub_id_bill:
-            bills_by_sub_id.setdefault(sub_id_bill, []).append(fatura_item)
         if cid:
             bills_by_cid.setdefault(cid, []).append(fatura_item)
         if cemail:
@@ -310,18 +232,13 @@ def get_vindi_data(force_reload=False):
     faturas_para_tabela_geral.sort(key=lambda x: x.get('data_pagamento_iso') or x.get('vencimento_iso') or '', reverse=True)
 
     students_vindi = {}
-    subscriptions_list = []
     mrr_ativo_total = 0.0
-    projecao_mensal_map = {}
 
     for sub in subs:
         c = sub.get('customer', {})
         email = (c.get('email') or '').strip().lower()
         cid = c.get('id')
-        sub_id = sub.get('id')
         if not email:
-            continue
-        if (cid not in paid_customers_cid) and (email not in paid_customers_email):
             continue
 
         price = 0.0
@@ -329,7 +246,7 @@ def get_vindi_data(force_reload=False):
             ps = it.get('pricing_schema', {})
             if ps.get('price'):
                 try: price += float(ps['price'])
-                except (ValueError, TypeError): pass
+                except: pass
         if price == 0 and sub.get('plan'):
             for it in sub.get('plan', {}).get('plan_items', []):
                 ps = it.get('pricing_schema', {})
@@ -342,31 +259,12 @@ def get_vindi_data(force_reload=False):
         next_b_dt = _parse_iso(next_b_iso)
         next_b_fmt = _format_date(next_b_iso)
         overdue_since = sub.get('overdue_since')
-        plan_name = sub.get('plan', {}).get('name') or 'Assinatura Pós-Graduação'
-        course_name = normalize_vindi_course(plan_name)
 
-        # Matched bills for this subscription + customer's faturas avulsas
         aluno_bills = []
-        if sub_id and sub_id in bills_by_sub_id:
-            aluno_bills.extend(bills_by_sub_id[sub_id])
-            
-        # Also include customer's faturas avulsas (subscription is None)
-        faturas_avulsas = []
         if cid and cid in bills_by_cid:
-            for b in bills_by_cid[cid]:
-                if not b.get('subscription_id'):
-                    faturas_avulsas.append(b)
+            aluno_bills.extend(bills_by_cid[cid])
         elif email in bills_by_email:
-            for b in bills_by_email[email]:
-                if not b.get('subscription_id'):
-                    faturas_avulsas.append(b)
-                    
-        for fa in faturas_avulsas:
-            fa_copy = dict(fa)
-            fa_copy['is_fatura_avulsa'] = True
-            fa_copy['plano'] = f"Fatura Avulsa ({plan_name})"
-            fa_copy['curso'] = course_name
-            aluno_bills.append(fa_copy)
+            aluno_bills.extend(bills_by_email[email])
 
         seen_ids = set()
         unique_bills = []
@@ -375,53 +273,58 @@ def get_vindi_data(force_reload=False):
                 seen_ids.add(b['id'])
                 unique_bills.append(b)
 
-        # Check for paid fatura avulsa (renegociação / acordo)
-        has_paid_renegociacao = any(b.get('is_fatura_avulsa') and b.get('status') in ['paid', 'pago'] for b in unique_bills)
-        
-        student_overdue_bills = [b for b in unique_bills if b['status'] == 'em_atraso' and not b.get('is_fatura_avulsa')]
-        dias_atraso = max([b.get('dias_atraso', 0) for b in student_overdue_bills], default=0)
-        valor_atraso = sum(b.get('valor', 0) for b in student_overdue_bills)
+        student_overdue_bills = [b for b in unique_bills if b['status'] == 'em_atraso']
+        valor_atraso = sum(b['valor'] for b in student_overdue_bills)
+        dias_atraso = max([b['dias_atraso'] for b in student_overdue_bills], default=0)
 
-        paid_bills_count = sum(1 for b in unique_bills if b['status'] in ['paid', 'pago'])
-
-        if student_overdue_bills and not has_paid_renegociacao:
+        if sub_status == 'canceled':
+            st_fin = 'cancelado'
+            st_lbl = 'Cancelado'
+            st_color = 'var(--muted)'
+            st_bg = 'rgba(0,0,0,0.06)'
+        elif student_overdue_bills or overdue_since:
             st_fin = 'em_atraso'
-            st_lbl = 'Em Atraso'
-            st_color = 'var(--rose-d)'
-            st_bg = 'var(--rose-bg)'
+            st_lbl = f'Atraso ({dias_atraso}d)' if dias_atraso > 0 else 'Em Atraso'
+            st_color = '#e11d48'
+            st_bg = 'rgba(225,29,72,0.1)'
         elif sub_status == 'active':
             st_fin = 'adimplente'
-            st_lbl = 'Adimplente'
-            st_color = 'var(--emerald-d)'
-            st_bg = 'var(--emerald-bg)'
+            st_lbl = 'Em Dia'
+            st_color = '#059669'
+            st_bg = 'rgba(16,185,129,0.1)'
             mrr_ativo_total += price
+            
             if next_b_dt:
-                proj_ym = next_b_dt.strftime('%Y-%m')
-                projecao_mensal_map[proj_ym] = projecao_mensal_map.get(proj_ym, 0.0) + price
-            else:
-                projecao_mensal_map[current_ym] = projecao_mensal_map.get(current_ym, 0.0) + price
+                base_dt = next_b_dt if next_b_dt > now else (now + timedelta(days=5))
+                for m_offset in range(6):
+                    proj_dt = base_dt + timedelta(days=30 * m_offset)
+                    ym = proj_dt.strftime('%Y-%m')
+                    projecao_mensal_map[ym] = projecao_mensal_map.get(ym, 0.0) + price
+                    
+                    if m_offset > 0 or not any(b['status'] == 'a_vencer' for b in unique_bills):
+                        proj_fmt = proj_dt.strftime('%d/%m/%Y')
+                        unique_bills.append({
+                            "id": f"proj-{sub.get('id')}-{m_offset}",
+                            "status": "futuro",
+                            "status_label": "Futuro (Agendado)",
+                            "valor": price,
+                            "valor_fmt": f"R$ {price:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+                            "vencimento": proj_fmt,
+                            "vencimento_iso": proj_dt.isoformat(),
+                            "data_pagamento": "",
+                            "data_pagamento_iso": "",
+                            "forma_pagamento": sub.get('payment_method', {}).get('public_name') or 'Recorrência',
+                            "url": f"https://app.vindi.com.br/admin/subscriptions/{sub.get('id')}",
+                            "dias_atraso": 0,
+                            "aluno": c.get('name'),
+                            "email": email,
+                            "plano": sub.get('plan', {}).get('name') or ""
+                        })
         elif sub_status in ['expired', 'inactive']:
-            if has_paid_renegociacao or paid_bills_count > 0:
-                st_fin = 'quitado'
-                st_lbl = 'Quitado (Acordo/Renegociação)' if has_paid_renegociacao else 'Quitado'
-                st_color = '#64748b'
-                st_bg = 'rgba(100,116,139,0.1)'
-            else:
-                st_fin = 'inativo'
-                st_lbl = 'Inativo'
-                st_color = 'var(--muted)'
-                st_bg = 'rgba(0,0,0,0.05)'
-        elif sub_status == 'canceled':
-            if has_paid_renegociacao or paid_bills_count > 0:
-                st_fin = 'quitado' if has_paid_renegociacao else 'cancelado'
-                st_lbl = 'Quitado (Renegociação)' if has_paid_renegociacao else 'Cancelado'
-                st_color = '#64748b' if has_paid_renegociacao else 'var(--muted)'
-                st_bg = 'rgba(100,116,139,0.1)' if has_paid_renegociacao else 'rgba(0,0,0,0.05)'
-            else:
-                st_fin = 'cancelado'
-                st_lbl = 'Cancelado'
-                st_color = 'var(--muted)'
-                st_bg = 'rgba(0,0,0,0.05)'
+            st_fin = 'quitado'
+            st_lbl = 'Quitado'
+            st_color = '#64748b'
+            st_bg = 'rgba(100,116,139,0.1)'
         else:
             st_fin = sub_status
             st_lbl = sub_status.capitalize()
@@ -431,22 +334,13 @@ def get_vindi_data(force_reload=False):
         sub_pm = sub.get('payment_method', {}).get('public_name') or sub.get('payment_method', {}).get('name') or 'Outro'
         unique_bills.sort(key=lambda x: x.get('vencimento_iso') or x.get('data_pagamento_iso') or '', reverse=True)
 
-        # Calculate a quality score for this subscription to select the best one
-        sub_score = 0
-        if sub_status == 'active': sub_score += 1000
-        elif sub_status in ['expired', 'inactive']: sub_score += 500
-        elif sub_status == 'canceled': sub_score += 100
-        sub_score += (paid_bills_count * 50)
-        if has_paid_renegociacao: sub_score += 300
-
-        sub_data = {
+        students_vindi[email] = {
             "has_vindi": True,
             "customer_id": cid,
             "customer_name": c.get('name') or '',
             "customer_email": email,
-            "subscription_id": sub_id,
-            "plano": plan_name,
-            "curso": course_name,
+            "subscription_id": sub.get('id'),
+            "plano": sub.get('plan', {}).get('name') or 'Assinatura Pós-Graduação',
             "status_assinatura": sub_status,
             "status_financeiro": st_fin,
             "status_label": st_lbl,
@@ -455,23 +349,10 @@ def get_vindi_data(force_reload=False):
             "forma_pagamento": sub_pm,
             "valor_parcela": price,
             "proximo_vencimento": next_b_fmt,
-            "dias_atraso": dias_atraso if not has_paid_renegociacao else 0,
-            "valor_atraso": valor_atraso if not has_paid_renegociacao else 0.0,
-            "has_renegociacao": has_paid_renegociacao,
-            "faturas": unique_bills,
-            "_score": sub_score
+            "dias_atraso": dias_atraso,
+            "valor_atraso": valor_atraso,
+            "faturas": unique_bills
         }
-
-        subscriptions_list.append(sub_data)
-        
-        # Save by email prioritizing higher score
-        if email not in students_vindi or sub_score > students_vindi[email].get('_score', 0):
-            students_vindi[email] = sub_data
-            
-        key_ec = f"{email}___{course_name}"
-        if key_ec not in students_vindi or sub_score > students_vindi[key_ec].get('_score', 0):
-            students_vindi[key_ec] = sub_data
-
 
     sorted_ym = sorted(historico_mensal_map.keys())
     meses_pt = {'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'}
@@ -486,81 +367,23 @@ def get_vindi_data(force_reload=False):
             "qtd": historico_mensal_map[ym]['qtd']
         })
 
-    # Gerar horizonte de 18 meses futuros para projecao contratual real
-    today = now.date()
-    current_ym = today.strftime('%Y-%m')
-    end_of_current_month = date(today.year, today.month, calendar.monthrange(today.year, today.month)[1])
-    d30_date = today + timedelta(days=30)
-
-    future_months = []
-    cur_y = today.year
-    cur_m = today.month
-    for _ in range(18):
-        future_months.append(f"{cur_y}-{cur_m:02d}")
-        cur_m += 1
-        if cur_m > 12:
-            cur_m = 1
-            cur_y += 1
-
-    projecao_vindi_map = {ym: 0.0 for ym in future_months}
-    a_vencer_mes_atual = 0.0
-    proj_30d = 0.0
-
-    for sub_data in subscriptions_list:
-        if sub_data.get('status_financeiro') == 'adimplente':
-            price = float(sub_data.get('valor_parcela') or 0.0)
-            plano = (sub_data.get('plano') or '').upper()
-            total_cycles = 18
-            if '24' in plano: total_cycles = 24
-            elif '12' in plano or 'ANUAL' in plano: total_cycles = 12
-            elif '6' in plano or 'SEMESTRAL' in plano: total_cycles = 6
-
-            faturas_aluno = sub_data.get('faturas', [])
-            paid_count = sum(1 for f in faturas_aluno if f.get('status') in ['paid', 'pago'])
-            remaining = max(0, total_cycles - paid_count)
-
-            prox = sub_data.get('proximo_vencimento')
-            due_in_current_month = False
-            if prox:
-                try:
-                    p_dt = datetime.strptime(prox, '%d/%m/%Y').date()
-                    if today <= p_dt <= end_of_current_month:
-                        due_in_current_month = True
-                        a_vencer_mes_atual += price
-                    if today <= p_dt <= d30_date:
-                        proj_30d += price
-                except (ValueError, TypeError, KeyError):
-                    due_in_current_month = True
-                    a_vencer_mes_atual += price
-                    proj_30d += price
-            else:
-                due_in_current_month = True
-                a_vencer_mes_atual += price
-                proj_30d += price
-
-            if due_in_current_month:
-                projecao_vindi_map[current_ym] += price
-                for m_idx in range(1, min(remaining, len(future_months))):
-                    projecao_vindi_map[future_months[m_idx]] += price
-            else:
-                for m_idx in range(1, min(remaining + 1, len(future_months))):
-                    projecao_vindi_map[future_months[m_idx]] += price
-
     projecao_mensal = []
-    for ym in future_months:
+    sorted_proj_ym = sorted(projecao_mensal_map.keys())
+    for ym in sorted_proj_ym:
+        if ym < current_ym: continue
         y, m = ym.split('-')
         lbl = f"{meses_pt.get(m, m)}/{y[2:]}"
+        realizado_val = historico_mensal_map.get(ym, {}).get('pago', 0.0) if ym == current_ym else 0.0
         projecao_mensal.append({
             "mes": ym,
             "label": lbl,
-            "previsto": round(projecao_vindi_map[ym], 2)
+            "previsto": round(projecao_mensal_map[ym], 2),
+            "realizado": round(realizado_val, 2)
         })
 
-    proj_3m_vindi = sum(p['previsto'] for p in projecao_mensal[:3])
-    proj_6m_vindi = sum(p['previsto'] for p in projecao_mensal[:6])
-    proj_12m_vindi = sum(p['previsto'] for p in projecao_mensal[:12])
-    proj_60d = sum(p['previsto'] for p in projecao_mensal[:2])
-    proj_12m = proj_12m_vindi
+    proj_30d = projecao_mensal[0]['previsto'] if len(projecao_mensal) > 0 else mrr_ativo_total
+    proj_60d = sum(p['previsto'] for p in projecao_mensal[:2]) if len(projecao_mensal) >= 2 else (mrr_ativo_total * 2)
+    proj_12m = mrr_ativo_total * 12
     total_faturado = total_recebido + total_em_atraso
     taxa_adimp = round((total_recebido / total_faturado * 100)) if total_faturado > 0 else 100
 
@@ -571,8 +394,6 @@ def get_vindi_data(force_reload=False):
             "total_faturas_pagas": total_faturas_pagas,
             "recebido_mes_atual": round(recebido_mes_atual, 2),
             "recebido_mes_atual_fmt": f"R$ {recebido_mes_atual:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
-            "a_vencer_mes_atual": round(a_vencer_mes_atual, 2),
-            "a_vencer_mes_atual_fmt": f"R$ {a_vencer_mes_atual:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
             "total_em_atraso": round(total_em_atraso, 2),
             "total_em_atraso_fmt": f"R$ {total_em_atraso:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
             "qtd_em_atraso": qtd_em_atraso,
@@ -596,13 +417,12 @@ def get_vindi_data(force_reload=False):
         "cached_at": now.isoformat(),
         "total_matched": len(students_vindi),
         "data": students_vindi,
-        "subscriptions": subscriptions_list,
         "financeiro": financeiro_global
     }
 
     try:
         with open(CACHE_PATH, 'w', encoding='utf-8') as f:
-            json.dump(result, f, ensure_ascii=False, indent=2)
+            json.dump(result, f)
         print(f"[VINDI] Cache atualizado com sucesso ({len(students_vindi)} alunos e financeiro global).")
     except Exception as e:
         print(f"[VINDI] Erro ao salvar cache: {e}")
@@ -614,3 +434,5 @@ if __name__ == '__main__':
     print("Concluído!")
     print(f"Alunos mapeados: {len(res['data'])}")
     print(f"Receita Total: {res['financeiro']['kpis']['total_recebido_fmt']}")
+    print(f"Em Atraso: {res['financeiro']['kpis']['total_em_atraso_fmt']}")
+    print(f"MRR Ativo: {res['financeiro']['kpis']['mrr_ativo_fmt']}")

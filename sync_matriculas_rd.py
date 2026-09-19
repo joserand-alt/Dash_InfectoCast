@@ -204,26 +204,44 @@ def sync_pending_matriculas(dry_run=False):
 
     todas_matriculas = []
 
-    # 1. Carregar Inscrições / Matrículas da Planilha Academy
-    insc_file = get_inscricoes_file()
-    if os.path.exists(insc_file):
+    # 1. Carregar Inscrições / Matrículas da InfectoCast Academy API
+    academy_students_path = os.path.join(BASE_DIR, "academy_students_cache.json")
+    academy_logs_path = os.path.join(BASE_DIR, "academy_logs_cache.json")
+    
+    academy_course_map = {}
+    if os.path.exists(academy_logs_path):
         try:
-            df_insc = pd.read_excel(insc_file)
-            for idx, row in df_insc.iterrows():
-                em = str(row.get("E-mail") or "").strip().lower()
-                if not em or "@" not in em or em.endswith("@infectocast.com") or "teste" in em:
-                    continue
-                todas_matriculas.append({
-                    "email": em,
-                    "nome": str(row.get("Nome") or "").strip(),
-                    "curso": str(row.get("Curso") or row.get("Pós") or "Pós-Graduação InfectoCast").strip(),
-                    "valor": row.get("Valor") or row.get("Valor Pago") or None,
-                    "gateway": "Academy",
-                    "origem": "Academy",
-                    "id": str(row.get("ID") or f"MAT-AC-{idx+1}").strip()
-                })
+            with open(academy_logs_path, "r", encoding="utf-8") as f_al:
+                logs_data = json.load(f_al)
+                for l in logs_data:
+                    em = str(l.get("E-mail", "")).lower().strip()
+                    acao = str(l.get("Ação / Local", "")).upper()
+                    item = str(l.get("ID Item") or l.get("Desc. Item") or "").strip()
+                    if "TURMA" in acao and item and item != "nan":
+                        academy_course_map[em] = item
+        except Exception:
+            pass
+
+    if os.path.exists(academy_students_path):
+        try:
+            with open(academy_students_path, "r", encoding="utf-8") as f_ast:
+                ast_data = json.load(f_ast)
+                for aid, s in ast_data.items():
+                    em = str(s.get("email", "")).lower().strip()
+                    if not em or "@" not in em or em.endswith("@infectocast.com") or "teste" in em:
+                        continue
+                    curso_resolved = academy_course_map.get(em, "Pós-Graduação InfectoCast")
+                    todas_matriculas.append({
+                        "email": em,
+                        "nome": str(s.get("nome") or "Aluno Academy").strip(),
+                        "curso": curso_resolved,
+                        "valor": None,
+                        "gateway": "Academy",
+                        "origem": "Academy",
+                        "id": f"MAT-AC-{aid}"
+                    })
         except Exception as e:
-            logger.error(f"Erro ao ler planilha de inscrições Academy: {e}")
+            logger.error(f"Erro ao carregar alunos da Academy API: {e}")
 
     # 2. Carregar Matrículas da Cativa Digital
     todas_matriculas.extend(get_cativa_enrollments())
