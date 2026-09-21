@@ -1939,6 +1939,71 @@ option {
 
 
 <!-- MODAL DE AUDITORIA DE MATRÍCULAS // ACADEMY, CATIVA & GATEWAYS -->
+<!-- MODAL: PROJEÇÃO DIÁRIA DE RECEBIMENTOS DO MÊS VIGENTE -->
+<div class="modal-ov" id="modal-projecao-diaria">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:940px; width:95%; padding:0; overflow:hidden; border-radius:14px; background:var(--card); box-shadow:0 10px 40px rgba(0,0,0,0.35); max-height:92vh; display:flex; flex-direction:column;">
+    <div class="md-head" style="background:var(--card-hover); padding:16px 20px; border-bottom:1px solid var(--line); position:relative; flex-shrink:0;">
+      <button class="md-close" onclick="closeModalProjecaoDiaria()" style="position:absolute; right:16px; top:16px; background:transparent; border:none; font-size:22px; cursor:pointer; color:var(--muted); line-height:1;" title="Fechar">&times;</button>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:20px;">📅</span>
+        <h3 id="mpd-title" style="margin:0; font-size:16px; font-weight:800; color:var(--ink);">Projeção Diária de Recebimentos — Setembro / 2026</h3>
+      </div>
+      <p style="margin:4px 0 0 28px; font-size:12px; color:var(--muted);">Acompanhamento diário de faturamento realizado (01 a 21/09) e projetado a vencer (22 a 30/09).</p>
+    </div>
+
+    <div style="padding:20px; overflow-y:auto; flex:1;">
+      <!-- KPIs Resumo do Mês -->
+      <div id="mpd-kpis" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:12px; margin-bottom:20px;"></div>
+
+      <!-- Gráfico de Barras SVG Interativo -->
+      <div style="background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+          <div style="font-size:12.5px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:6px;">
+            <span>📊</span> Curva Diária de Entradas do Mês (Setembro/2026)
+          </div>
+          <div style="display:flex; gap:12px; font-size:11px;">
+            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; border-radius:2px; background:var(--emerald);"></span> Realizado (01 a 21/09)</span>
+            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; border-radius:2px; background:var(--brand);"></span> A Vencer (22 a 30/09)</span>
+          </div>
+        </div>
+        <div id="mpd-chart-mount" style="width:100%; min-height:180px; overflow-x:auto;"></div>
+      </div>
+
+      <!-- Controles de Filtro e Exportação -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+        <div style="display:flex; gap:6px;" id="mpd-filter-chips">
+          <button id="mpd-btn-all" onclick="filterModalProjecaoDays('all')" class="chip on" style="font-size:11px; padding:5px 12px; cursor:pointer;">Todos os Dias (01 a 30)</button>
+          <button id="mpd-btn-future" onclick="filterModalProjecaoDays('future')" class="chip" style="font-size:11px; padding:5px 12px; cursor:pointer;">⏳ A Vencer (22 a 30/09)</button>
+          <button id="mpd-btn-past" onclick="filterModalProjecaoDays('past')" class="chip" style="font-size:11px; padding:5px 12px; cursor:pointer;">✅ Realizados (01 a 21/09)</button>
+        </div>
+        <button onclick="exportModalProjecaoCSV()" class="btn-export-csv" style="display:inline-flex; align-items:center; gap:5px; background:var(--paper); border:1px solid var(--line); border-radius:6px; padding:5px 12px; font-size:11px; font-weight:700; cursor:pointer; color:var(--ink);" title="Exportar projeção diária para CSV">
+          <span>📥</span> Exportar CSV Diário
+        </button>
+      </div>
+
+      <!-- Tabela Dia a Dia -->
+      <div style="background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden;">
+        <div style="max-height:280px; overflow-y:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+            <thead style="background:var(--paper); position:sticky; top:0; z-index:1; border-bottom:1px solid var(--line);">
+              <tr>
+                <th style="padding:10px 14px; font-weight:700; color:var(--muted)">DIA</th>
+                <th style="padding:10px 14px; font-weight:700; color:var(--muted)">SITUAÇÃO</th>
+                <th style="padding:10px 14px; font-weight:700; color:var(--muted); text-align:right">REALIZADO</th>
+                <th style="padding:10px 14px; font-weight:700; color:var(--muted); text-align:right">A VENCER</th>
+                <th style="padding:10px 14px; font-weight:700; color:var(--muted); text-align:right">TOTAL DO DIA</th>
+                <th style="padding:10px 14px; font-weight:700; color:var(--muted); text-align:center">COBRANÇAS</th>
+                <th style="padding:10px 14px; font-weight:700; color:var(--muted)">DETALHES DOS CURSOS</th>
+              </tr>
+            </thead>
+            <tbody id="mpd-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-ov" id="modal-sync-24h">
   <div class="modal" role="dialog" aria-modal="true" style="max-width:840px; padding:0; overflow:hidden; border-radius:14px; background:var(--card); box-shadow:0 10px 40px rgba(0,0,0,0.35);">
     <div class="md-head" style="background:var(--card-hover); padding:16px 20px; border-bottom:1px solid var(--line); position:relative;">
@@ -5906,7 +5971,7 @@ function drawExecView(force) {
         <!-- LINHA 1: PERFORMANCE DO MÊS E MRR -->
         <div class="exec-grid-4" style="margin-bottom:14px">
           <!-- CARD 1: RECEITA MÊS VIGENTE -->
-          <div class="exec-card" style="border-top:3px solid var(--emerald)">
+          <div class="exec-card" onclick="openModalProjecaoDiaria()" style="border-top:3px solid var(--emerald); cursor:pointer; transition:all .2s ease;" onmouseover="this.style.boxShadow='0 6px 18px rgba(16,185,129,0.18)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow=''; this.style.transform='none';" title="Clique para abrir o detalhamento e projeção dia a dia do mês vigente">
             <div class="exec-card-top">
               <span class="exec-card-label">Receita Mês Vigente (${labelMesVigente})</span>
               <span class="exec-pill ${isCrescimentoPositivo ? 'pill-green' : 'pill-amber'}">
@@ -5917,7 +5982,10 @@ function drawExecView(force) {
             <div class="exec-card-sub">
               <b>${fM(recMesAtual)}</b> realizado (${pctRealizadoMes}%) + <b>${fM(aVencerMesVigente)}</b> a vencer em ${labelMesVigente}
             </div>
-          </div>
+            <div style="font-size:10.5px; font-weight:700; color:var(--emerald-d); margin-top:6px; display:flex; align-items:center; gap:4px;">
+              <span>📅 Ver Projeção Dia a Dia</span> &rarr;
+            </div>
+          </div></div>
 
           <!-- CARD 2: REALIZADO MÊS ANTERIOR -->
           <div class="exec-card" style="border-top:3px solid var(--sky)">
@@ -9466,6 +9534,350 @@ document.addEventListener('click', function(e) {
     const modal = document.getElementById('modal-sync-24h');
     if (modal && e.target === modal) {
         closeSyncModal24h();
+    }
+});
+
+
+
+// =============================================================================
+// MODAL: PROJEÇÃO DIÁRIA DE RECEBIMENTOS DO MÊS VIGENTE
+// =============================================================================
+let _projecaoDiariaData = null;
+let _projecaoDiariaFilter = 'all';
+
+function getProjecaoDiariaData() {
+    if (_projecaoDiariaData) return _projecaoDiariaData;
+
+    const refDay = 21; // Data de corte atual: 21/09/2026
+    const daysMap = {};
+    for (let d = 1; d <= 30; d++) {
+        daysMap[d] = {
+            dia: d,
+            realizado: 0,
+            a_vencer: 0,
+            count_real: 0,
+            count_prev: 0,
+            cursos: {},
+            is_past: d < refDay,
+            is_today: d === refDay,
+            is_future: d > refDay
+        };
+    }
+
+    // 1. Extrair faturas de Setembro dos gateways (Vindi + Asaas)
+    const vFin = (DATA && DATA.financeiro) || {};
+    const aFin = (DATA && DATA.financeiro_asaas) || {};
+    const vFaturas = vFin.faturas_tabela || [];
+    const aFaturas = aFin.faturas_tabela || [];
+
+    const parseDayFromStr = (s) => {
+        if (!s) return null;
+        const str = String(s).trim();
+        // DD/MM/YYYY
+        if (str.includes('/09/2026')) {
+            const parts = str.split('/');
+            if (parts.length >= 2) return parseInt(parts[0], 10);
+        }
+        // YYYY-MM-DD
+        if (str.startsWith('2026-09')) {
+            const parts = str.split('-');
+            if (parts.length >= 3) return parseInt(parts[2].slice(0, 2), 10);
+        }
+        return null;
+    };
+
+    const resolvePlanoName = (p) => {
+        const n = String(p || '').toUpperCase();
+        if (n.includes('CCIH')) return 'Pós CCIH';
+        if (n.includes('IMUNO') || n.includes('INUNO')) return 'Pós Imunodeprimido';
+        if (n.includes('ORTOPED') || n.includes('MOLES')) return 'Pós Ortopedia';
+        if (n.includes('INFECTOPED') || n.includes('PEDIATR')) return 'Pós Infectopediatria';
+        if (n.includes('SOS') || n.includes('ANTIBIOT')) return 'S.O.S Antibiótico';
+        if (n.includes('MULTI')) return 'Jornada Multi-R';
+        if (n.includes('FUNGO')) return 'Do Fungo ao Antifúngico';
+        return 'Pós-Graduação';
+    };
+
+    [...vFaturas, ...aFaturas].forEach(f => {
+        const dVenc = parseDayFromStr(f.vencimento || f.data_vencimento);
+        const dPago = parseDayFromStr(f.data_pagamento || f.data_pagamento_iso);
+        const val = Number(f.valor) || 0;
+        const st = String(f.status || '').toLowerCase();
+        const curso = resolvePlanoName(f.plano || f.description);
+
+        if (st === 'pago' || st === 'paid' || st === 'received' || st === 'confirmed') {
+            const day = dPago || dVenc;
+            if (day && daysMap[day]) {
+                daysMap[day].realizado += val;
+                daysMap[day].count_real++;
+                daysMap[day].cursos[curso] = (daysMap[day].cursos[curso] || 0) + val;
+            }
+        } else if (st === 'a_vencer' || st === 'pending' || st === 'open' || st === 'aguardando_pagamento') {
+            const day = dVenc;
+            if (day && daysMap[day]) {
+                if (day >= refDay) {
+                    daysMap[day].a_vencer += val;
+                    daysMap[day].count_prev++;
+                    daysMap[day].cursos[curso] = (daysMap[day].cursos[curso] || 0) + val;
+                }
+            }
+        }
+    });
+
+    // 2. Extrair próximas recorrências ativas de Setembro (dias 22 a 30)
+    const vSubs = vFin.subscriptions || [];
+    vSubs.forEach(sub => {
+        const st = String(sub.status_assinatura || '').toLowerCase();
+        if (st === 'active' || st === 'ativo' || st === 'adimplente' || st === 'em_dia') {
+            const pvDay = parseDayFromStr(sub.proximo_vencimento);
+            if (pvDay && pvDay >= refDay && daysMap[pvDay]) {
+                const val = Number(sub.valor_parcela) || 0;
+                const curso = resolvePlanoName(sub.plano);
+                // Evitar duplicação se fatura já computada
+                if (daysMap[pvDay].a_vencer === 0 || daysMap[pvDay].count_prev === 0) {
+                    daysMap[pvDay].a_vencer += val;
+                    daysMap[pvDay].count_prev++;
+                    daysMap[pvDay].cursos[curso] = (daysMap[pvDay].cursos[curso] || 0) + val;
+                }
+            }
+        }
+    });
+
+    // Totais
+    let totalReal = 0, totalPrev = 0, countReal = 0, countPrev = 0;
+    Object.values(daysMap).forEach(d => {
+        totalReal += d.realizado;
+        totalPrev += d.a_vencer;
+        countReal += d.count_real;
+        countPrev += d.count_prev;
+    });
+
+    _projecaoDiariaData = {
+        daysMap,
+        totalReal,
+        totalPrev,
+        totalMes: totalReal + totalPrev,
+        countReal,
+        countPrev,
+        totalCount: countReal + countPrev
+    };
+    return _projecaoDiariaData;
+}
+
+function openModalProjecaoDiaria() {
+    const data = getProjecaoDiariaData();
+    const modal = document.getElementById('modal-projecao-diaria');
+    if (!modal) return;
+
+    // 1. Render KPIs
+    const kpisMount = document.getElementById('mpd-kpis');
+    if (kpisMount) {
+        const pctReal = data.totalMes > 0 ? ((data.totalReal / data.totalMes) * 100).toFixed(1) : '0';
+        const pctPrev = data.totalMes > 0 ? ((data.totalPrev / data.totalMes) * 100).toFixed(1) : '0';
+        kpisMount.innerHTML = `
+          <div class="exec-card" style="border-top:3px solid var(--emerald); background:rgba(5,150,105,0.02)">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Receita Prevista Mês</span>
+              <span class="exec-pill pill-green">Setembro/2026</span>
+            </div>
+            <div class="exec-card-val" style="color:var(--emerald-d)">${fM(data.totalMes)}</div>
+            <div class="exec-card-sub">${data.totalCount} lançamentos previstos no mês</div>
+          </div>
+
+          <div class="exec-card" style="border-top:3px solid var(--emerald)">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Já Realizado (01 a 21/09)</span>
+              <span class="exec-pill pill-green">${pctReal}% do mês</span>
+            </div>
+            <div class="exec-card-val" style="color:var(--emerald-d)">${fM(data.totalReal)}</div>
+            <div class="exec-card-sub">${data.countReal} recebimentos confirmados em caixa</div>
+          </div>
+
+          <div class="exec-card" style="border-top:3px solid var(--brand); background:rgba(2,132,199,0.02)">
+            <div class="exec-card-top">
+              <span class="exec-card-label">A Vencer (22 a 30/09)</span>
+              <span class="exec-pill pill-blue">${pctPrev}% do mês</span>
+            </div>
+            <div class="exec-card-val" style="color:#0284c7">${fM(data.totalPrev)}</div>
+            <div class="exec-card-sub">${data.countPrev} cobranças previstas nos próximos 9 dias</div>
+          </div>
+
+          <div class="exec-card" style="border-top:3px solid #7c3aed">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Média Diária Prevista</span>
+              <span class="exec-pill pill-purple">30 Dias</span>
+            </div>
+            <div class="exec-card-val" style="color:#7c3aed">${fM(data.totalMes / 30)}</div>
+            <div class="exec-card-sub">Previsibilidade média diária de faturamento</div>
+          </div>
+        `;
+    }
+
+    // 2. Render Chart SVG
+    renderProjecaoDiariaChart(data);
+
+    // 3. Render Table
+    filterModalProjecaoDays(_projecaoDiariaFilter || 'all');
+
+    modal.classList.add('on');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModalProjecaoDiaria() {
+    const modal = document.getElementById('modal-projecao-diaria');
+    if (modal) modal.classList.remove('on');
+    if (!document.getElementById('modal-sync-24h') || !document.getElementById('modal-sync-24h').classList.contains('on')) {
+        document.body.style.overflow = '';
+    }
+}
+
+function renderProjecaoDiariaChart(data) {
+    const mount = document.getElementById('mpd-chart-mount');
+    if (!mount) return;
+
+    const days = Object.values(data.daysMap);
+    const maxVal = Math.max(1, ...days.map(d => Math.max(d.realizado, d.a_vencer)));
+
+    const W = 860, H = 160, pad = { l: 45, r: 15, t: 20, b: 28 };
+    const chartW = W - pad.l - pad.r;
+    const chartH = H - pad.t - pad.b;
+    const step = chartW / 30;
+    const barW = Math.max(12, Math.min(20, step - 6));
+
+    let grid = '', bars = '', labels = '';
+
+    [0, 0.5, 1].forEach(pct => {
+        const y = pad.t + chartH - (pct * chartH);
+        const val = pct * maxVal;
+        grid += `<line x1="${pad.l}" y1="${y}" x2="${W - pad.r}" y2="${y}" stroke="var(--line)" stroke-dasharray="3,3" />`;
+        grid += `<text x="${pad.l - 6}" y="${y + 3}" font-size="9" fill="var(--muted)" text-anchor="end">${fM(val).replace(',00','')}</text>`;
+    });
+
+    days.forEach((d, idx) => {
+        const isReal = d.is_past || d.is_today;
+        const val = isReal ? d.realizado : d.a_vencer;
+        const h = maxVal > 0 ? (val / maxVal) * chartH : 0;
+        const x = pad.l + (idx * step) + (step - barW) / 2;
+        const y = pad.t + chartH - h;
+
+        const color = isReal ? 'var(--emerald)' : 'var(--brand)';
+        const opacity = d.is_today ? '1' : (isReal ? '0.85' : '0.9');
+
+        bars += `
+          <rect x="${x}" y="${y}" width="${barW}" height="${Math.max(2, h)}" rx="3" fill="${color}" opacity="${opacity}">
+            <title>Dia ${String(d.dia).padStart(2,'0')}/09: ${isReal ? 'Realizado' : 'A Vencer'} = ${fM(val)} (${d.count_real + d.count_prev} cobranças)</title>
+          </rect>
+        `;
+
+        if (d.dia === 21) {
+            bars += `<text x="${x + barW/2}" y="${pad.t - 5}" font-size="8.5" font-weight="800" fill="var(--emerald-d)" text-anchor="middle">HOJE</text>`;
+        } else if (val > 0 && (d.dia === 27 || d.dia === 26 || d.dia === 14 || d.dia === 30 || d.dia === 22)) {
+            bars += `<text x="${x + barW/2}" y="${Math.max(pad.t + 10, y - 4)}" font-size="8" font-weight="700" fill="var(--ink)" text-anchor="middle">${fM(val).replace('R$ ','').replace(',00','')}</text>`;
+        }
+
+        const lblColor = d.is_today ? 'var(--emerald-d)' : (d.dia % 5 === 0 || d.dia === 1 ? 'var(--ink)' : 'var(--muted)');
+        const lblWeight = (d.dia % 5 === 0 || d.is_today) ? '700' : '400';
+        labels += `<text x="${x + barW/2}" y="${H - 8}" font-size="8.5" font-weight="${lblWeight}" fill="${lblColor}" text-anchor="middle">${d.dia}</text>`;
+    });
+
+    mount.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="overflow:visible">${grid}${bars}${labels}</svg>`;
+}
+
+function filterModalProjecaoDays(filterType) {
+    _projecaoDiariaFilter = filterType;
+    const btnAll = document.getElementById('mpd-btn-all');
+    const btnFuture = document.getElementById('mpd-btn-future');
+    const btnPast = document.getElementById('mpd-btn-past');
+
+    if (btnAll) btnAll.className = filterType === 'all' ? 'chip on' : 'chip';
+    if (btnFuture) btnFuture.className = filterType === 'future' ? 'chip on' : 'chip';
+    if (btnPast) btnPast.className = filterType === 'past' ? 'chip on' : 'chip';
+
+    const data = getProjecaoDiariaData();
+    const tbody = document.getElementById('mpd-table-body');
+    if (!tbody) return;
+
+    const days = Object.values(data.daysMap).filter(d => {
+        if (filterType === 'future') return d.is_future || d.is_today;
+        if (filterType === 'past') return d.is_past || d.is_today;
+        return true;
+    });
+
+    if (days.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="padding:24px; text-align:center; color:var(--muted)">Nenhum registro para o filtro selecionado.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = days.map(d => {
+        const tot = d.realizado + d.a_vencer;
+        const isFuture = d.is_future;
+        const isToday = d.is_today;
+
+        let stBadge = '';
+        if (isToday) {
+            stBadge = `<span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(16,185,129,0.15); color:var(--emerald-d); font-weight:800; font-size:10.5px;">📌 Hoje (D-21)</span>`;
+        } else if (isFuture) {
+            stBadge = `<span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(2,132,199,0.1); color:#0284c7; font-weight:700; font-size:10.5px;">⏳ A Vencer</span>`;
+        } else {
+            stBadge = `<span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(5,150,105,0.08); color:var(--emerald-d); font-weight:600; font-size:10.5px;">✅ Realizado</span>`;
+        }
+
+        const cursosStr = Object.entries(d.cursos).map(([c, v]) => `${c}: ${fM(v)}`).join(' • ') || 'Sem movimentações';
+
+        const rowBg = isToday ? 'background:rgba(16,185,129,0.04); font-weight:600;' : (tot > 10000 ? 'background:rgba(2,132,199,0.02);' : '');
+
+        return `
+          <tr style="border-bottom:1px solid var(--line); ${rowBg}">
+            <td style="padding:9px 14px; font-weight:700; color:var(--ink);">Dia ${String(d.dia).padStart(2,'0')}/09</td>
+            <td style="padding:9px 14px;">${stBadge}</td>
+            <td style="padding:9px 14px; text-align:right; color:var(--emerald-d); font-weight:${d.realizado > 0 ? '700' : '400'}">${d.realizado > 0 ? fM(d.realizado) : '-'}</td>
+            <td style="padding:9px 14px; text-align:right; color:#0284c7; font-weight:${d.a_vencer > 0 ? '700' : '400'}">${d.a_vencer > 0 ? fM(d.a_vencer) : '-'}</td>
+            <td style="padding:9px 14px; text-align:right; font-weight:800; color:var(--ink);">${tot > 0 ? fM(tot) : '-'}</td>
+            <td style="padding:9px 14px; text-align:center; color:var(--muted); font-weight:600;">${d.count_real + d.count_prev}x</td>
+            <td style="padding:9px 14px; color:var(--muted); font-size:11px; max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${cursosStr}">${cursosStr}</td>
+          </tr>
+        `;
+    }).join('');
+}
+
+function exportModalProjecaoCSV() {
+    const data = getProjecaoDiariaData();
+    const days = Object.values(data.daysMap);
+
+    const headers = ['Dia', 'Data', 'Situacao', 'Valor_Realizado_BRL', 'Valor_A_Vencer_BRL', 'Total_Dia_BRL', 'Qtd_Cobrancas', 'Cursos_Detalhamento'];
+    const rows = days.map(d => {
+        const sit = d.is_today ? 'Hoje' : (d.is_future ? 'A Vencer' : 'Realizado');
+        const dt = `${String(d.dia).padStart(2,'0')}/09/2026`;
+        const cursosStr = Object.entries(d.cursos).map(([c, v]) => `${c}: ${v.toFixed(2)}`).join(' | ');
+        return [
+            d.dia,
+            `"${dt}"`,
+            `"${sit}"`,
+            d.realizado.toFixed(2).replace('.',','),
+            d.a_vencer.toFixed(2).replace('.',','),
+            (d.realizado + d.a_vencer).toFixed(2).replace('.',','),
+            d.count_real + d.count_prev,
+            `"${cursosStr.replace(/"/g, '""')}"`
+        ].join(';');
+    });
+
+    const csvContent = '\uFEFF' + [headers.join(';'), ...rows].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `projecao_diaria_recebimentos_setembro_2026.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+// Fechar modal ao clicar fora
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('modal-projecao-diaria');
+    if (modal && e.target === modal) {
+        closeModalProjecaoDiaria();
     }
 });
 
