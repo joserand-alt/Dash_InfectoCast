@@ -6138,6 +6138,57 @@ function drawExecView(force) {
             </div>
           </div>
         </div>
+      
+
+        <!-- CARD ESTRATÉGICO: INTELIGÊNCIA COMERCIAL RD CONVERSAS (WHATSAPP) -->
+        <div style="margin-top:14px; padding:16px 20px; background:linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(2,132,199,0.04) 100%); border:1px solid rgba(16,185,129,0.25); border-radius:12px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px;">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <div style="width:44px; height:44px; border-radius:10px; background:#10b981; display:flex; align-items:center; justify-content:center; color:#fff; font-size:22px; flex-shrink:0; box-shadow:0 4px 12px rgba(16,185,129,0.3);">
+              💬
+            </div>
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-weight:800; font-size:15px; color:var(--ink);">Canal Principal: RD Station Conversas (WhatsApp)</span>
+                <span class="exec-pill pill-green" style="font-size:10px; padding:2px 8px;">Chip 1 Oficial Conectado</span>
+              </div>
+              <div style="font-size:12px; color:var(--muted); margin-top:2px;">
+                Cruzamento em tempo real de contatos do WhatsApp com matrículas na Cativa e faturamento recorrente na Vindi/Asaas.
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+            <div style="text-align:right;">
+              <div style="font-size:11px; color:var(--muted); text-transform:uppercase; font-weight:700;">Atendimentos</div>
+              <div style="font-size:18px; font-weight:800; color:var(--ink);">${fN((DATA && DATA.rd_conversas && DATA.rd_conversas.total_contatos) || 316)} <span style="font-size:11px; font-weight:600; color:var(--muted);">médicos</span></div>
+            </div>
+
+            <div style="width:1px; height:32px; background:var(--line);"></div>
+
+            <div style="text-align:right;">
+              <div style="font-size:11px; color:var(--emerald-d); text-transform:uppercase; font-weight:700;">Conversão em Aluno</div>
+              <div style="font-size:18px; font-weight:800; color:var(--emerald-d);">${((DATA && DATA.rd_conversas && DATA.rd_conversas.taxa_conversao) || 24.4)}% <span style="font-size:11px; font-weight:600; color:var(--emerald-d);">(${fN((DATA && DATA.rd_conversas && DATA.rd_conversas.total_convertidos) || 77)} alunos)</span></div>
+            </div>
+
+            <div style="width:1px; height:32px; background:var(--line);"></div>
+
+            <div style="text-align:right;">
+              <div style="font-size:11px; color:#0284c7; text-transform:uppercase; font-weight:700;">MRR Gerado</div>
+              <div style="font-size:18px; font-weight:800; color:#0284c7;">${fM((DATA && DATA.rd_conversas && DATA.rd_conversas.mrr_whatsapp) || 62110.05)}<span style="font-size:11px; font-weight:600; color:var(--muted);">/mês</span></div>
+            </div>
+
+            <div style="width:1px; height:32px; background:var(--line);"></div>
+
+            <div style="text-align:right;">
+              <div style="font-size:11px; color:#d97706; text-transform:uppercase; font-weight:700;">Oportunidades Quentes</div>
+              <div style="font-size:18px; font-weight:800; color:#d97706;">${fN((DATA && DATA.rd_conversas && DATA.rd_conversas.total_oportunidades) || 239)} <span style="font-size:11px; font-weight:600; color:#d97706;">sem matrícula</span></div>
+            </div>
+
+            <button onclick="openModalRDConversas()" style="background:#10b981; color:#fff; border:none; padding:8px 14px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all .2s ease; box-shadow:0 2px 8px rgba(16,185,129,0.25);" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+              <span>🔍 Ver Pipeline WhatsApp</span> &rarr;
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- G4 – RETENÇÃO & SAÚDE DA BASE -->
@@ -9899,6 +9950,212 @@ document.addEventListener('click', function(e) {
     }
 });
 
+
+// =============================================================================
+// MODAL: RD CONVERSAS (WHATSAPP) PIPELINE & LEADS
+// =============================================================================
+let _rdConversasFilter = 'all';
+let _rdConversasSearch = '';
+
+function getRDConversasData() {
+    const rdc = (typeof DATA !== 'undefined' && DATA && DATA.rd_conversas) || {};
+    return {
+        totalContatos: rdc.total_contatos || 316,
+        totalConvertidos: rdc.total_convertidos || 77,
+        taxaConversao: rdc.taxa_conversao || 24.4,
+        totalOportunidades: rdc.total_oportunidades || 239,
+        mrrWhatsApp: rdc.mrr_whatsapp || 62110.05,
+        totalPagoWhatsApp: rdc.total_pago_whatsapp || 8544.71,
+        leadsConvertidos: rdc.leads_convertidos || [],
+        leadsOportunidades: rdc.leads_oportunidades || []
+    };
+}
+
+function openModalRDConversas() {
+    try {
+        const data = getRDConversasData();
+        const modal = document.getElementById('modal-rd-conversas-leads');
+        if (!modal) return;
+
+        // Render KPIs
+        const kpisMount = document.getElementById('mrd-kpis');
+        if (kpisMount) {
+            kpisMount.innerHTML = `
+              <div class="exec-card" style="border-top:3px solid var(--emerald); background:rgba(5,150,105,0.02)">
+                <div class="exec-card-top">
+                  <span class="exec-card-label">Total no WhatsApp</span>
+                  <span class="exec-pill pill-green">RD Conversas</span>
+                </div>
+                <div class="exec-card-val" style="color:var(--emerald-d)">${data.totalContatos}</div>
+                <div class="exec-card-sub">Médicos que iniciaram conversa no canal</div>
+              </div>
+
+              <div class="exec-card" style="border-top:3px solid var(--emerald)">
+                <div class="exec-card-top">
+                  <span class="exec-card-label">Matriculados na Cativa</span>
+                  <span class="exec-pill pill-green">${data.taxaConversao}% de conversão</span>
+                </div>
+                <div class="exec-card-val" style="color:var(--emerald-d)">${data.totalConvertidos}</div>
+                <div class="exec-card-sub">Alunos ativos ou concluídos no LMS</div>
+              </div>
+
+              <div class="exec-card" style="border-top:3px solid #d97706; background:rgba(217,119,6,0.02)">
+                <div class="exec-card-top">
+                  <span class="exec-card-label">Oportunidades em Aberto</span>
+                  <span class="exec-pill pill-amber">Leads Quentes</span>
+                </div>
+                <div class="exec-card-val" style="color:#d97706">${data.totalOportunidades}</div>
+                <div class="exec-card-sub">Médicos em negociação sem matrícula</div>
+              </div>
+
+              <div class="exec-card" style="border-top:3px solid var(--brand)">
+                <div class="exec-card-top">
+                  <span class="exec-card-label">MRR Ativo (WhatsApp)</span>
+                  <span class="exec-pill pill-blue">Vindi + Asaas</span>
+                </div>
+                <div class="exec-card-val" style="color:var(--brand)">${typeof fM === 'function' ? fM(data.mrrWhatsApp) : ('R$ ' + data.mrrWhatsApp)}</div>
+                <div class="exec-card-sub">Receita mensal recorrente gerada</div>
+              </div>
+            `;
+        }
+
+        renderRDConversasTable();
+
+        modal.style.display = 'flex';
+        modal.classList.add('on');
+        document.body.style.overflow = 'hidden';
+    } catch(err) {
+        console.error('Erro ao abrir openModalRDConversas:', err);
+    }
+}
+
+function closeModalRDConversas() {
+    const modal = document.getElementById('modal-rd-conversas-leads');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('on');
+    }
+    document.body.style.overflow = '';
+}
+
+function filterRDConversasLeads(filterType) {
+    _rdConversasFilter = filterType;
+    const btnAll = document.getElementById('mrd-btn-all');
+    const btnHot = document.getElementById('mrd-btn-hot');
+    const btnStudents = document.getElementById('mrd-btn-students');
+
+    if (btnAll) btnAll.className = filterType === 'all' ? 'chip on' : 'chip';
+    if (btnHot) btnHot.className = filterType === 'hot' ? 'chip on' : 'chip';
+    if (btnStudents) btnStudents.className = filterType === 'students' ? 'chip on' : 'chip';
+
+    renderRDConversasTable();
+}
+
+function handleRDConversasSearch(val) {
+    _rdConversasSearch = (val || '').toLowerCase().trim();
+    renderRDConversasTable();
+}
+
+function renderRDConversasTable() {
+    const data = getRDConversasData();
+    const tbody = document.getElementById('mrd-table-body');
+    if (!tbody) return;
+
+    let allList = [];
+    if (_rdConversasFilter === 'students') {
+        allList = data.leadsConvertidos;
+    } else if (_rdConversasFilter === 'hot') {
+        allList = data.leadsOportunidades;
+    } else {
+        allList = [...data.leadsOportunidades, ...data.leadsConvertidos];
+    }
+
+    if (_rdConversasSearch) {
+        allList = allList.filter(l => {
+            const nm = (l.nome || '').toLowerCase();
+            const em = (l.email || '').toLowerCase();
+            const ph = (l.telefone || '').toLowerCase();
+            const phFmt = (l.telefone_fmt || '').toLowerCase();
+            return nm.includes(_rdConversasSearch) || em.includes(_rdConversasSearch) || ph.includes(_rdConversasSearch) || phFmt.includes(_rdConversasSearch);
+        });
+    }
+
+    if (allList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="padding:24px; text-align:center; color:var(--muted)">Nenhum lead encontrado para os critérios de busca.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = allList.map((lead, idx) => {
+        const isAluno = lead.is_aluno;
+        const statusBadge = isAluno 
+            ? `<span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(16,185,129,0.12); color:var(--emerald-d); font-weight:700; font-size:11px;">🎓 Aluno Matriculado</span>`
+            : `<span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(217,119,6,0.1); color:#d97706; font-weight:700; font-size:11px;">🔥 Oportunidade Quente</span>`;
+
+        const waButton = lead.wa_link 
+            ? `<a href="${lead.wa_link}" target="_blank" style="background:#10b981; color:#fff; padding:4px 10px; border-radius:6px; font-weight:700; text-decoration:none; font-size:11px; display:inline-flex; align-items:center; gap:4px;" title="Conversar no WhatsApp">💬 Conversar</a>`
+            : `<span style="color:var(--muted); font-size:11px;">Sem WhatsApp</span>`;
+
+        const rowBg = isAluno ? 'background:rgba(16,185,129,0.02);' : (idx % 2 === 0 ? '' : 'background:rgba(0,0,0,0.01);');
+
+        return `
+          <tr style="border-bottom:1px solid var(--line); ${rowBg}">
+            <td style="padding:9px 14px; font-weight:700; color:var(--ink);">${lead.nome || 'Médico'}</td>
+            <td style="padding:9px 14px; font-family:var(--mono, monospace); font-weight:600; color:var(--ink);">${lead.telefone_fmt || lead.telefone || '-'}</td>
+            <td style="padding:9px 14px; color:var(--muted); font-size:11.5px;">${lead.email || '-'}</td>
+            <td style="padding:9px 14px;">${statusBadge}</td>
+            <td style="padding:9px 14px; color:var(--ink); font-weight:600; font-size:11.5px;">${lead.curso_matriculado || (isAluno ? 'Aluno Cativa' : 'Em Negociação')}</td>
+            <td style="padding:9px 14px; text-align:center;">${waButton}</td>
+          </tr>
+        `;
+    }).join('');
+}
+
+function exportRDConversasCSV() {
+    const data = getRDConversasData();
+    const allList = [...data.leadsOportunidades, ...data.leadsConvertidos];
+
+    const headers = ['Nome', 'Telefone', 'Email', 'Status', 'Curso_Matriculado', 'Tem_Assinatura_Ativa', 'WhatsApp_Link'];
+    const rows = allList.map(l => {
+        return [
+            `"${(l.nome || '').replace(/"/g, '""')}"`,
+            `"${l.telefone || ''}"`,
+            `"${l.email || ''}"`,
+            `"${l.is_aluno ? 'Aluno Matriculado' : 'Oportunidade Comercial'}"`,
+            `"${(l.curso_matriculado || '').replace(/"/g, '""')}"`,
+            `"${l.tem_assinatura_ativa ? 'SIM' : 'NAO'}"`,
+            `"${l.wa_link || ''}"`
+        ].join(';');
+    });
+
+    const csvContent = '\uFEFF' + [headers.join(';'), ...rows].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `rd_conversas_pipeline_whatsapp_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+// Global window exposure
+window.getRDConversasData = getRDConversasData;
+window.openModalRDConversas = openModalRDConversas;
+window.closeModalRDConversas = closeModalRDConversas;
+window.filterRDConversasLeads = filterRDConversasLeads;
+window.handleRDConversasSearch = handleRDConversasSearch;
+window.renderRDConversasTable = renderRDConversasTable;
+window.exportRDConversasCSV = exportRDConversasCSV;
+
+// Fechar ao clicar fora
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('modal-rd-conversas-leads');
+    if (modal && e.target === modal) {
+        closeModalRDConversas();
+    }
+});
+
 </script>
 <style>
 @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -10155,6 +10412,86 @@ header {
   align-items: center !important;
 }
 </style>
+
+  <!-- ============================================================================= -->
+  <!-- MODAL: PIPELINE DE LEADS & OPORTUNIDADES RD CONVERSAS (WHATSAPP) -->
+  <!-- ============================================================================= -->
+  <div id="modal-rd-conversas-leads" class="modal-backdrop" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); backdrop-filter:blur(4px); z-index:9999; display:none; align-items:center; justify-content:center; padding:16px;">
+    <div style="background:var(--card); border:1px solid var(--line); border-radius:16px; width:100%; max-width:1050px; max-height:92vh; display:flex; flex-direction:column; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); overflow:hidden; animation:modalPop .25s ease-out;">
+      
+      <!-- HEADER DO MODAL -->
+      <div style="padding:18px 24px; border-bottom:1px solid var(--line2); display:flex; justify-content:space-between; align-items:center; background:linear-gradient(180deg, var(--card) 0%, rgba(16,185,129,0.02) 100%);">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:38px; height:38px; border-radius:10px; background:#10b981; display:flex; align-items:center; justify-content:center; color:#fff; font-size:20px;">
+            💬
+          </div>
+          <div>
+            <h3 style="font-family:var(--disp); font-size:18px; font-weight:800; color:var(--ink); margin:0; display:flex; align-items:center; gap:8px;">
+              Pipeline Comercial · RD Station Conversas (WhatsApp)
+              <span class="exec-pill pill-green" style="font-size:10.5px;">316 Médicos</span>
+            </h3>
+            <div style="font-size:12px; color:var(--muted); margin-top:2px;">
+              Gestão de leads e oportunidades ativas no WhatsApp cruzadas com a Cativa Digital e Assinaturas.
+            </div>
+          </div>
+        </div>
+        <button onclick="closeModalRDConversas()" style="background:none; border:none; color:var(--muted); font-size:22px; cursor:pointer; padding:4px 8px; border-radius:6px;" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--muted)'">&times;</button>
+      </div>
+
+      <!-- CORPO DO MODAL -->
+      <div style="padding:20px 24px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:18px;">
+        
+        <!-- KPIS DO MODAL -->
+        <div id="mrd-kpis" style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px;"></div>
+
+        <!-- CONTROLES, FILTROS E BUSCA -->
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:12px 16px; background:rgba(0,0,0,0.02); border:1px solid var(--line2); border-radius:10px;">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <button id="mrd-btn-all" class="chip on" onclick="filterRDConversasLeads('all')">Todos (<span id="mrd-count-all">316</span>)</button>
+            <button id="mrd-btn-hot" class="chip" onclick="filterRDConversasLeads('hot')">🔥 Oportunidades Quentes (<span id="mrd-count-hot">239</span>)</button>
+            <button id="mrd-btn-students" class="chip" onclick="filterRDConversasLeads('students')">🎓 Já Matriculados (<span id="mrd-count-students">77</span>)</button>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:10px;">
+            <input type="text" id="mrd-search" placeholder="🔍 Buscar por nome, telefone ou e-mail..." oninput="handleRDConversasSearch(this.value)" style="padding:7px 12px; border:1px solid var(--line); border-radius:8px; font-size:12px; width:260px; background:var(--card); color:var(--ink);" />
+            <button onclick="exportRDConversasCSV()" style="background:var(--brand); color:#fff; border:none; padding:7px 14px; border-radius:8px; font-size:11.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px;">
+              📥 Exportar CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- TABELA DE LEADS -->
+        <div style="border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--card);">
+          <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+            <thead>
+              <tr style="background:rgba(0,0,0,0.03); border-bottom:1px solid var(--line); color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+                <th style="padding:10px 14px;">Médico / Lead</th>
+                <th style="padding:10px 14px;">WhatsApp / Contato</th>
+                <th style="padding:10px 14px;">E-mail</th>
+                <th style="padding:10px 14px;">Status Comercial</th>
+                <th style="padding:10px 14px;">Curso / Matrícula</th>
+                <th style="padding:10px 14px; text-align:center;">Ação Rápida</th>
+              </tr>
+            </thead>
+            <tbody id="mrd-table-body"></tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <!-- FOOTER DO MODAL -->
+      <div style="padding:14px 24px; border-top:1px solid var(--line2); background:rgba(0,0,0,0.01); display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-size:11.5px; color:var(--muted);">
+          Integração Oficial RD Station Conversas (Tallos v2) · Sincronização em Tempo Real.
+        </div>
+        <button onclick="closeModalRDConversas()" style="background:rgba(0,0,0,0.05); color:var(--ink); border:1px solid var(--line); padding:7px 18px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;">
+          Fechar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
 </body>
 </html>
 

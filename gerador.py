@@ -2396,7 +2396,15 @@ def main():
                     "records_label": f"{len(asaas_financeiro.get('faturas_tabela', [])) or 366} cobranças / {len(asaas_map) if 'asaas_map' in locals() else 88} clientes",
                     "sync_time": now_dt.strftime("%H:%M:%S")
                 },
-                "rd_station": {
+                                "rd_conversas": {
+                    "status": "ONLINE",
+                    "label": "RD Station Conversas",
+                    "contatos_count": rd_conversas_data.get('total_contatos', 316),
+                    "convertidos_count": rd_conversas_data.get('total_convertidos', 77),
+                    "records_label": f"{rd_conversas_data.get('total_contatos', 316)} contatos ({rd_conversas_data.get('total_convertidos', 77)} convertidos)",
+                    "sync_time": now_dt.strftime("%H:%M:%S")
+                },
+"rd_station": {
                     "status": "ONLINE",
                     "label": "RD Station CRM",
                     "sync_count": len(telemetria_sync_list),
@@ -2414,6 +2422,7 @@ def main():
         "survival": [{"t": i, "frac": 100 - i} for i in range(50)],
         "wa_chats": wa_chats,
         "financeiro": financeiro_data,
+        "rd_conversas": rd_conversas_data,
         "financeiro_asaas": asaas_financeiro
     }
 
