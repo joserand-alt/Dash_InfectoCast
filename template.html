@@ -9540,6 +9540,8 @@ document.addEventListener('click', function(e) {
 
 
 // =============================================================================
+// =============================================================================
+// =============================================================================
 // MODAL: PROJEÇÃO DIÁRIA DE RECEBIMENTOS DO MÊS VIGENTE
 // =============================================================================
 let _projecaoDiariaData = null;
@@ -9564,15 +9566,16 @@ function getProjecaoDiariaData() {
         };
     }
 
-    const vFin = (DATA && DATA.financeiro) || {};
-    const aFin = (DATA && DATA.financeiro_asaas) || {};
+    const vFin = (typeof DATA !== 'undefined' && DATA && DATA.financeiro) || {};
+    const aFin = (typeof DATA !== 'undefined' && DATA && DATA.financeiro_asaas) || {};
     const vSubs = vFin.subscriptions || [];
     const aSubs = aFin.subscriptions || [];
     const vKpis = vFin.kpis || {};
     const aKpis = aFin.kpis || {};
 
-    const targetReal = finUnifiedGlobal.global.pago_mes_atual || ((Number(vKpis.recebido_mes_atual) || 0) + (Number(aKpis.recebido_mes_atual) || 0)) || 145377.98;
-    const targetPrev = finUnifiedGlobal.global.proj_mes_atual || ((Number(vKpis.a_vencer_mes_atual) || 0) + (Number(aKpis.a_vencer_mes_atual) || 0)) || 94331.07;
+    const finUnified = (typeof computeUnifiedFinancialDataset === 'function') ? computeUnifiedFinancialDataset('all') : null;
+    const targetReal = (finUnified && finUnified.global && finUnified.global.pago_mes_atual) || ((Number(vKpis.recebido_mes_atual) || 0) + (Number(aKpis.recebido_mes_atual) || 0)) || 145377.98;
+    const targetPrev = (finUnified && finUnified.global && finUnified.global.proj_mes_atual) || ((Number(vKpis.a_vencer_mes_atual) || 0) + (Number(aKpis.a_vencer_mes_atual) || 0)) || 94331.07;
     const targetTotal = targetReal + targetPrev;
 
     const parseDay = (s) => {
@@ -9652,73 +9655,6 @@ function getProjecaoDiariaData() {
     return _projecaoDiariaData;
 }
 
-function openModalProjecaoDiaria() {
-    const data = getProjecaoDiariaData();
-    const modal = document.getElementById('modal-projecao-diaria');
-    if (!modal) return;
-
-    // 1. Render KPIs
-    const kpisMount = document.getElementById('mpd-kpis');
-    if (kpisMount) {
-        const pctReal = data.totalMes > 0 ? ((data.totalReal / data.totalMes) * 100).toFixed(1) : '0';
-        const pctPrev = data.totalMes > 0 ? ((data.totalPrev / data.totalMes) * 100).toFixed(1) : '0';
-        kpisMount.innerHTML = `
-          <div class="exec-card" style="border-top:3px solid var(--emerald); background:rgba(5,150,105,0.02)">
-            <div class="exec-card-top">
-              <span class="exec-card-label">Receita Prevista Mês</span>
-              <span class="exec-pill pill-green">Setembro/2026</span>
-            </div>
-            <div class="exec-card-val" style="color:var(--emerald-d)">${fM(data.totalMes)}</div>
-            <div class="exec-card-sub">${data.totalCount} lançamentos previstos no mês</div>
-          </div>
-
-          <div class="exec-card" style="border-top:3px solid var(--emerald)">
-            <div class="exec-card-top">
-              <span class="exec-card-label">Já Realizado (01 a 21/09)</span>
-              <span class="exec-pill pill-green">${pctReal}% do mês</span>
-            </div>
-            <div class="exec-card-val" style="color:var(--emerald-d)">${fM(data.totalReal)}</div>
-            <div class="exec-card-sub">${data.countReal} recebimentos confirmados em caixa</div>
-          </div>
-
-          <div class="exec-card" style="border-top:3px solid var(--brand); background:rgba(2,132,199,0.02)">
-            <div class="exec-card-top">
-              <span class="exec-card-label">A Vencer (22 a 30/09)</span>
-              <span class="exec-pill pill-blue">${pctPrev}% do mês</span>
-            </div>
-            <div class="exec-card-val" style="color:#0284c7">${fM(data.totalPrev)}</div>
-            <div class="exec-card-sub">${data.countPrev} cobranças previstas nos próximos 9 dias</div>
-          </div>
-
-          <div class="exec-card" style="border-top:3px solid #7c3aed">
-            <div class="exec-card-top">
-              <span class="exec-card-label">Média Diária Prevista</span>
-              <span class="exec-pill pill-purple">30 Dias</span>
-            </div>
-            <div class="exec-card-val" style="color:#7c3aed">${fM(data.totalMes / 30)}</div>
-            <div class="exec-card-sub">Previsibilidade média diária de faturamento</div>
-          </div>
-        `;
-    }
-
-    // 2. Render Chart SVG
-    renderProjecaoDiariaChart(data);
-
-    // 3. Render Table
-    filterModalProjecaoDays(_projecaoDiariaFilter || 'all');
-
-    modal.classList.add('on');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeModalProjecaoDiaria() {
-    const modal = document.getElementById('modal-projecao-diaria');
-    if (modal) modal.classList.remove('on');
-    if (!document.getElementById('modal-sync-24h') || !document.getElementById('modal-sync-24h').classList.contains('on')) {
-        document.body.style.overflow = '';
-    }
-}
-
 function renderProjecaoDiariaChart(data) {
     const mount = document.getElementById('mpd-chart-mount');
     if (!mount) return;
@@ -9737,8 +9673,9 @@ function renderProjecaoDiariaChart(data) {
     [0, 0.5, 1].forEach(pct => {
         const y = pad.t + chartH - (pct * chartH);
         const val = pct * maxVal;
+        const valStr = typeof fM === 'function' ? fM(val).replace(',00','') : 'R$ ' + Math.round(val);
         grid += `<line x1="${pad.l}" y1="${y}" x2="${W - pad.r}" y2="${y}" stroke="var(--line)" stroke-dasharray="3,3" />`;
-        grid += `<text x="${pad.l - 6}" y="${y + 3}" font-size="9" fill="var(--muted)" text-anchor="end">${fM(val).replace(',00','')}</text>`;
+        grid += `<text x="${pad.l - 6}" y="${y + 3}" font-size="9" fill="var(--muted)" text-anchor="end">${valStr}</text>`;
     });
 
     days.forEach((d, idx) => {
@@ -9750,17 +9687,19 @@ function renderProjecaoDiariaChart(data) {
 
         const color = isReal ? 'var(--emerald)' : 'var(--brand)';
         const opacity = d.is_today ? '1' : (isReal ? '0.85' : '0.9');
+        const valFormatted = typeof fM === 'function' ? fM(val) : 'R$ ' + val.toFixed(2);
 
         bars += `
           <rect x="${x}" y="${y}" width="${barW}" height="${Math.max(2, h)}" rx="3" fill="${color}" opacity="${opacity}">
-            <title>Dia ${String(d.dia).padStart(2,'0')}/09: ${isReal ? 'Realizado' : 'A Vencer'} = ${fM(val)} (${d.count_real + d.count_prev} cobranças)</title>
+            <title>Dia ${String(d.dia).padStart(2,'0')}/09: ${isReal ? 'Realizado' : 'A Vencer'} = ${valFormatted} (${d.count_real + d.count_prev} cobranças)</title>
           </rect>
         `;
 
         if (d.dia === 21) {
             bars += `<text x="${x + barW/2}" y="${pad.t - 5}" font-size="8.5" font-weight="800" fill="var(--emerald-d)" text-anchor="middle">HOJE</text>`;
         } else if (val > 0 && (d.dia === 27 || d.dia === 26 || d.dia === 14 || d.dia === 30 || d.dia === 22)) {
-            bars += `<text x="${x + barW/2}" y="${Math.max(pad.t + 10, y - 4)}" font-size="8" font-weight="700" fill="var(--ink)" text-anchor="middle">${fM(val).replace('R$ ','').replace(',00','')}</text>`;
+            const shortVal = typeof fM === 'function' ? fM(val).replace('R$ ','').replace(',00','') : Math.round(val);
+            bars += `<text x="${x + barW/2}" y="${Math.max(pad.t + 10, y - 4)}" font-size="8" font-weight="700" fill="var(--ink)" text-anchor="middle">${shortVal}</text>`;
         }
 
         const lblColor = d.is_today ? 'var(--emerald-d)' : (d.dia % 5 === 0 || d.dia === 1 ? 'var(--ink)' : 'var(--muted)');
@@ -9810,17 +9749,21 @@ function filterModalProjecaoDays(filterType) {
             stBadge = `<span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(5,150,105,0.08); color:var(--emerald-d); font-weight:600; font-size:10.5px;">✅ Realizado</span>`;
         }
 
-        const cursosStr = Object.entries(d.cursos).map(([c, v]) => `${c}: ${fM(v)}`).join(' • ') || 'Sem movimentações';
+        const cursosStr = Object.entries(d.cursos).map(([c, v]) => `${c}: ${typeof fM === 'function' ? fM(v) : ('R$ ' + v.toFixed(2))}`).join(' • ') || 'Sem movimentações';
 
         const rowBg = isToday ? 'background:rgba(16,185,129,0.04); font-weight:600;' : (tot > 10000 ? 'background:rgba(2,132,199,0.02);' : '');
+
+        const realFormatted = d.realizado > 0 ? (typeof fM === 'function' ? fM(d.realizado) : ('R$ ' + d.realizado.toFixed(2))) : '-';
+        const vencFormatted = d.a_vencer > 0 ? (typeof fM === 'function' ? fM(d.a_vencer) : ('R$ ' + d.a_vencer.toFixed(2))) : '-';
+        const totFormatted = tot > 0 ? (typeof fM === 'function' ? fM(tot) : ('R$ ' + tot.toFixed(2))) : '-';
 
         return `
           <tr style="border-bottom:1px solid var(--line); ${rowBg}">
             <td style="padding:9px 14px; font-weight:700; color:var(--ink);">Dia ${String(d.dia).padStart(2,'0')}/09</td>
             <td style="padding:9px 14px;">${stBadge}</td>
-            <td style="padding:9px 14px; text-align:right; color:var(--emerald-d); font-weight:${d.realizado > 0 ? '700' : '400'}">${d.realizado > 0 ? fM(d.realizado) : '-'}</td>
-            <td style="padding:9px 14px; text-align:right; color:#0284c7; font-weight:${d.a_vencer > 0 ? '700' : '400'}">${d.a_vencer > 0 ? fM(d.a_vencer) : '-'}</td>
-            <td style="padding:9px 14px; text-align:right; font-weight:800; color:var(--ink);">${tot > 0 ? fM(tot) : '-'}</td>
+            <td style="padding:9px 14px; text-align:right; color:var(--emerald-d); font-weight:${d.realizado > 0 ? '700' : '400'}">${realFormatted}</td>
+            <td style="padding:9px 14px; text-align:right; color:#0284c7; font-weight:${d.a_vencer > 0 ? '700' : '400'}">${vencFormatted}</td>
+            <td style="padding:9px 14px; text-align:right; font-weight:800; color:var(--ink);">${totFormatted}</td>
             <td style="padding:9px 14px; text-align:center; color:var(--muted); font-weight:600;">${d.count_real + d.count_prev}x</td>
             <td style="padding:9px 14px; color:var(--muted); font-size:11px; max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${cursosStr}">${cursosStr}</td>
           </tr>
@@ -9860,6 +9803,93 @@ function exportModalProjecaoCSV() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 }
+
+function openModalProjecaoDiaria() {
+    try {
+        const data = getProjecaoDiariaData();
+        const modal = document.getElementById('modal-projecao-diaria');
+        if (!modal) {
+            console.error('Modal modal-projecao-diaria não encontrado no DOM');
+            return;
+        }
+
+        // 1. Render KPIs
+        const kpisMount = document.getElementById('mpd-kpis');
+        if (kpisMount) {
+            const pctReal = data.totalMes > 0 ? ((data.totalReal / data.totalMes) * 100).toFixed(1) : '0';
+            const pctPrev = data.totalMes > 0 ? ((data.totalPrev / data.totalMes) * 100).toFixed(1) : '0';
+            const valTotalMes = typeof fM === 'function' ? fM(data.totalMes) : ('R$ ' + data.totalMes.toFixed(2));
+            const valTotalReal = typeof fM === 'function' ? fM(data.totalReal) : ('R$ ' + data.totalReal.toFixed(2));
+            const valTotalPrev = typeof fM === 'function' ? fM(data.totalPrev) : ('R$ ' + data.totalPrev.toFixed(2));
+            const valMediaDia = typeof fM === 'function' ? fM(data.totalMes / 30) : ('R$ ' + (data.totalMes / 30).toFixed(2));
+
+            kpisMount.innerHTML = `
+              <div class="exec-card" style="border-top:3px solid var(--emerald); background:rgba(5,150,105,0.02)">
+                <div class="exec-card-top">
+                  <span class="exec-card-label">Receita Prevista Mês</span>
+                  <span class="exec-pill pill-green">Setembro/2026</span>
+                </div>
+                <div class="exec-card-val" style="color:var(--emerald-d)">${valTotalMes}</div>
+                <div class="exec-card-sub">${data.totalCount} lançamentos previstos no mês</div>
+              </div>
+
+              <div class="exec-card" style="border-top:3px solid var(--emerald)">
+                <div class="exec-card-top">
+                  <span class="exec-card-label">Já Realizado (01 a 21/09)</span>
+                  <span class="exec-pill pill-green">${pctReal}% do mês</span>
+                </div>
+                <div class="exec-card-val" style="color:var(--emerald-d)">${valTotalReal}</div>
+                <div class="exec-card-sub">${data.countReal} recebimentos confirmados em caixa</div>
+              </div>
+
+              <div class="exec-card" style="border-top:3px solid var(--brand); background:rgba(2,132,199,0.02)">
+                <div class="exec-card-top">
+                  <span class="exec-card-label">A Vencer (22 a 30/09)</span>
+                  <span class="exec-pill pill-blue">${pctPrev}% do mês</span>
+                </div>
+                <div class="exec-card-val" style="color:#0284c7">${valTotalPrev}</div>
+                <div class="exec-card-sub">${data.countPrev} cobranças previstas nos próximos 9 dias</div>
+              </div>
+
+              <div class="exec-card" style="border-top:3px solid #7c3aed">
+                <div class="exec-card-top">
+                  <span class="exec-card-label">Média Diária Prevista</span>
+                  <span class="exec-pill pill-purple">30 Dias</span>
+                </div>
+                <div class="exec-card-val" style="color:#7c3aed">${valMediaDia}</div>
+                <div class="exec-card-sub">Previsibilidade média diária de faturamento</div>
+              </div>
+            `;
+        }
+
+        // 2. Render Chart SVG
+        renderProjecaoDiariaChart(data);
+
+        // 3. Render Table
+        filterModalProjecaoDays(_projecaoDiariaFilter || 'all');
+
+        modal.classList.add('on');
+        document.body.style.overflow = 'hidden';
+    } catch(err) {
+        console.error('Erro ao abrir openModalProjecaoDiaria:', err);
+    }
+}
+
+function closeModalProjecaoDiaria() {
+    const modal = document.getElementById('modal-projecao-diaria');
+    if (modal) modal.classList.remove('on');
+    if (!document.getElementById('modal-sync-24h') || !document.getElementById('modal-sync-24h').classList.contains('on')) {
+        document.body.style.overflow = '';
+    }
+}
+
+// Global window exposure
+window.getProjecaoDiariaData = getProjecaoDiariaData;
+window.renderProjecaoDiariaChart = renderProjecaoDiariaChart;
+window.filterModalProjecaoDays = filterModalProjecaoDays;
+window.exportModalProjecaoCSV = exportModalProjecaoCSV;
+window.openModalProjecaoDiaria = openModalProjecaoDiaria;
+window.closeModalProjecaoDiaria = closeModalProjecaoDiaria;
 
 // Fechar modal ao clicar fora
 document.addEventListener('click', function(e) {
