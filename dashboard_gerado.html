@@ -8172,6 +8172,86 @@ window.filterCursoTableKpi = function(filterKey) {
     }
 };
 
+window.exportCursoAlunosTable = function() {
+    const list = window.CURRENT_CURSO_SORTED_STUDENTS || [];
+    if (!list || list.length === 0) {
+        alert('Nenhum aluno para exportar no filtro atual.');
+        return;
+    }
+
+    const courseName = window.CURRENT_CURSO_ACTIVE_NAME || 'TODAS_AS_ESPECIALIDADES';
+    const filterKey = window.CURSO_ACTIVE_KPI_FILTER || 'todos';
+    const now = new Date();
+    const nowStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+    const headers = [
+        'Nome',
+        'Email',
+        'Curso / Especialidade',
+        'Status Pedagógico',
+        'Data Matrícula',
+        'Aulas Assistidas',
+        'Total Aulas Grade',
+        'Progresso (%)',
+        'Último Acesso',
+        'Dias Inativo',
+        'Gateway Vindi Status',
+        'Gateway Asaas Status',
+        'Valor em Atraso (R$)'
+    ];
+
+    const formatCsvField = (val) => {
+        if (val == null) return '""';
+        let str = String(val).replace(/"/g, '""');
+        return `"${str}"`;
+    };
+
+    const rows = list.map(s => {
+        const nome = s.nome || 'Sem Nome';
+        const email = s.email || '';
+        const curso = s.curso || s.canonical_curso || '';
+        const status = s.status || '';
+        const mat = s.data_insc || s.data_inscricao || s.inscricao || '';
+        const aulas = s.aulas_feitas || 0;
+        const totAulas = s.total_aulas_curric || '';
+        const pct = (s.progresso_pct || 0) + '%';
+        const lastAccess = s.last_fmt || '';
+        const diasInativo = s.dias_inativo != null ? s.dias_inativo : '';
+        const vindiSt = s.vindi ? (s.vindi.status_financeiro || s.vindi.status_assinatura || '') : '';
+        const asaasSt = s.asaas ? (s.asaas.status_financeiro || s.asaas.status_assinatura || '') : '';
+        const atraso = (s.vindi?.valor_atraso || s.asaas?.valor_atraso || 0);
+
+        return [
+            formatCsvField(nome),
+            formatCsvField(email),
+            formatCsvField(curso),
+            formatCsvField(status),
+            formatCsvField(mat),
+            formatCsvField(aulas),
+            formatCsvField(totAulas),
+            formatCsvField(pct),
+            formatCsvField(lastAccess),
+            formatCsvField(diasInativo),
+            formatCsvField(vindiSt),
+            formatCsvField(asaasSt),
+            formatCsvField(atraso > 0 ? atraso.toFixed(2).replace('.', ',') : '0,00')
+        ].join(';');
+    });
+
+    const csvContent = '\uFEFF' + [headers.map(h => `"${h}"`).join(';'), ...rows].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+
+    const cleanName = courseName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').substring(0, 35);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `alunos_${cleanName}_${filterKey}_${nowStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+};
+
 function drawCursoView(courseName, force) {
     const mount = document.getElementById('curso-content-mount');
     if (!mount) return;
@@ -8701,6 +8781,9 @@ function drawCursoView(courseName, force) {
         return 0;
     });
 
+    window.CURRENT_CURSO_SORTED_STUDENTS = sortedStudents;
+    window.CURRENT_CURSO_ACTIVE_NAME = activeCourse;
+
     const renderTh = (colKey, label, align) => {
         const isCur = curSort.col === colKey;
         const icon = isCur ? (curSort.asc ? ' &#9650;' : ' &#9660;') : ' <span style="opacity:0.35; font-size:10px;">&#8645;</span>';
@@ -8983,12 +9066,15 @@ function drawCursoView(courseName, force) {
               <div class="exec-sec-sub">${isAll ? 'Listagem consolidada de todos os alunos ativos da carteira acadêmica.' : 'Listagem de alunos vinculados a esta especialidade com status de engajamento pedagógico e financeiro.'}</div>
             </div>
           </div>
-          <div style="display:flex; align-items:center; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <button type="button" onclick="exportCursoAlunosTable()" style="display:inline-flex; align-items:center; gap:6px; background:var(--card); border:1px solid var(--line); color:var(--ink); border-radius:6px; padding:5px 12px; font-size:11.5px; font-weight:700; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.05); transition:all .2s ease;" onmouseover="this.style.borderColor='var(--brand)'; this.style.color='var(--brand)';" onmouseout="this.style.borderColor='var(--line)'; this.style.color='var(--ink)';" title="Exportar apenas os alunos atualmente exibidos nesta tabela para arquivo CSV (compatível com Excel)">
+              <span>📥</span> Exportar Tabela (${sortedStudents.length})
+            </button>
             ${kpiFilter ? `
             <button onclick="filterCursoTableKpi(null)" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); color:#dc2626; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
               ✕ Limpar Filtro
             </button>` : ''}
-            <span class="badge" style="background:var(--paper); color:var(--ink); font-weight:700">${sortedStudents.length} Alunos Listados ${kpiFilter ? `(de ${totalMatriculas})` : ''}</span>
+            <span class="badge" style="background:var(--paper); color:var(--ink); font-weight:700">${sortedStudents.length} Alunos Listados (de ${alunosAtivosCurso.length})</span>
           </div>
         </div>
 
