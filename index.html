@@ -8831,8 +8831,8 @@ function drawCursoView(courseName, force) {
         </div>
 
         <div style="display:grid; grid-template-columns: 360px 1fr; gap:16px; align-items:stretch;">
-          <!-- KPIs de Matrícula -->
-          <div style="display:flex; flex-direction:column; gap:10px;">
+                    <!-- KPIs de Matrícula -->
+          <div style="display:flex; flex-direction:column; gap:8px;">
             <div class="exec-card" onclick="filterCursoTableKpi(null)" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === null ? 'border:2px solid var(--brand); box-shadow:0 4px 14px rgba(0,240,255,0.15);' : ''}" title="Clique para ver todos os alunos">
               <div class="exec-card-top">
                 <span class="exec-card-label">Matrículas Totais Acumuladas</span>
@@ -8842,22 +8842,31 @@ function drawCursoView(courseName, force) {
               <div class="exec-card-sub">${fN(totalConfirmados)} confirmadas • ${fN(countPendentes)} pendentes</div>
             </div>
 
-            <div class="exec-card" onclick="filterCursoTableKpi('recent_30d')" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === 'recent_30d' ? 'border:2px solid #10b981; box-shadow:0 4px 14px rgba(16,185,129,0.2); background:rgba(16,185,129,0.03);' : ''}" title="Clique para filtrar apenas os alunos matriculados nos últimos 30 dias">
+            <div class="exec-card" onclick="filterCursoTableKpi('recent_30d')" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === 'recent_30d' ? 'border:2px solid var(--brand); box-shadow:0 4px 14px rgba(0,240,255,0.15);' : ''}" title="Clique para filtrar apenas as matrículas recentes dos últimos 30 dias">
               <div class="exec-card-top">
                 <span class="exec-card-label">Matrículas Recentes (30 Dias)</span>
                 <span class="exec-pill ${kpiFilter === 'recent_30d' ? 'pill-green' : growthEnrollClass}">${kpiFilter === 'recent_30d' ? '● Filtrando Tabela' : growthEnrollText}</span>
               </div>
               <div class="exec-card-val" style="color:var(--emerald-d)">${fN(matriculas30d)}</div>
-              <div class="exec-card-sub">Período recente (D-30 a Hoje) vs ${fN(matriculas30dAnt)} ant.</div>
+              <div class="exec-card-sub">Período recente (D-30 a Hoje) vs 30d ant.</div>
             </div>
 
-            <div class="exec-card" onclick="filterCursoTableKpi('pendente')" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === 'pendente' ? 'border:2px solid #f59e0b; box-shadow:0 4px 14px rgba(245,158,11,0.25); background:rgba(245,158,11,0.04);' : ''}" title="Clique para filtrar apenas as matrículas pendentes (sem consumo e sem pagamento)">
+            <div class="exec-card" onclick="filterCursoTableKpi('prev_30d')" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === 'prev_30d' ? 'border:2px solid var(--brand); box-shadow:0 4px 14px rgba(0,240,255,0.15);' : ''}" title="Clique para filtrar apenas as matrículas dos 30 dias anteriores na tabela">
+              <div class="exec-card-top">
+                <span class="exec-card-label">Matrículas (30 Dias Anteriores)</span>
+                <span class="exec-pill ${kpiFilter === 'prev_30d' ? 'pill-blue' : 'pill-purple'}">${kpiFilter === 'prev_30d' ? '● Filtrando Tabela' : 'Base D-60 a D-31'}</span>
+              </div>
+              <div class="exec-card-val" style="color:var(--ink)">${fN(matriculas30dAnt)}</div>
+              <div class="exec-card-sub">Período comparativo anterior (${fN(matriculas30dAnt)} entradas)</div>
+            </div>
+
+            <div class="exec-card" onclick="filterCursoTableKpi('pendente')" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === 'pendente' ? 'border:2px solid #d97706; box-shadow:0 4px 14px rgba(217,119,6,0.15);' : ''}" title="Clique para filtrar apenas os alunos com matrículas pendentes">
               <div class="exec-card-top">
                 <span class="exec-card-label">Matrículas Pendentes</span>
-                <span class="exec-pill ${kpiFilter === 'pendente' ? 'pill-yellow' : (countPendentes > 0 ? 'pill-yellow' : 'pill-gray')}">${kpiFilter === 'pendente' ? '● Filtrando Tabela' : 'Aguardando Pagamento'}</span>
+                <span class="exec-pill ${kpiFilter === 'pendente' ? 'pill-yellow' : (countPendentes > 0 ? 'pill-yellow' : 'pill-green')}">${kpiFilter === 'pendente' ? '● Filtrando Tabela' : (countPendentes > 0 ? 'Aguardando' : 'Nenhuma')}</span>
               </div>
               <div class="exec-card-val" style="color:#d97706">${fN(countPendentes)}</div>
-              <div class="exec-card-sub">Inscrições iniciadas sem financeiro ou consumo (clique p/ listar)</div>
+              <div class="exec-card-sub">Inscrições sem financeiro ou consumo (clique p/ listar)</div>
             </div>
           </div>
 
