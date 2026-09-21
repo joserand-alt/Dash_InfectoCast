@@ -5037,21 +5037,36 @@ function computeUnifiedFinancialDataset(gatewayFilter) {
 
     // Ticket Médio Oficial: (Total Recebido nos últimos 180 dias / Clientes Pagantes dentro dos últimos 180 dias) / 6
     const d180Ref = new Date().getTime() - (180 * 24 * 3600 * 1000);
-    let gRec180 = 0;
+    let gRec180 = 0, gRec180Pos = 0, gRec180Livres = 0;
     const gPagantes180 = new Set();
+    const gPagantes180Pos = new Set();
+    const gPagantes180Livres = new Set();
     faturasList.forEach(f => {
         const st = (f.status || '').toLowerCase();
         if (st === 'pago' || st === 'paid' || st === 'received' || st === 'confirmed') {
             const dtStr = (f.data_pagamento || f.data_pagamento_iso || f.data || '').toString();
             const dObj = _parseDateSafe(dtStr);
             if (dObj && dObj.getTime() >= d180Ref) {
-                gRec180 += (Number(f.valor) || 0);
+                const val = (Number(f.valor) || 0);
+                gRec180 += val;
                 const em = (f.email || f.aluno || '').toLowerCase().trim();
                 if (em) gPagantes180.add(em);
+
+                const cName = (f.curso || '').toUpperCase();
+                const isPos = cName.includes('POS-') || cName.includes('PÓS-') || cName.includes('POS ') || cName.includes('PÓS ');
+                if (isPos) {
+                    gRec180Pos += val;
+                    if (em) gPagantes180Pos.add(em);
+                } else {
+                    gRec180Livres += val;
+                    if (em) gPagantes180Livres.add(em);
+                }
             }
         }
     });
     globalObj.ticket_medio = gPagantes180.size > 0 ? (gRec180 / gPagantes180.size) / 6 : 0;
+    globalObj.ticket_medio_pos = gPagantes180Pos.size > 0 ? (gRec180Pos / gPagantes180Pos.size) / 6 : 0;
+    globalObj.ticket_medio_livres = gPagantes180Livres.size > 0 ? (gRec180Livres / gPagantes180Livres.size) / 6 : 0;
 
     const gBaseAdimp = globalObj.pago_total + globalObj.atraso;
     globalObj.taxa_adimplencia = gBaseAdimp > 0 ? Math.round((globalObj.pago_total / gBaseAdimp) * 100) : 100;
@@ -5063,6 +5078,8 @@ function computeUnifiedFinancialDataset(gatewayFilter) {
         previsto_mes_vigente: globalObj.previsto_mes_vigente,
         mrr_ativo: globalObj.mrr,
         ticket_medio: globalObj.ticket_medio,
+        ticket_medio_pos: globalObj.ticket_medio_pos,
+        ticket_medio_livres: globalObj.ticket_medio_livres,
         projecao_30d: globalObj.proj_1m,
         proj_3m: globalObj.proj_3m,
         proj_6m: globalObj.proj_6m,
@@ -6126,7 +6143,15 @@ function drawExecView(force) {
               <span class="exec-pill pill-blue">6 Meses</span>
             </div>
             <div class="exec-card-val" style="color:var(--ink)">${fM(uKpis.ticket_medio || 0)}</div>
-            <div class="exec-card-sub">Média mensal por aluno pagante ativo no semestre</div>
+            <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
+              <span style="font-size:11px; font-weight:600; background:rgba(99,102,241,0.08); color:#4f46e5; padding:3px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:4px;">
+                🎓 Pós: <strong>${fM(uKpis.ticket_medio_pos || 0)}</strong>
+              </span>
+              <span style="font-size:11px; font-weight:600; background:rgba(16,185,129,0.08); color:#059669; padding:3px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:4px;">
+                📖 Livres: <strong>${fM(uKpis.ticket_medio_livres || 0)}</strong>
+              </span>
+            </div>
+            <div class="exec-card-sub" style="margin-top:6px">Média mensal por aluno pagante ativo no semestre</div>
           </div>
 
           <!-- KPI 4: INADIMPLÊNCIA (R$) -->
@@ -7531,7 +7556,7 @@ function _renderFinKpiCards() {
         { key: 'recebido_mes', icon: '📅', label: 'Recebido Este Mês', value: fmt(k.recebido_mes_atual), sub: 'Mês corrente', color: 'var(--sky)' },
         { key: 'em_atraso', icon: '🔴', label: 'Em Atraso', value: fmt(k.total_em_atraso), sub: `${fmtN(k.qtd_em_atraso)} fatura(s) pendente(s) · Clique p/ ver por aluno`, color: k.total_em_atraso > 0 ? 'var(--coral)' : 'var(--emerald)' },
         { key: 'mrr', icon: '🔄', label: 'MRR (Próx. 6M)', value: fmt(k.mrr_ativo), sub: 'Média mensal Out/26 a Mar/27', color: '#7c3aed' },
-        { key: 'ticket_medio', icon: '🎯', label: 'Ticket Médio Mensal', value: fmt(k.ticket_medio || 0), sub: 'Semestre móvel (180d / 6)', color: 'var(--amber)' },
+        { key: 'ticket_medio', icon: '🎯', label: 'Ticket Médio Mensal', value: fmt(k.ticket_medio || 0), sub: `🎓 Pós: ${fmt(k.ticket_medio_pos || 0)} · 📖 Livres: ${fmt(k.ticket_medio_livres || 0)}`, color: 'var(--amber)' },
         { key: 'adimplencia', icon: '📊', label: 'Adimplência', value: (k.taxa_adimplencia || 0) + '%', sub: 'Faturas pagas / total faturado', color: (k.taxa_adimplencia || 0) >= 80 ? 'var(--emerald)' : 'var(--coral)' },
     ];
 
@@ -8106,18 +8131,44 @@ function setCursoView(cName) {
 }
 window.setCursoView = setCursoView;
 
-window.CURSO_TABLE_SORT = window.CURSO_TABLE_SORT || { col: 'aulas_feitas', asc: false };
+window.CURSO_TABLE_SORT = window.CURSO_TABLE_SORT || { col: 'matricula', asc: false };
+window.CURSO_ACTIVE_KPI_FILTER = window.CURSO_ACTIVE_KPI_FILTER || null;
 
 window.sortCursoTable = function(col) {
-    if (!window.CURSO_TABLE_SORT) window.CURSO_TABLE_SORT = { col: 'aulas_feitas', asc: false };
+    if (!window.CURSO_TABLE_SORT) window.CURSO_TABLE_SORT = { col: 'matricula', asc: false };
     if (window.CURSO_TABLE_SORT.col === col) {
         window.CURSO_TABLE_SORT.asc = !window.CURSO_TABLE_SORT.asc;
     } else {
         window.CURSO_TABLE_SORT.col = col;
-        window.CURSO_TABLE_SORT.asc = (col === 'nome' || col === 'status');
+        if (col === 'nome' || col === 'status') {
+            window.CURSO_TABLE_SORT.asc = true; // A-Z
+        } else if (col === 'ultimo_acesso') {
+            window.CURSO_TABLE_SORT.asc = true; // Mais recente (0d) primeiro
+        } else {
+            window.CURSO_TABLE_SORT.asc = false; // Mais recente / maior valor primeiro
+        }
     }
     if (typeof drawCursoView === 'function') {
         drawCursoView(CURRENT_SELECTED_COURSE, true);
+    }
+};
+
+window.filterCursoTableKpi = function(filterKey) {
+    if (window.CURSO_ACTIVE_KPI_FILTER === filterKey) {
+        window.CURSO_ACTIVE_KPI_FILTER = null; // desativa se clicou no mesmo
+    } else {
+        window.CURSO_ACTIVE_KPI_FILTER = filterKey;
+    }
+    if (typeof drawCursoView === 'function') {
+        drawCursoView(CURRENT_SELECTED_COURSE, true);
+    }
+    if (window.CURSO_ACTIVE_KPI_FILTER && window.CURSO_ACTIVE_KPI_FILTER !== 'all') {
+        setTimeout(() => {
+            const tableSec = document.getElementById('sec-curso-alunos-tabela');
+            if (tableSec) {
+                tableSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 60);
     }
 };
 
@@ -8369,36 +8420,37 @@ function drawCursoView(courseName, force) {
     let matriculas30dAnt = 0;
     const enrollMonthlyMap = {};
 
+    const parseEnrollDate = (s) => {
+        if (!s) return null;
+        const dtStr = (s.data_insc || s.data_inscricao || s.inscricao || s.data_matricula || '').toString().trim();
+        if (!dtStr) return null;
+        if (dtStr.includes('/')) {
+            const p = dtStr.split('/');
+            if (p.length === 3) {
+                const yr = parseInt(p[2].length === 2 ? '20' + p[2] : p[2], 10);
+                return new Date(yr, parseInt(p[1], 10) - 1, parseInt(p[0], 10));
+            }
+        } else if (dtStr.includes('-')) {
+            const p = dtStr.slice(0, 10).split('-');
+            if (p.length === 3) {
+                return new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+            }
+        }
+        const d = new Date(dtStr);
+        return isNaN(d.getTime()) ? null : d;
+    };
+
     cStudents.forEach(s => {
-        const dtStr = (s.data_insc || s.data_inscricao || s.inscricao || '').toString().trim();
-        if (dtStr) {
-            const dt = typeof parseDateUniversal === 'function' ? parseDateUniversal(dtStr) : (function(str) {
-                if (str.includes('/')) {
-                    const p = str.split('/');
-                    if (p.length === 3) {
-                        const yr = parseInt(p[2].length === 2 ? '20' + p[2] : p[2], 10);
-                        return new Date(yr, parseInt(p[1], 10) - 1, parseInt(p[0], 10));
-                    }
-                } else if (str.includes('-')) {
-                    const p = str.slice(0, 10).split('-');
-                    if (p.length === 3) {
-                        return new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
-                    }
-                }
-                const d = new Date(str);
-                return isNaN(d.getTime()) ? null : d;
-            })(dtStr);
+        const dt = parseEnrollDate(s);
+        if (dt && !isNaN(dt.getTime())) {
+            const ym = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0');
+            enrollMonthlyMap[ym] = (enrollMonthlyMap[ym] || 0) + 1;
 
-            if (dt && !isNaN(dt.getTime())) {
-                const ym = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0');
-                enrollMonthlyMap[ym] = (enrollMonthlyMap[ym] || 0) + 1;
-
-                // Janela D-30 a Hoje (com tolerância D+1 para fuso horário e execuções no mesmo dia)
-                if (dt >= t30d && dt <= new Date(now.getTime() + 24 * 3600 * 1000)) {
-                    matriculas30d++;
-                } else if (dt >= t60d && dt < t30d) {
-                    matriculas30dAnt++;
-                }
+            // Janela D-30 a Hoje (com tolerância D+1 para fuso horário e execuções no mesmo dia)
+            if (dt >= t30d && dt <= new Date(now.getTime() + 24 * 3600 * 1000)) {
+                matriculas30d++;
+            } else if (dt >= t60d && dt < t30d) {
+                matriculas30dAnt++;
             }
         }
     });
@@ -8556,30 +8608,70 @@ function drawCursoView(courseName, force) {
         return `<span style="background:${cfg.bg}; color:${cfg.col}; border:1px solid ${cfg.border}; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:12px; display:inline-block;">${st}</span>`;
     };
 
+    // Filtragem interativa por KPI selecionado
+    const kpiFilter = window.CURSO_ACTIVE_KPI_FILTER || null;
+    let filteredStudents = [...cStudents];
+    let filterLabel = '';
+
+    if (kpiFilter === 'recent_30d') {
+        filteredStudents = filteredStudents.filter(s => {
+            const d = parseEnrollDate(s);
+            return d && d >= t30d && d <= new Date(now.getTime() + 24 * 3600 * 1000);
+        });
+        filterLabel = 'Matrículas Recentes (Últimos 30 Dias)';
+    } else if (kpiFilter === 'prev_30d') {
+        filteredStudents = filteredStudents.filter(s => {
+            const d = parseEnrollDate(s);
+            return d && d >= t60d && d < t30d;
+        });
+        filterLabel = 'Matrículas (30 Dias Anteriores - Base D-60 a D-31)';
+    } else if (kpiFilter === 'vigentes') {
+        filteredStudents = filteredStudents.filter(s => s.status !== 'Cancelado' && s.status !== 'Concluído' && !s.turma_encerrada);
+        filterLabel = 'Matrículas Vigentes (Em Curso)';
+    } else if (kpiFilter === 'ativos') {
+        filteredStudents = filteredStudents.filter(s => s.status === 'Ativo');
+        filterLabel = 'Alunos Engajados / Ativos';
+    } else if (kpiFilter === 'risco') {
+        filteredStudents = filteredStudents.filter(s => s.status === 'Em Risco' || s.status === 'Atenção');
+        filterLabel = 'Alunos Em Risco / Atenção';
+    } else if (kpiFilter === 'abandonou') {
+        filteredStudents = filteredStudents.filter(s => s.status === 'Abandonou' || s.status === 'Inativo');
+        filterLabel = 'Alunos Inativos / Abandonaram';
+    } else if (kpiFilter === 'atraso') {
+        filteredStudents = filteredStudents.filter(s => {
+            const vSt = (s.vindi ? (s.vindi.status_financeiro || s.vindi.status_assinatura) : '').toLowerCase();
+            const aSt = (s.asaas ? (s.asaas.status_financeiro || s.asaas.status_assinatura) : '').toLowerCase();
+            const vAtraso = (s.vindi && s.vindi.valor_atraso > 0) || vSt === 'inadimplente' || vSt === 'em_atraso' || vSt === 'overdue';
+            const aAtraso = (s.asaas && s.asaas.valor_atraso > 0) || aSt === 'inadimplente' || aSt === 'em_atraso' || aSt === 'overdue';
+            return vAtraso || aAtraso;
+        });
+        filterLabel = 'Alunos com Inadimplência / Faturas em Aberto';
+    }
+
     // Ordenacao interativa da tabela de alunos por coluna
-    const curSort = window.CURSO_TABLE_SORT || { col: 'aulas_feitas', asc: false };
-    const sortedStudents = [...cStudents].sort((a, b) => {
+    const curSort = window.CURSO_TABLE_SORT || { col: 'matricula', asc: false };
+    const sortedStudents = [...filteredStudents].sort((a, b) => {
         const asc = curSort.asc ? 1 : -1;
         if (curSort.col === 'nome') {
-            return asc * (a.nome || '').localeCompare(b.nome || '');
+            return asc * (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
         }
         if (curSort.col === 'status') {
-            return asc * (a.status || '').localeCompare(b.status || '');
+            return asc * (a.status || '').localeCompare(b.status || '', 'pt-BR');
         }
         if (curSort.col === 'matricula') {
-            const dtA = a.data_insc || a.data_inscricao || a.inscricao || '';
-            const dtB = b.data_insc || b.data_inscricao || b.inscricao || '';
-            return asc * dtA.localeCompare(dtB);
+            const dtA = parseEnrollDate(a)?.getTime() || 0;
+            const dtB = parseEnrollDate(b)?.getTime() || 0;
+            return asc * (dtA - dtB);
         }
         if (curSort.col === 'aulas_feitas') {
-            return asc * ((a.aulas_feitas || 0) - (b.aulas_feitas || 0));
+            return asc * ((Number(a.aulas_feitas) || 0) - (Number(b.aulas_feitas) || 0));
         }
         if (curSort.col === 'progresso') {
-            return asc * ((a.progresso_pct || 0) - (b.progresso_pct || 0));
+            return asc * ((Number(a.progresso_pct) || 0) - (Number(b.progresso_pct) || 0));
         }
         if (curSort.col === 'ultimo_acesso') {
-            const dA = a.dias_inativo != null ? a.dias_inativo : (a.acessou ? 999 : 9999);
-            const dB = b.dias_inativo != null ? b.dias_inativo : (b.acessou ? 999 : 9999);
+            const dA = a.dias_inativo != null ? a.dias_inativo : (a.acessou ? 9000 : 99999);
+            const dB = b.dias_inativo != null ? b.dias_inativo : (b.acessou ? 9000 : 99999);
             return asc * (dA - dB);
         }
         return 0;
@@ -8634,28 +8726,28 @@ function drawCursoView(courseName, force) {
         <div style="display:grid; grid-template-columns: 360px 1fr; gap:16px; align-items:stretch;">
           <!-- KPIs de Matrícula -->
           <div style="display:flex; flex-direction:column; gap:12px;">
-            <div class="exec-card" style="flex:1;">
+            <div class="exec-card" onclick="filterCursoTableKpi(null)" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === null ? 'border:2px solid var(--brand); box-shadow:0 4px 14px rgba(0,240,255,0.15);' : ''}" title="Clique para ver todos os alunos">
               <div class="exec-card-top">
                 <span class="exec-card-label">Matrículas Totais Acumuladas</span>
-                <span class="exec-pill pill-blue">Carteira Histórica</span>
+                <span class="exec-pill pill-blue">${kpiFilter === null ? '● Exibindo Todos' : 'Carteira Histórica'}</span>
               </div>
               <div class="exec-card-val" style="color:var(--brand)">${fN(totalMatriculas)}</div>
-              <div class="exec-card-sub">Total de alunos registrados e vinculados a este curso</div>
+              <div class="exec-card-sub">Total de alunos registrados e vinculados a este curso (clique para filtrar)</div>
             </div>
 
-            <div class="exec-card" style="flex:1;">
+            <div class="exec-card" onclick="filterCursoTableKpi('recent_30d')" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === 'recent_30d' ? 'border:2px solid #10b981; box-shadow:0 4px 14px rgba(16,185,129,0.2); background:rgba(16,185,129,0.03);' : ''}" title="Clique para filtrar apenas os alunos matriculados nos últimos 30 dias">
               <div class="exec-card-top">
                 <span class="exec-card-label">Matrículas Recentes (Últimos 30 Dias)</span>
-                <span class="exec-pill ${growthEnrollClass}">${growthEnrollText}</span>
+                <span class="exec-pill ${kpiFilter === 'recent_30d' ? 'pill-green' : growthEnrollClass}">${kpiFilter === 'recent_30d' ? '● Filtrando Tabela' : growthEnrollText}</span>
               </div>
               <div class="exec-card-val" style="color:var(--emerald-d)">${fN(matriculas30d)}</div>
               <div class="exec-card-sub">Período recente (D-30 a Hoje) vs ${fN(matriculas30dAnt)} nos 30d anteriores</div>
             </div>
 
-            <div class="exec-card" style="flex:1;">
+            <div class="exec-card" onclick="filterCursoTableKpi('prev_30d')" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === 'prev_30d' ? 'border:2px solid #8b5cf6; box-shadow:0 4px 14px rgba(139,92,246,0.2); background:rgba(139,92,246,0.03);' : ''}" title="Clique para filtrar apenas os alunos matriculados no período anterior (D-60 a D-31)">
               <div class="exec-card-top">
                 <span class="exec-card-label">Matrículas (30 Dias Anteriores)</span>
-                <span class="exec-pill pill-gray">Base D-60 a D-31</span>
+                <span class="exec-pill ${kpiFilter === 'prev_30d' ? 'pill-purple' : 'pill-gray'}">${kpiFilter === 'prev_30d' ? '● Filtrando Tabela' : 'Base D-60 a D-31'}</span>
               </div>
               <div class="exec-card-val" style="color:var(--ink)">${fN(matriculas30dAnt)}</div>
               <div class="exec-card-sub">Período comparativo anterior de novos ingressos</div>
@@ -8692,37 +8784,37 @@ function drawCursoView(courseName, force) {
         </div>
 
         <div class="exec-grid-4" style="margin-bottom:16px;">
-          <div class="exec-card">
+          <div class="exec-card" onclick="filterCursoTableKpi('vigentes')" style="cursor:pointer; transition:all .2s ease; ${kpiFilter === 'vigentes' ? 'border:2px solid #10b981; box-shadow:0 4px 14px rgba(16,185,129,0.2); background:rgba(16,185,129,0.03);' : ''}" title="Clique para filtrar apenas os alunos com matrículas vigentes">
             <div class="exec-card-top">
               <span class="exec-card-label">Matrículas Vigentes</span>
-              <span class="exec-pill pill-green">Em Curso</span>
+              <span class="exec-pill pill-green">${kpiFilter === 'vigentes' ? '● Filtrando Tabela' : 'Em Curso'}</span>
             </div>
             <div class="exec-card-val" style="color:var(--emerald-d)">${fN(countVigentes)}</div>
             <div class="exec-card-sub">${countConcluidos} concluídos / ${countCancelados} cancelados</div>
           </div>
 
-          <div class="exec-card">
+          <div class="exec-card" onclick="filterCursoTableKpi('ativos')" style="cursor:pointer; transition:all .2s ease; ${kpiFilter === 'ativos' ? 'border:2px solid #10b981; box-shadow:0 4px 14px rgba(16,185,129,0.2); background:rgba(16,185,129,0.03);' : ''}" title="Clique para filtrar apenas os alunos engajados/ativos">
             <div class="exec-card-top">
               <span class="exec-card-label">Alunos Engajados</span>
-              <span class="exec-pill pill-green">${countVigentes > 0 ? Math.round((countAtivos/countVigentes)*100) : 0}% da base</span>
+              <span class="exec-pill pill-green">${kpiFilter === 'ativos' ? '● Filtrando Tabela' : (countVigentes > 0 ? Math.round((countAtivos/countVigentes)*100) : 0) + '% da base'}</span>
             </div>
             <div class="exec-card-val" style="color:var(--emerald-d)">${fN(countAtivos)}</div>
             <div class="exec-card-sub">Acessando no ritmo esperado da especialidade</div>
           </div>
 
-          <div class="exec-card">
+          <div class="exec-card" onclick="filterCursoTableKpi('risco')" style="cursor:pointer; transition:all .2s ease; ${kpiFilter === 'risco' ? 'border:2px solid #f59e0b; box-shadow:0 4px 14px rgba(245,158,11,0.2); background:rgba(245,158,11,0.03);' : ''}" title="Clique para filtrar apenas os alunos em risco ou atenção">
             <div class="exec-card-top">
               <span class="exec-card-label">Em Risco / Atenção</span>
-              <span class="exec-pill ${countEmRisco > 0 ? 'pill-red' : 'pill-gray'}">${countVigentes > 0 ? Math.round((countEmRisco/countVigentes)*100) : 0}% da base</span>
+              <span class="exec-pill ${kpiFilter === 'risco' ? 'pill-yellow' : (countEmRisco > 0 ? 'pill-red' : 'pill-gray')}">${kpiFilter === 'risco' ? '● Filtrando Tabela' : (countVigentes > 0 ? Math.round((countEmRisco/countVigentes)*100) : 0) + '% da base'}</span>
             </div>
             <div class="exec-card-val" style="color:${countEmRisco > 0 ? '#DC2626' : 'var(--ink)'}">${fN(countEmRisco)}</div>
             <div class="exec-card-sub">Inatividade prolongada ou queda na cadência</div>
           </div>
 
-          <div class="exec-card">
+          <div class="exec-card" onclick="filterCursoTableKpi('abandonou')" style="cursor:pointer; transition:all .2s ease; ${kpiFilter === 'abandonou' ? 'border:2px solid #ef4444; box-shadow:0 4px 14px rgba(239,68,68,0.2); background:rgba(239,68,68,0.03);' : ''}" title="Clique para filtrar apenas os alunos inativos ou que abandonaram">
             <div class="exec-card-top">
               <span class="exec-card-label">Inativos / Abandonaram</span>
-              <span class="exec-pill ${countAbandonou > 0 ? 'pill-red' : 'pill-gray'}">${countVigentes > 0 ? Math.round((countAbandonou/countVigentes)*100) : 0}% da base</span>
+              <span class="exec-pill ${kpiFilter === 'abandonou' ? 'pill-red' : (countAbandonou > 0 ? 'pill-red' : 'pill-gray')}">${kpiFilter === 'abandonou' ? '● Filtrando Tabela' : (countVigentes > 0 ? Math.round((countAbandonou/countVigentes)*100) : 0) + '% da base'}</span>
             </div>
             <div class="exec-card-val" style="color:${countAbandonou > 0 ? '#DC2626' : 'var(--ink)'}">${fN(countAbandonou)}</div>
             <div class="exec-card-sub">Mais de 30 dias sem acesso (${countNunca} nunca acessaram)</div>
@@ -8798,10 +8890,10 @@ function drawCursoView(courseName, force) {
             <div class="exec-card-sub">Receita Mensal Recorrente ativa deste curso</div>
           </div>
 
-          <div class="exec-card">
+          <div class="exec-card" onclick="filterCursoTableKpi('atraso')" style="cursor:pointer; transition:all .2s ease; ${kpiFilter === 'atraso' ? 'border:2px solid #ef4444; box-shadow:0 4px 14px rgba(239,68,68,0.2); background:rgba(239,68,68,0.03);' : ''}" title="Clique para filtrar apenas os alunos com inadimplência">
             <div class="exec-card-top">
               <span class="exec-card-label">Taxa de Adimplência</span>
-              <span class="exec-pill ${cFin.taxa_adimplencia >= 90 ? 'pill-green' : 'pill-red'}">${cFin.taxa_adimplencia || 100}%</span>
+              <span class="exec-pill ${kpiFilter === 'atraso' ? 'pill-red' : (cFin.taxa_adimplencia >= 90 ? 'pill-green' : 'pill-red')}">${kpiFilter === 'atraso' ? '● Filtrando Tabela' : (cFin.taxa_adimplencia || 100) + '%'}</span>
             </div>
             <div class="exec-card-val" style="color:var(--ink)">${cFin.taxa_adimplencia || 100}%</div>
             <div class="exec-card-sub">${fM(cFin.atraso)} em atraso (${cFin.qtd_atraso || 0} faturas)</div>
@@ -8858,7 +8950,7 @@ function drawCursoView(courseName, force) {
       </div>
 
       <!-- SEÇÃO 4: ALUNOS MATRICULADOS NESTE CURSO -->
-      <div class="exec-sec" style="margin-bottom:24px;">
+      <div id="sec-curso-alunos-tabela" class="exec-sec" style="margin-bottom:24px;">
         <div class="exec-sec-head">
           <div class="exec-sec-title-wrap">
             <div class="exec-sec-num" style="background:var(--ink); color:#fff">👥</div>
@@ -8867,8 +8959,24 @@ function drawCursoView(courseName, force) {
               <div class="exec-sec-sub">${isAll ? 'Listagem consolidada de todos os alunos ativos da carteira acadêmica.' : 'Listagem de alunos vinculados a esta especialidade com status de engajamento pedagógico e financeiro.'}</div>
             </div>
           </div>
-          <span class="badge" style="background:var(--paper); color:var(--ink); font-weight:700">${cStudents.length} Alunos Listados</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            ${kpiFilter ? `
+            <button onclick="filterCursoTableKpi(null)" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); color:#dc2626; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+              ✕ Limpar Filtro
+            </button>` : ''}
+            <span class="badge" style="background:var(--paper); color:var(--ink); font-weight:700">${sortedStudents.length} Alunos Listados ${kpiFilter ? `(de ${totalMatriculas})` : ''}</span>
+          </div>
         </div>
+
+        ${kpiFilter ? `
+        <div style="background:rgba(0,240,255,0.06); border:1px solid rgba(0,240,255,0.25); border-radius:8px; padding:8px 14px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:12px; font-weight:700; color:var(--ink);">
+            🔍 Filtro ativo: <strong style="color:var(--brand);">${filterLabel}</strong> (${sortedStudents.length} aluno(s) encontrado(s))
+          </span>
+          <button onclick="filterCursoTableKpi(null)" style="background:var(--card); border:1px solid var(--line); border-radius:6px; padding:3px 9px; font-size:11px; font-weight:700; color:var(--muted); cursor:pointer;">
+            ✕ Desativar Filtro
+          </button>
+        </div>` : ''}
 
         <div style="background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden;">
           <div style="max-height:480px; overflow-y:auto;">
@@ -8885,7 +8993,12 @@ function drawCursoView(courseName, force) {
                 </tr>
               </thead>
               <tbody>
-                ${sortedStudents.map(s => {
+                ${sortedStudents.length === 0 ? `
+                  <tr>
+                    <td colspan="7" style="padding:36px; text-align:center; color:var(--muted); font-size:12.5px;">
+                      Nenhum aluno encontrado para o filtro selecionado (${filterLabel}).
+                    </td>
+                  </tr>` : sortedStudents.map(s => {
                     const pct = s.progresso_pct || 0;
                     const lastTxt = s.last_fmt ? (s.last_fmt + (s.dias_inativo != null ? ` (${s.dias_inativo}d)` : '')) : (s.acessou ? 'Acessou' : 'Nunca');
                     return `<tr style="border-bottom:1px solid var(--line); transition:background 0.1s;" onmouseover="this.style.background='var(--paper)'" onmouseout="this.style.background='transparent'">
@@ -8925,7 +9038,6 @@ function drawCursoView(courseName, force) {
               </tbody>
             </table>
           </div>
-          ${sortedStudents.length > 100 ? `<div style="padding:12px; text-align:center; color:var(--muted); font-size:11.5px; background:var(--paper)">Exibindo 100 de ${totalMatriculas} alunos. Acesse a aba <b>Progresso por Aluno</b> para ver a lista completa com filtros.</div>` : ''}
         </div>
       </div>
     `;
