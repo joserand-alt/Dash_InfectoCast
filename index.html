@@ -8307,16 +8307,29 @@ function drawCursoView(courseName, force) {
             }
         }
 
-        // Validação com Gateways Financeiros
+        // Validação com Gateways Financeiros e Matrículas Pendentes
         const vSt = (scopy.vindi ? (scopy.vindi.status_financeiro || scopy.vindi.status_assinatura) : '').toLowerCase();
         const aSt = (scopy.asaas ? (scopy.asaas.status_financeiro || scopy.asaas.status_assinatura) : '').toLowerCase();
         const vindiCanceled = vSt === 'cancelado' || vSt === 'canceled';
         const asaasCanceled = aSt === 'cancelado' || aSt === 'canceled';
-        const vindiActive = vSt === 'active' || vSt === 'ativo';
-        const asaasActive = aSt === 'active' || aSt === 'ativo' || aSt === 'received' || aSt === 'confirmed';
+        const vindiActive = vSt === 'active' || vSt === 'ativo' || vSt === 'adimplente' || vSt === 'em_dia';
+        const asaasActive = aSt === 'active' || aSt === 'ativo' || aSt === 'received' || aSt === 'confirmed' || aSt === 'adimplente' || aSt === 'em_dia';
+        const vFaturas = scopy.vindi ? (scopy.vindi.faturas || []) : [];
+        const aFaturas = scopy.asaas ? (scopy.asaas.faturas || []) : [];
+        const vPaid = vFaturas.some(f => (f.status === 'pago' || f.status === 'paid' || f.pago));
+        const aPaid = aFaturas.some(f => (f.status === 'pago' || f.status === 'paid' || f.status === 'RECEIVED' || f.status === 'CONFIRMED' || f.pago));
 
-        if ((vindiCanceled || asaasCanceled) && !vindiActive && !asaasActive) {
+        const hasFinanceiro = vindiActive || asaasActive || vPaid || aPaid;
+        const hasConsumo = (scopy.aulas_feitas > 0);
+
+        if ((vindiCanceled || asaasCanceled) && !vindiActive && !asaasActive && !hasConsumo) {
             scopy.status = 'Cancelado';
+            scopy.is_matricula_pendente = false;
+        } else if (!hasFinanceiro && !hasConsumo && scopy.status !== 'Concluído') {
+            scopy.status = 'Matrícula Pendente';
+            scopy.is_matricula_pendente = true;
+        } else {
+            scopy.is_matricula_pendente = false;
         }
 
         return scopy;
@@ -8468,18 +8481,23 @@ function drawCursoView(courseName, force) {
         growthEnrollText = '0 matrículas 30d';
     }
 
-    // 6. Saúde, Engajamento & Retenção da Turma
-    const vigentes = cStudents.filter(s => s.status !== 'Cancelado' && s.status !== 'Concluído' && !s.turma_encerrada);
+    // 6. Saúde, Engajamento & Retenção da Turma (Excluindo Matrículas Pendentes da base ativa)
+    const pendentes = cStudents.filter(s => s.is_matricula_pendente || s.status === 'Matrícula Pendente');
+    const countPendentes = pendentes.length;
+    const confirmados = cStudents.filter(s => !s.is_matricula_pendente && s.status !== 'Matrícula Pendente');
+    const totalConfirmados = confirmados.length;
+
+    const vigentes = confirmados.filter(s => s.status !== 'Cancelado' && s.status !== 'Concluído' && !s.turma_encerrada);
     const countVigentes = vigentes.length;
     const countAtivos = vigentes.filter(s => s.status === 'Ativo').length;
     const countEmRisco = vigentes.filter(s => s.status === 'Em Risco' || s.status === 'Atenção').length;
     const countAbandonou = vigentes.filter(s => s.status === 'Abandonou' || s.status === 'Inativo').length;
     const countNunca = vigentes.filter(s => !s.acessou || s.status === 'Nunca acessou').length;
-    const countCancelados = cStudents.filter(s => s.status === 'Cancelado').length;
-    const countConcluidos = cStudents.filter(s => s.status === 'Concluído' || s.turma_encerrada).length;
+    const countCancelados = confirmados.filter(s => s.status === 'Cancelado').length;
+    const countConcluidos = confirmados.filter(s => s.status === 'Concluído' || s.turma_encerrada).length;
 
-    // Alunos ativos (excluindo cancelamentos) conforme regra institucional
-    const alunosAtivosCurso = cStudents.filter(s => s.status !== 'Cancelado');
+    // Alunos ativos (excluindo cancelamentos e pendentes) conforme regra institucional
+    const alunosAtivosCurso = confirmados.filter(s => s.status !== 'Cancelado');
     const totalAulasFeitas = alunosAtivosCurso.reduce((acc, s) => acc + (s.aulas_feitas || 0), 0);
     const mediaAulasPorAluno = alunosAtivosCurso.length > 0 ? (totalAulasFeitas / alunosAtivosCurso.length).toFixed(1) : '0.0';
 
@@ -8602,10 +8620,13 @@ function drawCursoView(courseName, force) {
             'Cancelado': { bg: 'rgba(220, 38, 38, 0.15)', col: '#991b1b', border: 'rgba(220, 38, 38, 0.3)' },
             'Concluído': { bg: 'rgba(14, 165, 233, 0.12)', col: '#0284c7', border: 'rgba(14, 165, 233, 0.3)' },
             'Apenas Login': { bg: 'rgba(217, 119, 6, 0.12)', col: '#92400e', border: 'rgba(217, 119, 6, 0.3)' },
-            'Nunca acessou': { bg: 'rgba(156, 163, 175, 0.15)', col: '#4b5563', border: 'rgba(156, 163, 175, 0.3)' }
+            'Nunca acessou': { bg: 'rgba(156, 163, 175, 0.15)', col: '#4b5563', border: 'rgba(156, 163, 175, 0.3)' },
+            'Matrícula Pendente': { bg: 'rgba(245, 158, 11, 0.15)', col: '#d97706', border: 'rgba(245, 158, 11, 0.4)' },
+            'Pendente': { bg: 'rgba(245, 158, 11, 0.15)', col: '#d97706', border: 'rgba(245, 158, 11, 0.4)' }
         };
         const cfg = map[st] || { bg: 'var(--paper)', col: 'var(--ink)', border: 'var(--line)' };
-        return `<span style="background:${cfg.bg}; color:${cfg.col}; border:1px solid ${cfg.border}; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:12px; display:inline-block;">${st}</span>`;
+        const icon = (st === 'Matrícula Pendente' || st === 'Pendente') ? '⏳ ' : '';
+        return `<span style="background:${cfg.bg}; color:${cfg.col}; border:1px solid ${cfg.border}; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:12px; display:inline-block;">${icon}${st}</span>`;
     };
 
     // Filtragem interativa por KPI selecionado
@@ -8637,6 +8658,9 @@ function drawCursoView(courseName, force) {
     } else if (kpiFilter === 'abandonou') {
         filteredStudents = filteredStudents.filter(s => s.status === 'Abandonou' || s.status === 'Inativo');
         filterLabel = 'Alunos Inativos / Abandonaram';
+    } else if (kpiFilter === 'pendente') {
+        filteredStudents = filteredStudents.filter(s => s.is_matricula_pendente || s.status === 'Matrícula Pendente');
+        filterLabel = 'Matrículas Pendentes (Aguardando Pagamento / Sem Consumo de Aulas)';
     } else if (kpiFilter === 'atraso') {
         filteredStudents = filteredStudents.filter(s => {
             const vSt = (s.vindi ? (s.vindi.status_financeiro || s.vindi.status_assinatura) : '').toLowerCase();
@@ -8725,32 +8749,32 @@ function drawCursoView(courseName, force) {
 
         <div style="display:grid; grid-template-columns: 360px 1fr; gap:16px; align-items:stretch;">
           <!-- KPIs de Matrícula -->
-          <div style="display:flex; flex-direction:column; gap:12px;">
+          <div style="display:flex; flex-direction:column; gap:10px;">
             <div class="exec-card" onclick="filterCursoTableKpi(null)" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === null ? 'border:2px solid var(--brand); box-shadow:0 4px 14px rgba(0,240,255,0.15);' : ''}" title="Clique para ver todos os alunos">
               <div class="exec-card-top">
                 <span class="exec-card-label">Matrículas Totais Acumuladas</span>
                 <span class="exec-pill pill-blue">${kpiFilter === null ? '● Exibindo Todos' : 'Carteira Histórica'}</span>
               </div>
               <div class="exec-card-val" style="color:var(--brand)">${fN(totalMatriculas)}</div>
-              <div class="exec-card-sub">Total de alunos registrados e vinculados a este curso (clique para filtrar)</div>
+              <div class="exec-card-sub">${fN(totalConfirmados)} confirmadas • ${fN(countPendentes)} pendentes</div>
             </div>
 
             <div class="exec-card" onclick="filterCursoTableKpi('recent_30d')" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === 'recent_30d' ? 'border:2px solid #10b981; box-shadow:0 4px 14px rgba(16,185,129,0.2); background:rgba(16,185,129,0.03);' : ''}" title="Clique para filtrar apenas os alunos matriculados nos últimos 30 dias">
               <div class="exec-card-top">
-                <span class="exec-card-label">Matrículas Recentes (Últimos 30 Dias)</span>
+                <span class="exec-card-label">Matrículas Recentes (30 Dias)</span>
                 <span class="exec-pill ${kpiFilter === 'recent_30d' ? 'pill-green' : growthEnrollClass}">${kpiFilter === 'recent_30d' ? '● Filtrando Tabela' : growthEnrollText}</span>
               </div>
               <div class="exec-card-val" style="color:var(--emerald-d)">${fN(matriculas30d)}</div>
-              <div class="exec-card-sub">Período recente (D-30 a Hoje) vs ${fN(matriculas30dAnt)} nos 30d anteriores</div>
+              <div class="exec-card-sub">Período recente (D-30 a Hoje) vs ${fN(matriculas30dAnt)} ant.</div>
             </div>
 
-            <div class="exec-card" onclick="filterCursoTableKpi('prev_30d')" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === 'prev_30d' ? 'border:2px solid #8b5cf6; box-shadow:0 4px 14px rgba(139,92,246,0.2); background:rgba(139,92,246,0.03);' : ''}" title="Clique para filtrar apenas os alunos matriculados no período anterior (D-60 a D-31)">
+            <div class="exec-card" onclick="filterCursoTableKpi('pendente')" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === 'pendente' ? 'border:2px solid #f59e0b; box-shadow:0 4px 14px rgba(245,158,11,0.25); background:rgba(245,158,11,0.04);' : ''}" title="Clique para filtrar apenas as matrículas pendentes (sem consumo e sem pagamento)">
               <div class="exec-card-top">
-                <span class="exec-card-label">Matrículas (30 Dias Anteriores)</span>
-                <span class="exec-pill ${kpiFilter === 'prev_30d' ? 'pill-purple' : 'pill-gray'}">${kpiFilter === 'prev_30d' ? '● Filtrando Tabela' : 'Base D-60 a D-31'}</span>
+                <span class="exec-card-label">Matrículas Pendentes</span>
+                <span class="exec-pill ${kpiFilter === 'pendente' ? 'pill-yellow' : (countPendentes > 0 ? 'pill-yellow' : 'pill-gray')}">${kpiFilter === 'pendente' ? '● Filtrando Tabela' : 'Aguardando Pagamento'}</span>
               </div>
-              <div class="exec-card-val" style="color:var(--ink)">${fN(matriculas30dAnt)}</div>
-              <div class="exec-card-sub">Período comparativo anterior de novos ingressos</div>
+              <div class="exec-card-val" style="color:#d97706">${fN(countPendentes)}</div>
+              <div class="exec-card-sub">Inscrições iniciadas sem financeiro ou consumo (clique p/ listar)</div>
             </div>
           </div>
 
