@@ -5994,110 +5994,79 @@ function drawExecView(force) {
         </div>
       </div>
 
-      <!-- G2 – FUNIL & CONVERSÃO DE LEADS (CONSOLIDAÇÃO G2 + G3) -->
+      <!-- G2 – FUNIL UNIFICADO & CONVERSÃO DE LEADS -->
       <div class="exec-sec">
         <div class="exec-sec-head">
           <div class="exec-sec-title-wrap">
             <div class="exec-sec-num">G2</div>
             <div>
               <h3 class="exec-sec-title">G2 FUNIL &amp; CONVERSÃO DE LEADS</h3>
-              <div class="exec-sec-sub">Jornada comercial completa: captação de leads, qualificação e conversão em alunos matriculados e engajados.</div>
+              <div class="exec-sec-sub">Jornada comercial e acadêmica unificada: captação, qualificação, matrícula, adimplência e engajamento no LMS.</div>
             </div>
           </div>
-          <button class="btn-exec-link" onclick="selectTab('funil')">Ver Funil Completo →</button>
+          <button class="btn-exec-link" onclick="selectTab('funil')">Ver Funil Completo &rarr;</button>
         </div>
 
-        <div class="exec-grid-4" style="margin-bottom:16px;">
-          <div class="exec-card">
-            <div class="exec-card-top">
-              <span class="exec-card-label">Leads Captados (CRM)</span>
-              <span class="exec-pill pill-blue">Topo do Funil</span>
-            </div>
-            <div class="exec-card-val" style="color:var(--ink)">${fN(totalLeads)}</div>
-            <div class="exec-card-sub">Base total de cadastros sincronizados do RD Station</div>
-          </div>
-
-          <div class="exec-card">
-            <div class="exec-card-top">
-              <span class="exec-card-label">Leads Qualificados (MQL)</span>
-              <span class="exec-pill pill-blue">${((leadsQualificados/Math.max(1, totalLeads))*100).toFixed(1)}%</span>
-            </div>
-            <div class="exec-card-val" style="color:var(--brand)">${fN(leadsQualificados)}</div>
-            <div class="exec-card-sub">Interesse manifesto em cursos e pós-graduação</div>
-          </div>
-
-          <div class="exec-card">
-            <div class="exec-card-top">
-              <span class="exec-card-label">Taxa de Conversão (MQL)</span>
-              <span class="exec-pill pill-green">MQL → Aluno</span>
-            </div>
-            <div class="exec-card-val" style="color:var(--emerald-d)">${((totalMatriculas/Math.max(1, leadsQualificados))*100).toFixed(1)}%</div>
-            <div class="exec-card-sub">${fN(totalMatriculas)} matrículas geradas a partir de ${fN(leadsQualificados)} MQLs</div>
-          </div>
-
-          <div class="exec-card">
-            <div class="exec-card-top">
-              <span class="exec-card-label">Alunos Engajados</span>
-              <span class="exec-pill pill-green">Ativos + Concluídos</span>
-            </div>
-            <div class="exec-card-val" style="color:var(--emerald-d)">${fN(countEngajados)}</div>
-            <div class="exec-card-sub">${fN(totalVigentes)} vigentes · ${fN(totalCanceladas)} cancelados</div>
-          </div>
-        </div>
-
-        <!-- BARRA DO FUNIL VISUAL INTEGRADO -->
-        <div class="exec-funnel-bar">
+        <!-- BARRA DO FUNIL VISUAL INTEGRADO (UNIFICADO) -->
+        <div class="exec-funnel-bar" style="margin-top: 4px;">
+          <!-- ETAPA 1: LEADS CAPTADOS -->
           <div class="exec-funnel-step">
             <div class="exec-funnel-step-label">1. Cadastros / Leads</div>
             <div class="exec-funnel-step-val">${fN(totalLeads)}</div>
-            <div class="exec-funnel-step-sub">Captação RD Station</div>
+            <div class="exec-funnel-step-sub">Captação RD Station (Topo)</div>
           </div>
 
           <div class="exec-funnel-arrow">
             <span class="exec-funnel-rate">${((leadsQualificados/Math.max(1, totalLeads))*100).toFixed(1)}%</span>
-            <span>→</span>
+            <span>&rarr;</span>
           </div>
 
+          <!-- ETAPA 2: LEADS QUALIFICADOS (MQL) -->
           <div class="exec-funnel-step">
             <div class="exec-funnel-step-label">2. Qualificados (MQL)</div>
-            <div class="exec-funnel-step-val">${fN(leadsQualificados)}</div>
-            <div class="exec-funnel-step-sub">Perfil com interesse</div>
+            <div class="exec-funnel-step-val" style="color:var(--brand)">${fN(leadsQualificados)}</div>
+            <div class="exec-funnel-step-sub">Interesse manifesto em cursos</div>
           </div>
 
           <div class="exec-funnel-arrow">
-            <span class="exec-funnel-rate">${((contatadosWA/Math.max(1, leadsQualificados))*100).toFixed(1)}%</span>
-            <span>→</span>
+            <span class="exec-funnel-rate" style="background:rgba(2,132,199,0.1); color:#0284c7;">${((totalMatriculas/Math.max(1, leadsQualificados))*100).toFixed(1)}%</span>
+            <span>&rarr;</span>
           </div>
 
-          <div class="exec-funnel-step">
-            <div class="exec-funnel-step-label">3. Abordagem WhatsApp</div>
-            <div class="exec-funnel-step-val">${fN(contatadosWA)}</div>
-            <div class="exec-funnel-step-sub">Atendimento Z-API</div>
-          </div>
-
-          <div class="exec-funnel-arrow">
-            <span class="exec-funnel-rate">${((totalMatriculas/Math.max(1, leadsQualificados))*100).toFixed(1)}%</span>
-            <span>→</span>
-          </div>
-
-          <div class="exec-funnel-step" style="border-color:var(--brand); background:rgba(30,58,138,0.03)">
-            <div class="exec-funnel-step-label" style="color:var(--brand)">4. Matrículas Realizadas</div>
+          <!-- ETAPA 3: MATRÍCULAS REALIZADAS -->
+          <div class="exec-funnel-step" style="border-color:var(--brand); background:rgba(2,132,199,0.03)">
+            <div class="exec-funnel-step-label" style="color:var(--brand)">3. Matrículas Geradas</div>
             <div class="exec-funnel-step-val" style="color:var(--brand)">${fN(totalMatriculas)}</div>
             <div class="exec-funnel-step-sub" style="font-weight:600; color:var(--ink)">
-              ${fN(totalVigentes)} vigentes · ${fN(totalConcluidas)} concluídas
+              ${fN(totalVigentes)} vigentes &bull; ${fN(totalConcluidas)} concluídas
             </div>
           </div>
 
           <div class="exec-funnel-arrow">
             <span class="exec-funnel-rate" style="background:rgba(5,150,105,0.1); color:var(--emerald-d)">${((totalAlunosPagantes/Math.max(1, totalMatriculas))*100).toFixed(1)}%</span>
-            <span>→</span>
+            <span>&rarr;</span>
           </div>
 
+          <!-- ETAPA 4: ALUNOS PAGANTES -->
           <div class="exec-funnel-step step-highlight" style="border-color:var(--emerald-d); background:rgba(5,150,105,0.03)">
-            <div class="exec-funnel-step-label" style="color:var(--emerald-d)">5. Alunos Pagantes</div>
+            <div class="exec-funnel-step-label" style="color:var(--emerald-d)">4. Alunos Pagantes</div>
             <div class="exec-funnel-step-val" style="color:var(--emerald-d)">${fN(totalAlunosPagantes)}</div>
             <div class="exec-funnel-step-sub" style="color:var(--muted)">
-              Com pagamento confirmado (${((totalAlunosPagantes/Math.max(1, totalMatriculas))*100).toFixed(1)}% da base)
+              Gateways Vindi &amp; Asaas (${((totalAlunosPagantes/Math.max(1, totalMatriculas))*100).toFixed(1)}%)
+            </div>
+          </div>
+
+          <div class="exec-funnel-arrow">
+            <span class="exec-funnel-rate" style="background:rgba(16,185,129,0.12); color:#047857">${((countEngajados/Math.max(1, totalAlunosPagantes))*100).toFixed(1)}%</span>
+            <span>&rarr;</span>
+          </div>
+
+          <!-- ETAPA 5: ALUNOS ENGAJADOS -->
+          <div class="exec-funnel-step" style="border-color:#10b981; background:rgba(16,185,129,0.04)">
+            <div class="exec-funnel-step-label" style="color:#047857">5. Alunos Ativos &amp; Engajados</div>
+            <div class="exec-funnel-step-val" style="color:#047857">${fN(countEngajados)}</div>
+            <div class="exec-funnel-step-sub" style="color:var(--muted)">
+              Consumo regular de aulas no LMS
             </div>
           </div>
         </div>
