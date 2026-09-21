@@ -196,6 +196,7 @@ def main():
             with open(academy_cache_path, 'r', encoding='utf-8') as f_l:
                 acad_l = json.load(f_l)
                 for item in acad_l:
+                    c_raw = item.get('Curso', '')
                     log_records.append({
                         'Data log': pd.to_datetime(item.get('Data log'), errors='coerce'),
                         'Nome aluno': str(item.get('Nome aluno', '')).strip(),
@@ -204,7 +205,7 @@ def main():
                         'ID Item': item.get('ID Item', ''),
                         'Desc. Item': item.get('Desc. Item', ''),
                         'Modulo': item.get('Modulo', 'Geral'),
-                        'Curso': item.get('Curso', 'PLATAFORMA GERAL'),
+                        'Curso': c_raw if c_raw else '',
                         'Plataforma': 'Academy'
                     })
         except Exception as e:
@@ -375,6 +376,7 @@ def main():
             with open(academy_cache_path, 'r', encoding='utf-8') as f:
                 acad_data = json.load(f)
                 for item in acad_data:
+                    c_raw = item.get('Curso', '')
                     academy_api_logs.append({
                         'Data log': pd.to_datetime(item.get('Data log'), errors='coerce'),
                         'Nome aluno': str(item.get('Nome aluno', '')).strip(),
@@ -383,7 +385,7 @@ def main():
                         'ID Item': item.get('ID Item', ''),
                         'Desc. Item': item.get('Desc. Item', ''),
                         'Modulo': item.get('Modulo', 'Geral'),
-                        'Curso': item.get('Curso', 'PLATAFORMA GERAL'),
+                        'Curso': c_raw if c_raw else '',
                         'Plataforma': 'Academy'
                     })
             print(f"[ACADEMY API] Carregados {len(academy_api_logs)} logs da API InfectoCast Academy.")
@@ -397,6 +399,7 @@ def main():
                 with open(academy_cache_path, 'r', encoding='utf-8') as f:
                     acad_data = json.load(f)
                     for item in acad_data:
+                        c_raw = item.get('Curso', '')
                         academy_api_logs.append({
                             'Data log': pd.to_datetime(item.get('Data log'), errors='coerce'),
                             'Nome aluno': str(item.get('Nome aluno', '')).strip(),
@@ -405,7 +408,7 @@ def main():
                             'ID Item': item.get('ID Item', ''),
                             'Desc. Item': item.get('Desc. Item', ''),
                             'Modulo': item.get('Modulo', 'Geral'),
-                            'Curso': item.get('Curso', 'PLATAFORMA GERAL'),
+                            'Curso': c_raw if c_raw else '',
                             'Plataforma': 'Academy'
                         })
         except Exception as e_ac:
@@ -466,7 +469,7 @@ def main():
                 'ID Item': 'Ambiente de Aprendizagem Cativa',
                 'Desc. Item': 'Acesso Web à Plataforma Cativa',
                 'Modulo': 'Geral',
-                'Curso': 'PLATAFORMA GERAL',
+                'Curso': '',
                 'Plataforma': 'Cativa'
             })
 
@@ -478,7 +481,7 @@ def main():
     df_log = df_log.dropna(subset=['Data log']).sort_values('Data log')
     hoje = datetime.date.today()
 
-    print("Montando grade curricular a partir dos logs da API...")
+    print("Montando grade curricular a partir dos logs da API...", flush=True)
     
     student_course_map = {}
     
@@ -498,24 +501,31 @@ def main():
             continue
 
         student_logs = df_log[df_log['E-mail'] == email]
+        
+        # Tentar primeiro pelo campo Curso já preenchido nos logs (vindo da API)
+        curso_logs = student_logs['Curso'].dropna().astype(str).str.strip()
+        curso_logs = curso_logs[curso_logs != ''].unique()
+        for cl in curso_logs:
+            c_mapped = canonicalize_curso(cl, email)
+            if c_mapped and c_mapped != normalize_curso('PLATAFORMA GERAL'):
+                student_course_map[email] = c_mapped
+                break
+        if email in student_course_map:
+            continue
+
+        # Fallback: inferir do conteúdo das aulas assistidas
         aula_logs = student_logs[student_logs['Ação / Local'].isin(['INICIOU AULA', 'CONCLUIU AULA'])]
-        all_text = ' '.join(aula_logs['ID Item'].fillna('').astype(str)).upper()
+        all_text = ' '.join(
+            aula_logs['ID Item'].fillna('').astype(str) + ' ' +
+            aula_logs['Desc. Item'].fillna('').astype(str) + ' ' +
+            aula_logs['Ação / Local'].fillna('').astype(str)
+        ).upper()
         all_text = norm_title(all_text)
 
-        if any(w in all_text for w in ['PEDIATRIA', 'INFECTOPEDIATRIA', 'NEONATAL', 'CRIANCA', 'SIFILIS CONGENITA']):
-            student_course_map[email] = normalize_curso('PÓS-GRADUAÇÃO EM INFECTOPEDIATRIA')
-        elif any(w in all_text for w in ['ORTOPEDIA', 'ORTO', 'PARTES MOLES', 'MUSCULOESQUELETICA']):
-            student_course_map[email] = normalize_curso('PÓS-GRADUAÇÃO EM INFECÇÕES ORTOPÉDICAS E DE PARTES MOLES')
-        elif any(w in all_text for w in ['CCIH', 'INFECCAO HOSPITALAR', 'PREVENCAO', 'VIGILANCIA', 'PAV', 'ISC', 'IPCSL']):
-            student_course_map[email] = normalize_curso('PÓS-GRADUAÇÃO EM PREVENÇÃO E CONTROLE DE INFECÇÃO HOSPITALAR (CCIH)')
-        elif any(w in all_text for w in ['IMUNO', 'IMUNODEPRIMIDO', 'TRANSPLANTE']):
-            student_course_map[email] = normalize_curso('PÓS-GRADUAÇÃO EM INFECÇÕES EM IMUNODEPRIMIDOS')
-        elif any(w in all_text for w in ['ANTIBIOTICO', 'S.O.S', 'ESBL', 'KPC', 'NDM', 'CRAB', 'PARC', 'MDR']):
-            student_course_map[email] = normalize_curso('S.O.S ANTIBIÓTICO')
-        elif any(w in all_text for w in ['FERRAMENTAS', 'ISHIKAWA', 'PARETO', 'PDCA', 'SIPOC', 'BRAINSTORMING', 'GEMBA']):
-            student_course_map[email] = normalize_curso('FERRAMENTAS DE QUALIDADE')
-        else:
-            student_course_map[email] = normalize_curso('PLATAFORMA GERAL')
+        c_inferred = canonicalize_curso(all_text, email)
+        if c_inferred and c_inferred != normalize_curso('PLATAFORMA GERAL'):
+            student_course_map[email] = c_inferred
+        # NÃO atribuir PLATAFORMA GERAL aqui — será resolvido pelo auto-healing
     
     # Step 2: Collect all lessons per course
     course_lessons = {}  # normalized_course -> {norm_title: original_title}
@@ -532,7 +542,7 @@ def main():
         if pd.notna(row.get('Curso')) and row.get('Curso'):
             curso = row['Curso']
         else:
-            curso = student_course_map.get(email, normalize_curso('PLATAFORMA GERAL'))
+            curso = student_course_map.get(email, '')
         if curso not in course_lessons:
             course_lessons[curso] = {}
         n_key = norm_title(item)
@@ -550,7 +560,7 @@ def main():
         item = str(row['ID Item'] or '').strip()
         if not item or item == 'nan':
             continue
-        curso = student_course_map.get(email, normalize_curso('PLATAFORMA GERAL'))
+        curso = student_course_map.get(email, '')
         if curso not in course_modules:
             course_modules[curso] = set()
         course_modules[curso].add(item)
@@ -682,7 +692,6 @@ def main():
         final_curriculum[curso] = mod_list
     
     print(f"Grade montada: {len(final_curriculum)} cursos, {sum(len(m) for m in final_curriculum.values())} módulos, {sum(len(a) for mods in final_curriculum.values() for m in mods for a in m['aulas'])} aulas.")
-        
     def normalize_phone(phone_str):
         if pd.isna(phone_str): return ''
         digits = re.sub(r'\D', '', str(phone_str))
@@ -759,7 +768,7 @@ def main():
             print("Erro processando log do WA:", e)
 
     def get_student_course_and_date(email, logs_df, default_d):
-        det_curso = student_course_map.get(str(email).strip(), normalize_curso('PLATAFORMA GERAL'))
+        det_curso = student_course_map.get(str(email).strip(), '')
         det_date = default_d
 
         if not logs_df.empty:
@@ -840,7 +849,7 @@ def main():
         
         c_inferido = False
         c_origem = "Log de Acesso"
-        if curso_aluno in ["PLATAFORMA GERAL", "SEM CURSO", "CURSO DESCONHECIDO"] and 'rd_course_hints' in locals() and email_str in rd_course_hints:
+        if curso_aluno in ["PLATAFORMA GERAL", "SEM CURSO", "CURSO DESCONHECIDO", "", "NAN", "NONE"] and 'rd_course_hints' in locals() and email_str in rd_course_hints:
             curso_aluno = rd_course_hints[email_str]
             c_inferido = True
             c_origem = "RD Station"
