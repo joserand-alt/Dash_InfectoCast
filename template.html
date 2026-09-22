@@ -2030,25 +2030,25 @@ option {
 </div>
 
 <div class="modal-ov" id="modal-sync-24h">
-  <div class="modal" role="dialog" aria-modal="true" style="max-width:840px; padding:0; overflow:hidden; border-radius:14px; background:var(--card); box-shadow:0 10px 40px rgba(0,0,0,0.35);">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:900px; padding:0; overflow:hidden; border-radius:14px; background:var(--card); box-shadow:0 10px 40px rgba(0,0,0,0.35);">
     <div class="md-head" style="background:var(--card-hover); padding:16px 20px; border-bottom:1px solid var(--line); position:relative;">
       <button class="md-close" onclick="closeSyncModal24h()" aria-label="Fechar" style="position:absolute; right:16px; top:16px; border:none; background:transparent; font-size:18px; cursor:pointer; color:var(--muted);">✕</button>
       <h3 style="margin:0 0 4px; font-size:16px; font-weight:800; color:var(--ink); display:flex; align-items:center; gap:8px;">
         <span style="display:inline-block; width:9px; height:9px; border-radius:50%; background:#10b981; box-shadow:0 0 10px #10b981;"></span>
-        Telemetria de Matrículas // Base de Alunos & Gateways
+        Auditoria de Matrículas // Confirmadas vs Pendentes
       </h3>
-      <div style="font-size:11.5px; color:var(--muted)">Auditoria detalhada de novos alunos considerando Primeiro Pagamento (Vindi/Asaas) e Cadastros de Ensino (Academy / Cativa)</div>
+      <div style="font-size:11.5px; color:var(--muted)">Matrículas Confirmadas (1º Pagamento Aprovado) e Inscrições Pendentes (sem financeiro e sem consumo)</div>
     </div>
     
     <!-- Mini Telemetria & Estatísticas -->
     <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; padding:14px 20px; background:var(--bg); border-bottom:1px solid var(--line);">
       <div style="padding:10px 14px; background:var(--card); border:1px solid var(--line); border-radius:8px;">
-        <div style="font-size:10px; color:var(--muted); text-transform:uppercase; font-weight:700;">Matrículas no Período</div>
+        <div style="font-size:10px; color:var(--muted); text-transform:uppercase; font-weight:700;">Registros no Filtro</div>
         <div style="font-size:18px; font-weight:800; color:#10b981" id="msync-total-val">0</div>
       </div>
       <div style="padding:10px 14px; background:var(--card); border:1px solid var(--line); border-radius:8px;">
-        <div style="font-size:10px; color:var(--muted); text-transform:uppercase; font-weight:700;">Sinais Monitorados</div>
-        <div style="font-size:13.5px; font-weight:800; color:var(--ink); margin-top:2px;">Primeiro Pagamento + Cadastros</div>
+        <div style="font-size:10px; color:var(--muted); text-transform:uppercase; font-weight:700;">Tipo Selecionado</div>
+        <div style="font-size:12.5px; font-weight:800; color:var(--ink); margin-top:2px;" id="msync-type-label">Matrículas Confirmadas</div>
       </div>
       <div style="padding:10px 14px; background:var(--card); border:1px solid var(--line); border-radius:8px;">
         <div style="font-size:10px; color:var(--muted); text-transform:uppercase; font-weight:700;">Último Registro</div>
@@ -2057,25 +2057,23 @@ option {
     </div>
 
     <!-- Abas Rápidas de Período -->
-    <div style="display:flex; gap:8px; padding:12px 20px 0; background:var(--card);">
-      <button id="mbtn-tab-24h" onclick="filterMatriculasModalPeriod('24h')" style="padding:7px 16px; border-radius:8px; border:1px solid var(--line); font-size:11.5px; font-weight:700; cursor:pointer; transition:all 0.15s;">
-        ⚡ Últimas 24 Horas
-      </button>
-      <button id="mbtn-tab-30d" onclick="filterMatriculasModalPeriod('30d')" style="padding:7px 16px; border-radius:8px; border:1px solid var(--line); font-size:11.5px; font-weight:700; cursor:pointer; transition:all 0.15s;">
-        📅 Últimos 30 Dias
-      </button>
-      <button id="mbtn-tab-all" onclick="filterMatriculasModalPeriod('all')" style="padding:7px 16px; border-radius:8px; border:1px solid var(--line); font-size:11.5px; font-weight:700; cursor:pointer; transition:all 0.15s;">
-        📋 Todas as Matrículas
-      </button>
+    <div style="display:flex; align-items:center; gap:8px; padding:12px 20px; background:var(--card); border-bottom:1px solid var(--line); overflow-x:auto;" id="msync-tabs-container">
     </div>
 
-    <!-- Barra de Filtro Rápido -->
-    <div style="padding:12px 20px 0;">
-      <input type="text" id="msync-search" placeholder="Filtrar por nome do aluno, e-mail, curso ou sinal..." style="width:100%; box-sizing:border-box; padding:9px 14px; font-size:12px; border-radius:8px; border:1px solid var(--line); background:var(--bg); color:var(--ink); outline:none;" />
+    <!-- Barra de Pesquisa Rápida -->
+    <div style="padding:10px 20px; background:var(--bg); border-bottom:1px solid var(--line); display:flex; align-items:center; gap:10px;">
+      <input type="text" id="msync-search" placeholder="🔍 Buscar por nome, email ou curso..." style="width:100%; padding:8px 12px; border-radius:6px; border:1px solid var(--line); background:var(--card); color:var(--ink); font-size:12px; outline:none;" />
     </div>
 
-    <!-- Tabela de Alunos -->
-    <div class="md-body" id="msync-table-body" style="max-height:50vh; overflow-y:auto; padding:12px 20px 20px;"></div>
+    <!-- Lista de Alunos -->
+    <div id="msync-table-body" style="max-height:380px; overflow-y:auto;">
+    </div>
+
+    <!-- Rodapé -->
+    <div style="padding:12px 20px; background:var(--card-hover); border-top:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; font-size:11px; color:var(--muted);">
+      <div><span>💡</span> Matrículas confirmadas possuem primeiro pagamento aprovado via Vindi/Asaas/Cativa.</div>
+      <button onclick="closeSyncModal24h()" style="padding:6px 14px; border-radius:6px; border:1px solid var(--line); background:var(--card); color:var(--ink); font-weight:700; cursor:pointer;">Fechar</button>
+    </div>
   </div>
 </div>
 
@@ -5232,7 +5230,6 @@ function getMatriculasAuditoriaData() {
     const rawStudents = (DATA && DATA.students) ? DATA.students : [];
     const vindi = (DATA && DATA.financeiro) ? DATA.financeiro : {};
     const asaas = (DATA && DATA.financeiro_asaas) ? DATA.financeiro_asaas : {};
-    const telemetria = (DATA && DATA.telemetria_sync) ? DATA.telemetria_sync : [];
     const vFaturas = (vindi.faturas_tabela || []);
     const aFaturas = (asaas.faturas_tabela || []);
 
@@ -5295,7 +5292,8 @@ function getMatriculasAuditoriaData() {
     const t30d = new Date(now.getTime() - 30 * 24 * 3600 * 1000);
 
     const validStudents = rawStudents.filter(s => !isInvalidOrInternal(s));
-    const allMatriculas = [];
+    const matriculasConfirmadas = [];
+    const matriculasPendentes = [];
     const processedPairs = new Set();
 
     validStudents.forEach(s => {
@@ -5306,71 +5304,107 @@ function getMatriculasAuditoriaData() {
         
         if (processedPairs.has(pairKey)) return;
         processedPairs.add(pairKey);
-        
-        // REGRA DE OURO:
-        // Se o aluno tem faturas pagas no gateway para este curso, o marco da matricula e a DATA DO PRIMEIRO PAGAMENTO PAGO.
-        // Se nao tem pagamento no gateway (acesso direto/plataforma), o marco e a data de inscricao na plataforma.
-        
-        let effDate = null;
-        let origem = '';
-        let valor = 0;
-        let tipo = '';
-        
+
         const paidBillsCourse = studentCoursePaidBills.get(em + '___' + cNorm) || studentCoursePaidBills.get(nm.toLowerCase() + '___' + cNorm);
         const paidBillsGlobal = studentCoursePaidBills.get(em + '___GLOBAL') || studentCoursePaidBills.get(nm.toLowerCase() + '___GLOBAL');
-        
         const targetBills = paidBillsCourse || paidBillsGlobal;
-        
+
+        // 1. Matrícula Confirmada (Tem pagamento aprovado no gateway)
         if (targetBills && targetBills.length > 0) {
             targetBills.sort((a, b) => a.date - b.date);
             const firstPaid = targetBills[0];
-            effDate = firstPaid.date;
-            origem = 'Primeiro Pagamento (' + firstPaid.gateway + ')';
-            valor = firstPaid.valor;
-            tipo = 'gateway';
-        } else {
-            const dtInsc = parseDateUniversal(s.data_insc || s.data_inscricao || s.data_matricula || s.first);
-            if (dtInsc) {
-                effDate = dtInsc;
-                origem = 'Cadastro Plataforma (' + (s.plataforma || 'Academy') + ')';
-                tipo = 'plataforma';
+            const effDate = firstPaid.date;
+
+            if (effDate && effDate <= now) {
+                const pad = n => n < 10 ? '0' + n : n;
+                const dtFmt = pad(effDate.getDate()) + '/' + pad(effDate.getMonth()+1) + '/' + effDate.getFullYear() + ' ' + pad(effDate.getHours()) + ':' + pad(effDate.getMinutes());
+                
+                matriculasConfirmadas.push({
+                    nome: nm || 'Aluno',
+                    email: em,
+                    curso: s.curso || 'PLATAFORMA GERAL',
+                    data: effDate,
+                    data_fmt: dtFmt,
+                    origem: 'Primeiro Pagamento (' + firstPaid.gateway + ')',
+                    gateway: firstPaid.gateway,
+                    tipo: 'confirmada',
+                    origem_label: 'Matrícula Confirmada',
+                    valor: firstPaid.valor,
+                    is_24h: effDate >= t24h,
+                    is_30d: effDate >= t30d
+                });
             }
-        }
-        
-        if (effDate && effDate <= now) {
-            const is24h = effDate >= t24h;
-            const is30d = effDate >= t30d;
-            
-            const pad = n => n < 10 ? '0' + n : n;
-            const dtFmt = pad(effDate.getDate()) + '/' + pad(effDate.getMonth()+1) + '/' + effDate.getFullYear() + ' ' + pad(effDate.getHours()) + ':' + pad(effDate.getMinutes());
-            
-            allMatriculas.push({
-                nome: nm || 'Aluno',
-                email: em,
-                curso: s.curso || 'PLATAFORMA GERAL',
-                data: effDate,
-                data_fmt: dtFmt,
-                origem: origem,
-                tipo: tipo,
-                valor: valor,
-                is_24h: is24h,
-                is_30d: is30d
-            });
+        } else {
+            // 2. Matrícula Pendente (Mesma regra da Visão por Curso: sem financeiro e sem consumo)
+            const vSt = (s.vindi ? (s.vindi.status_financeiro || s.vindi.status_assinatura) : '').toLowerCase();
+            const aSt = (s.asaas ? (s.asaas.status_financeiro || s.asaas.status_assinatura) : '').toLowerCase();
+            const vindiCanceled = vSt === 'cancelado' || vSt === 'canceled';
+            const asaasCanceled = aSt === 'cancelado' || aSt === 'canceled';
+            const vindiActive = vSt === 'active' || vSt === 'ativo' || vSt === 'adimplente' || vSt === 'em_dia';
+            const asaasActive = aSt === 'active' || aSt === 'ativo' || aSt === 'received' || aSt === 'confirmed' || aSt === 'adimplente' || aSt === 'em_dia';
+            const vFats = s.vindi ? (s.vindi.faturas || []) : [];
+            const aFats = s.asaas ? (s.asaas.faturas || []) : [];
+            const vPaid = vFats.some(f => (f.status === 'pago' || f.status === 'paid' || f.pago));
+            const aPaid = aFats.some(f => (f.status === 'pago' || f.status === 'paid' || f.status === 'RECEIVED' || f.status === 'CONFIRMED' || f.pago));
+
+            const hasFinanceiro = vindiActive || asaasActive || vPaid || aPaid;
+            const hasConsumo = (Number(s.aulas_feitas || 0) > 0);
+
+            let isPendente = false;
+            if ((vindiCanceled || asaasCanceled) && !vindiActive && !asaasActive && !hasConsumo) {
+                isPendente = false;
+            } else if (!hasFinanceiro && !hasConsumo && s.status !== 'Concluído') {
+                isPendente = true;
+            }
+
+            if (isPendente) {
+                const dtInsc = parseDateUniversal(s.data_insc || s.data_inscricao || s.data_matricula || s.first);
+                if (dtInsc && dtInsc <= now) {
+                    const pad = n => n < 10 ? '0' + n : n;
+                    const dtFmt = pad(dtInsc.getDate()) + '/' + pad(dtInsc.getMonth()+1) + '/' + dtInsc.getFullYear() + ' ' + pad(dtInsc.getHours()) + ':' + pad(dtInsc.getMinutes());
+                    
+                    matriculasPendentes.push({
+                        nome: nm || 'Lead / Inscrição',
+                        email: em,
+                        curso: s.curso || 'PLATAFORMA GERAL',
+                        data: dtInsc,
+                        data_fmt: dtFmt,
+                        origem: 'Cadastro Plataforma (' + (s.plataforma || 'Academy') + ')',
+                        gateway: s.plataforma || 'Academy',
+                        tipo: 'pendente',
+                        origem_label: 'Matrícula Pendente (Aguardando Pagamento)',
+                        valor: 0,
+                        aulas_feitas: Number(s.aulas_feitas || 0),
+                        is_24h: dtInsc >= t24h,
+                        is_30d: dtInsc >= t30d
+                    });
+                }
+            }
         }
     });
 
-    allMatriculas.sort((a, b) => b.data - a.data);
+    matriculasConfirmadas.sort((a, b) => b.data - a.data);
+    matriculasPendentes.sort((a, b) => b.data - a.data);
 
-    const list24h = allMatriculas.filter(m => m.is_24h);
-    const list30d = allMatriculas.filter(m => m.is_30d);
+    const list24h = matriculasConfirmadas.filter(m => m.is_24h);
+    const list30d = matriculasConfirmadas.filter(m => m.is_30d);
+
+    const pendentes24h = matriculasPendentes.filter(m => m.is_24h);
+    const pendentes30d = matriculasPendentes.filter(m => m.is_30d);
 
     return {
         count24h: list24h.length,
         count30d: list30d.length,
-        total: allMatriculas.length,
-        list24h: list24h,
-        list30d: list30d,
-        allRecords: allMatriculas
+        totalConfirmadas: matriculasConfirmadas.length,
+        countPendentes24h: pendentes24h.length,
+        countPendentes30d: pendentes30d.length,
+        totalPendentes: matriculasPendentes.length,
+        list24h,
+        list30d,
+        allRecords: matriculasConfirmadas,
+        pendentes24h,
+        pendentes30d,
+        allPendentes: matriculasPendentes
     };
 }
 
@@ -5916,7 +5950,7 @@ function drawExecView(force) {
               <div class="exec-sec-sub">Métricas operacionais e comerciais consolidadas em tempo real (Academy, Cativa & Gateways).</div>
             </div>
           </div>
-          <button class="btn-exec-link" onclick="openModalMatriculas('24h')" style="background: #10b981; color: #022c22; font-weight: 800; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; display:flex; align-items:center; gap:6px; box-shadow:0 0 12px rgba(16,185,129,0.3); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+          <button class="btn-exec-link" onclick="openModalMatriculas('24h_conf')" style="background: #10b981; color: #022c22; font-weight: 800; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; display:flex; align-items:center; gap:6px; box-shadow:0 0 12px rgba(16,185,129,0.3); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
             <span>📋 Detalhar Matrículas (24h / 30d)</span> →
           </button>
         </div>
@@ -5925,83 +5959,111 @@ function drawExecView(force) {
         <div style="font-size:11px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
           <span style="color:#10b981;">⚡</span> ÚLTIMAS 24 HORAS
         </div>
-        <div class="exec-grid-4" style="margin-bottom:16px;">
-          <div class="exec-card" style="border-top:3px solid #10b981; cursor:pointer;" onclick="openModalMatriculas('24h')" title="Clique para ver detalhes das matrículas nas últimas 24h">
+        <div style="display:grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px;">
+          <!-- Card 1: Confirmadas 24h -->
+          <div class="exec-card" style="border-top:3px solid #10b981; cursor:pointer;" onclick="openModalMatriculas('24h_conf')" title="Clique para ver detalhes das matrículas confirmadas nas últimas 24h">
             <div class="exec-card-top">
-              <span class="exec-card-label">Matrículas 24h</span>
-              <span class="exec-pill pill-green">⚡ CADASTRO / PAGAMENTO</span>
+              <span class="exec-card-label">Matrículas Confirmadas</span>
+              <span class="exec-pill pill-green">⚡ PAGO / CONFIRMADO</span>
             </div>
             <div class="exec-card-val" style="color:#10b981;">${fN(matriculas24h)}</div>
-            <div class="exec-card-sub">Academy • Cativa • Gateways ↗</div>
+            <div class="exec-card-sub">Vindi • Asaas • Cativa ↗</div>
           </div>
 
+          <!-- Card 2: Pendentes 24h -->
+          <div class="exec-card" style="border-top:3px solid #f59e0b; cursor:pointer;" onclick="openModalMatriculas('24h_pend')" title="Clique para ver detalhes das matrículas pendentes nas últimas 24h">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Matrículas Pendentes</span>
+              <span class="exec-pill pill-amber" style="background:rgba(245,158,11,0.12); color:#d97706; border:1px solid rgba(245,158,11,0.3);">⏳ SEM PAGAMENTO/USO</span>
+            </div>
+            <div class="exec-card-val" style="color:#f59e0b;">${fN(matInfo.countPendentes24h)}</div>
+            <div class="exec-card-sub">Aguardando Pagamento / Consumo ↗</div>
+          </div>
+
+          <!-- Card 3: Receita 24h -->
           <div class="exec-card" style="border-top:3px solid var(--emerald);">
             <div class="exec-card-top">
               <span class="exec-card-label">Receita Realizada 24h</span>
               <span class="exec-pill pill-green">Caixa 24h</span>
             </div>
-            <div class="exec-card-val" style="color:var(--emerald-d);">${fM(rec24h)}</div>
-            <div class="exec-card-sub">Liquidação Vindi &amp; Asaas</div>
+            <div class="exec-card-val" style="color:var(--emerald);">${fM(rec24h)}</div>
+            <div class="exec-card-sub">Liquidação Vindi & Asaas</div>
           </div>
 
+          <!-- Card 4: Alunos Ativos 24h -->
           <div class="exec-card" style="border-top:3px solid var(--sky);">
             <div class="exec-card-top">
               <span class="exec-card-label">Alunos Ativos 24h</span>
               <span class="exec-pill pill-blue">Uso / Logins</span>
             </div>
-            <div class="exec-card-val" style="color:#0284c7;">${fN(alunosAtivos24h)}</div>
+            <div class="exec-card-val" style="color:var(--sky);">${fN(alunosAtivos24h)}</div>
             <div class="exec-card-sub">Alunos com aulas e acessos recentes</div>
           </div>
 
-          <div class="exec-card" style="border-top:3px solid var(--line2);">
+          <!-- Card 5: Contatos 24h -->
+          <div class="exec-card" style="border-top:3px solid var(--purple); cursor:pointer;" onclick="openRdConversasModal('hoje')" title="Clique para ver contatos e leads das últimas 24h no WhatsApp">
             <div class="exec-card-top">
               <span class="exec-card-label">Contatos Recebidos 24h</span>
-              <span class="exec-pill pill-blue">Entrada CRM</span>
+              <span class="exec-pill pill-purple">Entrada CRM</span>
             </div>
-            <div class="exec-card-val" style="color:var(--muted);">—</div>
-            <div class="exec-card-sub">Canal de entrada / Tráfego</div>
+            <div class="exec-card-val" style="color:var(--purple);">${rdConversasData.hoje_contatos > 0 ? fN(rdConversasData.hoje_contatos) : '—'}</div>
+            <div class="exec-card-sub">Canal de entrada / Tráfego ↗</div>
           </div>
         </div>
 
         <!-- LINHA 2: ÚLTIMOS 30 DIAS -->
         <div style="font-size:11px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-          <span style="color:var(--brand);">📅</span> ÚLTIMOS 30 DIAS
+          <span style="color:#3b82f6;">📅</span> ÚLTIMOS 30 DIAS
         </div>
-        <div class="exec-grid-4">
-          <div class="exec-card" style="border-top:3px solid var(--brand); cursor:pointer;" onclick="openModalMatriculas('30d')" title="Clique para ver detalhes das matrículas nos últimos 30 dias">
+        <div style="display:grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px;">
+          <!-- Card 1: Confirmadas 30d -->
+          <div class="exec-card" style="border-top:3px solid #3b82f6; cursor:pointer;" onclick="openModalMatriculas('30d_conf')" title="Clique para ver detalhes das matrículas confirmadas nos últimos 30 dias">
             <div class="exec-card-top">
-              <span class="exec-card-label">Matrículas 30dd</span>
-              <span class="exec-pill pill-blue">📅 CADASTRO / PAGAMENTO</span>
+              <span class="exec-card-label">Matrículas Confirmadas</span>
+              <span class="exec-pill pill-blue">📅 PAGO / CONFIRMADO</span>
             </div>
-            <div class="exec-card-val" style="color:var(--brand);">${fN(matriculas30d)}</div>
-            <div class="exec-card-sub">Academy • Cativa • Gateways ↗</div>
+            <div class="exec-card-val" style="color:var(--ink);">${fN(matriculas30d)}</div>
+            <div class="exec-card-sub">Vindi • Asaas • Cativa ↗</div>
           </div>
 
+          <!-- Card 2: Pendentes 30d -->
+          <div class="exec-card" style="border-top:3px solid #f59e0b; cursor:pointer;" onclick="openModalMatriculas('30d_pend')" title="Clique para ver detalhes das matrículas pendentes nos últimos 30 dias">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Matrículas Pendentes</span>
+              <span class="exec-pill pill-amber" style="background:rgba(245,158,11,0.12); color:#d97706; border:1px solid rgba(245,158,11,0.3);">⏳ SEM PAGAMENTO/USO</span>
+            </div>
+            <div class="exec-card-val" style="color:#f59e0b;">${fN(matInfo.countPendentes30d)}</div>
+            <div class="exec-card-sub">Aguardando Pagamento / Consumo ↗</div>
+          </div>
+
+          <!-- Card 3: Receita 30d -->
           <div class="exec-card" style="border-top:3px solid var(--emerald);">
             <div class="exec-card-top">
-              <span class="exec-card-label">Receita Realizada 30dd</span>
+              <span class="exec-card-label">Receita Realizada 30d</span>
               <span class="exec-pill pill-green">Caixa 30d</span>
             </div>
-            <div class="exec-card-val" style="color:var(--emerald-d);">${fM(rec30d)}</div>
+            <div class="exec-card-val" style="color:var(--emerald);">${fM(rec30d)}</div>
             <div class="exec-card-sub">Faturamento liquidado (30d)</div>
           </div>
 
-          <div class="exec-card" style="border-top:3px solid #7c3aed;">
+          <!-- Card 4: Alunos Ativos 30d -->
+          <div class="exec-card" style="border-top:3px solid var(--purple);">
             <div class="exec-card-top">
-              <span class="exec-card-label">Alunos Ativos 30dd</span>
-              <span class="exec-pill pill-purple">Engajamento</span>
+              <span class="exec-card-label">Alunos Ativos 30d</span>
+              <span class="exec-pill pill-purple">Engajamento 30d</span>
             </div>
-            <div class="exec-card-val" style="color:#7c3aed;">${fN(alunosAtivos30d)}</div>
+            <div class="exec-card-val" style="color:var(--purple);">${fN(alunosAtivos30d)}</div>
             <div class="exec-card-sub">Alunos ativos no período</div>
           </div>
 
-          <div class="exec-card" style="border-top:3px solid var(--line2);">
+          <!-- Card 5: Contatos 30d -->
+          <div class="exec-card" style="border-top:3px solid var(--purple); cursor:pointer;" onclick="openRdConversasModal('all')" title="Clique para ver conversas e suporte do WhatsApp">
             <div class="exec-card-top">
-              <span class="exec-card-label">Contatos Recebidos 30dd</span>
-              <span class="exec-pill pill-blue">Entrada CRM</span>
+              <span class="exec-card-label">Contatos Recebidos 30d</span>
+              <span class="exec-pill pill-purple">Total CRM</span>
             </div>
-            <div class="exec-card-val" style="color:var(--muted);">—</div>
-            <div class="exec-card-sub">Canal de entrada / Tráfego</div>
+            <div class="exec-card-val" style="color:var(--purple);">${fN(rdConversasData.total_contatos || 316)}</div>
+            <div class="exec-card-sub">Suporte & Comerciais (WhatsApp) ↗</div>
           </div>
         </div>
       </div>
@@ -9508,16 +9570,14 @@ function updateSync24hKpi() {
 function openModalMatriculas(period) {
     const matData = getMatriculasAuditoriaData();
     _matriculasModalData = {
-        period: period || '24h',
-        list24h: matData.list24h,
-        list30d: matData.list30d,
-        allRecords: matData.allRecords
+        period: period || '24h_conf',
+        data: matData
     };
 
     const modal = document.getElementById('modal-sync-24h');
     if (!modal) return;
 
-    // Atualizar abas
+    // Atualizar abas dinâmicas
     updateMatriculasModalTabs();
 
     // Renderizar tabela com o período ativo
@@ -9532,15 +9592,14 @@ function openModalMatriculas(period) {
         searchInp.value = '';
         searchInp.oninput = function(e) {
             const term = e.target.value.toLowerCase().trim();
-            const currentList = _matriculasModalData.period === '24h' 
-                ? _matriculasModalData.list24h 
-                : (_matriculasModalData.period === '30d' ? _matriculasModalData.list30d : _matriculasModalData.allRecords);
+            const currentList = getActiveMatriculasList(_matriculasModalData.period);
             
             const filtered = currentList.filter(s => 
                 (s.nome || '').toLowerCase().includes(term) ||
                 (s.email || '').toLowerCase().includes(term) ||
                 (s.curso || '').toLowerCase().includes(term) ||
-                (s.origem_sinal || '').toLowerCase().includes(term)
+                (s.origem || '').toLowerCase().includes(term) ||
+                (s.gateway || '').toLowerCase().includes(term)
             );
             renderMatriculasTable(filtered);
         };
@@ -9548,43 +9607,72 @@ function openModalMatriculas(period) {
 }
 
 function openModalSync24h() {
-    openModalMatriculas('24h');
+    openModalMatriculas('24h_conf');
+}
+
+function closeSyncModal24h() {
+    const modal = document.getElementById('modal-sync-24h');
+    if (modal) modal.classList.remove('on');
+    if (!document.getElementById('modal') || !document.getElementById('modal').classList.contains('on')) {
+        document.body.style.overflow = '';
+    }
+}
+
+function getActiveMatriculasList(periodKey) {
+    const d = (_matriculasModalData && _matriculasModalData.data) ? _matriculasModalData.data : getMatriculasAuditoriaData();
+    if (periodKey === '24h_conf') return d.list24h || [];
+    if (periodKey === '24h_pend') return d.pendentes24h || [];
+    if (periodKey === '30d_conf') return d.list30d || [];
+    if (periodKey === '30d_pend') return d.pendentes30d || [];
+    if (periodKey === 'all_conf') return d.allRecords || [];
+    if (periodKey === 'all_pend') return d.allPendentes || [];
+    return d.list24h || [];
 }
 
 function updateMatriculasModalTabs() {
-    const btn24h = document.getElementById('mbtn-tab-24h');
-    const btn30d = document.getElementById('mbtn-tab-30d');
-    const btnAll = document.getElementById('mbtn-tab-all');
+    const container = document.getElementById('msync-tabs-container');
+    if (!container) return;
+    
+    const d = (_matriculasModalData && _matriculasModalData.data) ? _matriculasModalData.data : getMatriculasAuditoriaData();
     const p = _matriculasModalData.period;
 
-    if (btn24h) {
-        btn24h.style.background = p === '24h' ? '#10b981' : 'var(--card)';
-        btn24h.style.color = p === '24h' ? '#022c22' : 'var(--ink)';
-        btn24h.innerHTML = `⚡ Últimas 24 Horas (<b>${_matriculasModalData.list24h.length}</b>)`;
-    }
-    if (btn30d) {
-        btn30d.style.background = p === '30d' ? '#3b82f6' : 'var(--card)';
-        btn30d.style.color = p === '30d' ? '#ffffff' : 'var(--ink)';
-        btn30d.innerHTML = `📅 Últimos 30 Dias (<b>${_matriculasModalData.list30d.length}</b>)`;
-    }
-    if (btnAll) {
-        btnAll.style.background = p === 'all' ? '#8b5cf6' : 'var(--card)';
-        btnAll.style.color = p === 'all' ? '#ffffff' : 'var(--ink)';
-        btnAll.innerHTML = `📋 Todas as Matrículas (<b>${_matriculasModalData.allRecords.length}</b>)`;
-    }
+    const tabs = [
+        { id: '24h_conf', label: `⚡ Confirmadas 24h (${d.count24h})`, color: '#10b981', textColor: '#022c22' },
+        { id: '24h_pend', label: `⏳ Pendentes 24h (${d.countPendentes24h})`, color: '#f59e0b', textColor: '#451a03' },
+        { id: '30d_conf', label: `📅 Confirmadas 30d (${d.count30d})`, color: '#3b82f6', textColor: '#ffffff' },
+        { id: '30d_pend', label: `⏳ Pendentes 30d (${d.countPendentes30d})`, color: '#f59e0b', textColor: '#451a03' },
+        { id: 'all_conf', label: `📂 Todas Confirmadas (${d.totalConfirmadas})`, color: '#8b5cf6', textColor: '#ffffff' },
+        { id: 'all_pend', label: `📂 Todas Pendentes (${d.totalPendentes})`, color: '#64748b', textColor: '#ffffff' }
+    ];
+
+    container.innerHTML = tabs.map(t => {
+        const isActive = p === t.id;
+        const bg = isActive ? t.color : 'var(--card)';
+        const col = isActive ? t.textColor : 'var(--ink)';
+        const border = isActive ? `1px solid ${t.color}` : '1px solid var(--line)';
+        return `<button onclick="filterMatriculasModalPeriod('${t.id}')" style="background:${bg}; color:${col}; border:${border}; padding:6px 12px; border-radius:8px; font-size:11.5px; font-weight:700; cursor:pointer; transition:all 0.2s; white-space:nowrap;">${t.label}</button>`;
+    }).join('');
 }
 
 function filterMatriculasModalPeriod(p) {
     _matriculasModalData.period = p;
     updateMatriculasModalTabs();
 
-    let targetList = [];
-    if (p === '24h') targetList = _matriculasModalData.list24h;
-    else if (p === '30d') targetList = _matriculasModalData.list30d;
-    else targetList = _matriculasModalData.allRecords;
+    const targetList = getActiveMatriculasList(p);
 
     const totalValEl = document.getElementById('msync-total-val');
     if (totalValEl) totalValEl.textContent = fmt(targetList.length);
+
+    const typeLabelEl = document.getElementById('msync-type-label');
+    if (typeLabelEl) {
+        if (p.includes('pend')) {
+            typeLabelEl.textContent = 'Matrículas Pendentes (Sem Financeiro / Sem Uso)';
+            typeLabelEl.style.color = '#f59e0b';
+        } else {
+            typeLabelEl.textContent = 'Matrículas Confirmadas (1º Pagamento Aprovado)';
+            typeLabelEl.style.color = '#10b981';
+        }
+    }
 
     const lastTimeEl = document.getElementById('msync-last-time');
     if (lastTimeEl) {
@@ -9598,20 +9686,12 @@ function filterMatriculasModalPeriod(p) {
     renderMatriculasTable(targetList);
 }
 
-function closeSyncModal24h() {
-    const modal = document.getElementById('modal-sync-24h');
-    if (modal) modal.classList.remove('on');
-    if (!document.getElementById('modal') || !document.getElementById('modal').classList.contains('on')) {
-        document.body.style.overflow = '';
-    }
-}
-
 function renderMatriculasTable(students) {
     const tbody = document.getElementById('msync-table-body');
     if (!tbody) return;
 
     if (!students || students.length === 0) {
-        tbody.innerHTML = '<div style="padding:32px; text-align:center; color:var(--muted); font-size:12.5px;">Nenhuma matrícula encontrada no período selecionado.</div>';
+        tbody.innerHTML = '<div style="padding:32px; text-align:center; color:var(--muted); font-size:12.5px;">Nenhum registro encontrado no período selecionado.</div>';
         return;
     }
 
@@ -9619,19 +9699,22 @@ function renderMatriculasTable(students) {
         const initials = (s.nome || 'A').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
         const cursoTag = s.curso || 'PLATAFORMA GERAL';
         const dataTag = s.data_fmt || 'Recente';
-        const sinal = s.origem_sinal || 'Cadastro';
+        const isConfirmada = s.tipo === 'confirmada';
         
-        const isPay = sinal.includes('Pagamento');
-        const isCativa = sinal.includes('Cativa');
-        const badgeBg = isPay ? 'rgba(16,185,129,0.12)' : (isCativa ? 'rgba(245,158,11,0.12)' : 'rgba(59,130,246,0.12)');
-        const badgeColor = isPay ? '#059669' : (isCativa ? '#d97706' : '#2563eb');
-        const badgeBorder = isPay ? 'rgba(16,185,129,0.3)' : (isCativa ? 'rgba(245,158,11,0.3)' : 'rgba(59,130,246,0.3)');
-        const icon = isPay ? '💳' : (isCativa ? '🟠' : '🎓');
+        const badgeBg = isConfirmada ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)';
+        const badgeColor = isConfirmada ? '#059669' : '#d97706';
+        const badgeBorder = isConfirmada ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)';
+        const icon = isConfirmada ? '💳' : '⏳';
+        const labelText = isConfirmada ? `● Confirmada (${s.gateway || 'Gateway'})` : `⏳ Matrícula Pendente`;
+
+        const valHtml = (isConfirmada && s.valor > 0) 
+            ? `<span style="font-weight:800; color:#059669; font-size:11.5px;">${fM(s.valor)}</span>`
+            : `<span style="color:var(--muted); font-size:11px;">${isConfirmada ? 'Acesso Confirmado' : '0 aulas assistidas'}</span>`;
 
         return `
           <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-bottom:1px solid var(--line); font-size:12px; transition:background 0.15s;" onmouseover="this.style.background='var(--card-hover)'" onmouseout="this.style.background='transparent'">
             <div style="display:flex; align-items:center; gap:12px; min-width:0;">
-              <div style="width:34px; height:34px; border-radius:50%; background:var(--sky-w); color:var(--sky-d); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:11px; flex-shrink:0;">
+              <div style="width:34px; height:34px; border-radius:50%; background:${isConfirmada ? 'var(--sky-w)' : 'rgba(245,158,11,0.15)'}; color:${isConfirmada ? 'var(--sky-d)' : '#d97706'}; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:11px; flex-shrink:0;">
                 ${initials}
               </div>
               <div style="min-width:0;">
@@ -9644,17 +9727,20 @@ function renderMatriculasTable(students) {
               </div>
             </div>
 
-            <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+            <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
               <div style="text-align:right; max-width:260px;">
-                <span style="display:inline-block; font-size:10.5px; font-weight:600; padding:2px 8px; border-radius:6px; background:var(--bg); color:var(--muted); border:1px solid var(--line); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:250px;" title="${cursoTag}">
+                <span style="display:inline-block; font-size:10.5px; font-weight:700; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:4px; padding:2px 6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:240px;">
                   ${cursoTag}
                 </span>
-                <div style="font-size:10px; color:var(--muted); margin-top:2px;">${dataTag}</div>
+                <div style="color:var(--muted); font-size:10px; margin-top:2px;">
+                  ${valHtml} • ${dataTag}
+                </div>
               </div>
 
-              <span style="display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:3px 9px; border-radius:12px; background:${badgeBg}; color:${badgeColor}; border:1px solid ${badgeBorder}; white-space:nowrap;">
-                ${icon} ${sinal}
-              </span>
+              <div style="display:flex; align-items:center; gap:4px; padding:3px 8px; border-radius:20px; font-size:10px; font-weight:800; background:${badgeBg}; color:${badgeColor}; border:1px solid ${badgeBorder}; white-space:nowrap;">
+                <span>${icon}</span>
+                <span>${labelText}</span>
+              </div>
             </div>
           </div>
         `;
@@ -9663,11 +9749,7 @@ function renderMatriculasTable(students) {
     tbody.innerHTML = rowsHtml;
 }
 
-function renderSync24hTable(students) {
-    renderMatriculasTable(students);
-}
-
-// Fechar modal ao clicar fora
+// Fechar ao clicar fora
 document.addEventListener('click', function(e) {
     const modal = document.getElementById('modal-sync-24h');
     if (modal && e.target === modal) {
@@ -9675,11 +9757,6 @@ document.addEventListener('click', function(e) {
     }
 });
 
-
-
-// =============================================================================
-// =============================================================================
-// =============================================================================
 // MODAL: PROJEÇÃO DIÁRIA DE RECEBIMENTOS DO MÊS VIGENTE
 // =============================================================================
 let _projecaoDiariaData = null;
