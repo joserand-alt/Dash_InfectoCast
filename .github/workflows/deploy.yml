@@ -51,15 +51,16 @@ jobs:
           python gerador.py
 
       - name: Salvar Caches, Tokens e Dashboard Atualizado no Git
+        continue-on-error: true
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add index.html dashboard_gerado.html *cache.json asaas_config.json rd_tokens.json rd_tagged_matriculas.json || true
-          if git status --porcelain | grep -q .; then
-            git commit -m "Auto-Sync: Dados e tags atualizados via APIs [skip ci]"
-            git push origin main || echo "Aviso: Nao foi possivel dar push no commit de auto-sync"
+          git add -A || true
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "Auto-Sync: Dados e tags atualizados via APIs [skip ci]" || true
+            git push origin main || echo "Aviso: Push para o Git ignorado ou sem permissao de escrita"
           else
-            echo "Nenhuma alteracao nos dados detectada."
+            echo "Nenhuma alteracao detectada."
           fi
 
       - name: Configurar GitHub Pages
