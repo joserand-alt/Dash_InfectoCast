@@ -55,7 +55,7 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A || true
+          git add index.html dashboard_gerado.html academy_logs_cache.json cativa_cache.json vindi_cache.json asaas_config.json rd_tokens.json rd_tagged_matriculas.json rd_conversas_cache.json || true
           if [ -n "$(git status --porcelain)" ]; then
             git commit -m "Auto-Sync: Dados e tags atualizados via APIs [skip ci]" || true
             git push origin main || echo "Aviso: Push para o Git ignorado ou sem permissao de escrita"
