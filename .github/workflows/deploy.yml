@@ -1,4 +1,4 @@
-name: Sincronização Automática das APIs & Deploy no GitHub Pages
+name: Sincronizacao Automatica das APIs & Deploy no GitHub Pages
 
 on:
   schedule:
@@ -14,8 +14,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: "dash-sync-pipeline"
+  cancel-in-progress: true
 
 jobs:
   sync_and_deploy:
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout do repositório
+      - name: Checkout do repositorio
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -37,14 +37,14 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Instalar Dependências
+      - name: Instalar Dependencias
         run: |
           python -m pip install --upgrade pip
           pip install pandas openpyxl requests
 
-      - name: Sincronizar Matrículas e Disparar Tags no RD Station
+      - name: Sincronizar Matriculas e Disparar Tags no RD Station
         run: |
-          python sync_matriculas_rd.py || echo "Aviso na sincronização de tags"
+          python sync_matriculas_rd.py || echo "Aviso na sincronizacao de tags"
 
       - name: Executar Gerador e Consultar APIs (Academy, Cativa, Vindi, Asaas, RD)
         run: |
@@ -57,9 +57,9 @@ jobs:
           git add index.html dashboard_gerado.html *cache.json asaas_config.json rd_tokens.json rd_tagged_matriculas.json || true
           if git status --porcelain | grep -q .; then
             git commit -m "Auto-Sync: Dados e tags atualizados via APIs [skip ci]"
-            git push origin main
+            git push origin main || echo "Aviso: Nao foi possivel dar push no commit de auto-sync"
           else
-            echo "Nenhuma alteração nos dados detectada."
+            echo "Nenhuma alteracao nos dados detectada."
           fi
 
       - name: Configurar GitHub Pages

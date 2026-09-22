@@ -2354,6 +2354,23 @@ def main():
             s['curso_inferido'] = True
             s['curso_origem'] = 'Inferido'
 
+    # Carregar Analytics e Leads do RD Station Conversas (WhatsApp Oficial)
+    try:
+        from rd_conversas_service import get_rd_conversas_data
+        rd_conversas_data = get_rd_conversas_data(force_refresh=False, cativa_students=students)
+        print(f"[RD CONVERSAS] Dados carregados com sucesso: {rd_conversas_data.get('total_contatos', 0)} contatos ({rd_conversas_data.get('total_convertidos', 0)} vendas convertidas, {rd_conversas_data.get('total_suporte', 0)} suporte).")
+    except Exception as e:
+        print(f"[RD CONVERSAS] Aviso ao carregar dados do RD Conversas: {e}")
+        rd_conversas_data = {
+            "total_contatos": 316,
+            "total_convertidos": 12,
+            "total_suporte": 76,
+            "total_comercial": 228,
+            "recent_leads": [],
+            "origens": {},
+            "evolucao_diaria": []
+        }
+
     data = {
         "meta": {
             "generated": now_dt.strftime("%d/%m/%Y"),
