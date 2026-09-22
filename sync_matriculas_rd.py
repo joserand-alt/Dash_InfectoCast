@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 """
 Sincronizador Inteligente de Matrículas e Pagamentos com o RD Station
-- Sincroniza alunos e matrículas da Cativa Digital, Academy, Vindi e Asaas
-- Classifica automaticamente em Pós-Graduação vs Curso Livre e tags do curso
-- Garante idempotência salvando histórico em rd_tagged_matriculas.json
+- REGRA DE OURO: O disparo de conversão e aplicação de tags de aluno no RD Station
+  SÓ OCORRE NA CONFIRMAÇÃO DO PRIMEIRO PAGAMENTO DO CURSO NO GATEWAY (Vindi / Asaas / Cativa).
+- Cadastros simples de plataforma sem pagamento aprovado NÃO disparam evento de conversão.
+- Classifica automaticamente em Pós-Graduação vs Curso Livre e tags oficiais do curso.
+- Garante idempotência salvando histórico em rd_tagged_matriculas.json (não redispara parcelas recorrentes).
 """
 
 import os
@@ -11,7 +13,8 @@ import json
 import time
 import logging
 from datetime import datetime
-import pandas as pd
+import unicodedata
+import re
 
 import rd_service
 
@@ -24,14 +27,33 @@ CATIVA_CACHE_FILE = os.path.join(BASE_DIR, "cativa_cache.json")
 ASAAS_CACHE_FILE = os.path.join(BASE_DIR, "asaas_cache.json")
 VINDI_CACHE_FILE = os.path.join(BASE_DIR, "vindi_cache.json")
 
-def get_inscricoes_file():
-    p1 = os.path.join(BASE_DIR, "BD", "Inscrições.xlsx")
-    if os.path.exists(p1):
-        return p1
-    p2 = r"C:\Users\DELL\Desktop\Acompanhamento de acessos\BD\Inscrições.xlsx"
-    if os.path.exists(p2):
-        return p2
-    return p1
+def normalize_curso_name(cName):
+    if not cName:
+        return 'PÓS-GRADUAÇÃO INFECTOCAST'
+    s = unicodedata.normalize('NFKD', str(cName)).encode('ascii', 'ignore').decode('utf-8').upper().strip()
+    if 'INFECTOPEDIATRIA' in s or 'PEDIATRIA' in s:
+        return 'POS-GRADUACAO EM INFECTOPEDIATRIA'
+    if 'IMUNODEPRIMIDO' in s:
+        return 'POS-GRADUACAO EM INFECTOLOGIA DO PACIENTE IMUNODEPRIMIDO'
+    if 'ORTOPEDIC' in s or 'PARTES MOLES' in s:
+        return 'POS-GRADUACAO EM INFECCOES ORTOPEDICAS E DE PARTES MOLES'
+    if 'CCIH' in s or 'HOSPITALAR' in s:
+        return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)'
+    if 'TERAPIA INTENSIVA' in s or 'UTI' in s:
+        return 'POS-GRADUACAO EM INFECTOLOGIA EM TERAPIA INTENSIVA'
+    if 'ANTIBIOTICO' in s or 'SOS' in s:
+        return 'S.O.S ANTIBIOTICO'
+    if 'FUNGO' in s or 'ANTIFUNGICO' in s:
+        return 'DO FUNGO AO ANTIFUNGICO'
+    if 'MULTI-R' in s or 'JORNADA' in s:
+        return 'JORNADA MULTI-R'
+    if 'GESTACAO' in s or 'GESTANTE' in s:
+        return 'INFECCOES NA GESTACAO'
+    if 'HIV' in s or 'HEPATITE' in s:
+        return 'HIV E HEPATITES VIRAIS'
+    if 'INFECTOCAST' in s:
+        return 'POS-GRADUACAO INFECTOCAST'
+    return s
 
 def load_tagged_history():
     """Carrega o histórico de alunos/matrículas que já receberam a tag no RD"""
@@ -48,8 +70,19 @@ def save_tagged_history(history):
     with open(TAGGED_HISTORY_FILE, "w", encoding="utf-8") as f:
         json.dump(history, f, indent=2, ensure_ascii=False)
 
-def get_cativa_enrollments():
-    """Extrai lista de alunos e cursos da Cativa Digital"""
+def is_internal_or_test(email, nome=""):
+    em = str(email or "").lower().strip()
+    nm = str(nome or "").lower().strip()
+    if not em or "@" not in em:
+        return True
+    if any(x in em for x in ['@infectocast', '@integralmedica', '@nutrify', '@cativa', '@estrategia1', '@adtivo', 'teste']):
+        return True
+    if 'teste' in nm or em in ['gcotta29@gmail.com', 'j.o.s.e.r.a.n.d@gmail.com', 'email@email.com', 'wgww@gmail.com']:
+        return True
+    return False
+
+def get_cativa_confirmed_enrollments():
+    """Extrai lista de alunos com matrículas/cursos confirmados na Cativa Digital"""
     enrollments = []
     if not os.path.exists(CATIVA_CACHE_FILE):
         return enrollments
@@ -63,7 +96,7 @@ def get_cativa_enrollments():
         
         for s in students:
             em = str(s.get("email", "")).lower().strip()
-            if not em or "@" not in em or em.endswith("@infectocast.com") or "teste" in em:
+            if is_internal_or_test(em, s.get("fullName")):
                 continue
                 
             nome = str(s.get("fullName", "")).strip()
@@ -71,36 +104,32 @@ def get_cativa_enrollments():
             if not nome:
                 fn = meta.get("first_name", "")
                 ln = meta.get("last_name", "")
-                nome = f"{fn} {ln}".strip()
+                nome = f"{fn} {ln}".strip() or "Aluno Cativa"
                 
             courses = s.get("courses", [])
-            if not courses:
+            for c in courses:
+                c_name = c.get("courseName") or "Pós-Graduação InfectoCast"
+                c_norm = normalize_curso_name(c_name)
                 enrollments.append({
                     "email": em,
                     "nome": nome,
-                    "curso": "Pós-Graduação InfectoCast",
+                    "curso": c_norm,
+                    "valor": None,
                     "gateway": "Cativa Digital",
                     "origem": "Cativa",
-                    "id": f"CAT-{em}"
+                    "data_matricula": c.get("enrollmentDate") or datetime.now().strftime("%Y-%m-%d"),
+                    "id": f"CAT-{em}-{rd_service.slugify_tag(c_norm)}"
                 })
-            else:
-                for c in courses:
-                    c_name = c.get("courseName") or "Pós-Graduação InfectoCast"
-                    enrollments.append({
-                        "email": em,
-                        "nome": nome,
-                        "curso": c_name,
-                        "gateway": "Cativa Digital",
-                        "origem": "Cativa",
-                        "id": f"CAT-{em}-{rd_service.slugify_tag(c_name)}"
-                    })
     except Exception as e:
         logger.error(f"Erro ao processar alunos da Cativa: {e}")
         
     return enrollments
 
-def get_asaas_enrollments():
-    """Extrai alunos matriculados com pagamento confirmado no Asaas"""
+def get_asaas_confirmed_enrollments():
+    """
+    Extrai SOMENTE alunos com PAGAMENTO CONFIRMADO/PAGO no Asaas.
+    A data da matrícula é a data do PRIMEIRO pagamento aprovado.
+    """
     enrollments = []
     if not os.path.exists(ASAAS_CACHE_FILE):
         return enrollments
@@ -113,41 +142,51 @@ def get_asaas_enrollments():
         for k, st in data_map.items():
             if not isinstance(st, dict):
                 continue
-            if (st.get("total_pago") or 0) <= 0:
+            
+            # REGRA ESTRITA: Deve possuir total pago > 0 e faturas pagas confirmadas
+            tot_pago = float(st.get("total_pago") or 0)
+            faturas = st.get("faturas", [])
+            paid_fats = [f for f in faturas if str(f.get("status", "")).upper() in ["RECEIVED", "CONFIRMED", "PAGO", "PAID"]]
+            
+            if tot_pago <= 0 and len(paid_fats) == 0:
                 continue
                 
             em = str(st.get("customer_email") or "").lower().strip()
-            if not em or "@" not in em or em.endswith("@infectocast.com") or "teste" in em:
+            nome = str(st.get("customer_name") or "Aluno Asaas").strip()
+            if is_internal_or_test(em, nome):
                 continue
-                
-            nome = str(st.get("customer_name") or "Aluno Academy").strip()
-            faturas = st.get("faturas", [])
+
+            # Identificar curso por descrição ou tabela inteligente de preços
+            desc_text = ' '.join(str(f.get('description') or f.get('descricao') or '') for f in faturas)
+            desc_norm = normalize_curso_name(desc_text)
             
-            # Identificação inteligente de curso
-            curso = "Curso Academy"
-            tot_pago = float(st.get("total_pago") or 0)
+            # Preços conhecidos do catálogo
+            f_vals = [float(ft.get('valor') or 0) for ft in faturas]
+            sos_prices = [819.0, 487.0, 2187.0, 1968.30, 519.0, 204.75, 68.25, 182.25, 218.70, 437.40, 196.83]
             
-            desc_text = " ".join(str(ft.get("description", ft.get("plano", ""))) for ft in faturas).lower()
-            if "sos" in desc_text or "antibiotico" in desc_text or abs(tot_pago - 487.0) < 5:
-                curso = "S.O.S ANTIBIÓTICO"
-            elif "ccih" in desc_text or "hospitalar" in desc_text:
-                curso = "PÓS-GRADUAÇÃO EM PREVENÇÃO E CONTROLE DE INFECÇÃO HOSPITALAR (CCIH)"
-            elif "pediatria" in desc_text or "infectoped" in desc_text:
-                curso = "PÓS-GRADUAÇÃO EM INFECTOPEDIATRIA"
-            elif "ortoped" in desc_text:
-                curso = "PÓS-GRADUAÇÃO EM INFECÇÕES ORTOPÉDICAS E DE PARTES MOLES"
-            elif "imuno" in desc_text:
-                curso = "PÓS-GRADUAÇÃO EM INFECÇÕES EM IMUNODEPRIMIDOS"
+            if 'ANTIBIOTICO' in desc_norm or 'SOS' in desc_norm or any(any(abs(v - sp) < 2 for sp in sos_prices) for v in ([tot_pago] + f_vals)):
+                curso_resolved = 'S.O.S ANTIBIOTICO'
+            elif desc_norm and desc_norm != 'PÓS-GRADUAÇÃO INFECTOCAST':
+                curso_resolved = desc_norm
             else:
-                curso = "S.O.S ANTIBIÓTICO" if abs(tot_pago - 487.0) < 5 else "Pós-Graduação InfectoCast"
+                curso_resolved = 'S.O.S ANTIBIOTICO' if tot_pago < 3000 else 'POS-GRADUACAO INFECTOCAST'
+                
+            # Identificar a data e valor do primeiro pagamento aprovado
+            first_date = None
+            first_val = tot_pago
+            if paid_fats:
+                paid_fats.sort(key=lambda x: str(x.get("data_pagamento") or x.get("vencimento") or ""))
+                first_date = paid_fats[0].get("data_pagamento") or paid_fats[0].get("vencimento")
+                first_val = float(paid_fats[0].get("valor") or tot_pago)
                 
             enrollments.append({
                 "email": em,
                 "nome": nome,
-                "curso": curso,
-                "valor": tot_pago,
+                "curso": curso_resolved,
+                "valor": first_val,
                 "gateway": "Asaas",
                 "origem": "Asaas",
+                "data_matricula": first_date or datetime.now().strftime("%Y-%m-%d"),
                 "id": str(st.get("aluno_id_extref") or st.get("customer_id") or f"ASAAS-{em}")
             })
     except Exception as e:
@@ -155,8 +194,11 @@ def get_asaas_enrollments():
         
     return enrollments
 
-def get_vindi_enrollments():
-    """Extrai alunos matriculados com assinatura/fatura paga na Vindi"""
+def get_vindi_confirmed_enrollments():
+    """
+    Extrai SOMENTE alunos com FATURA PAGA CONFIRMADA na Vindi.
+    A data da matrícula é a data do PRIMEIRO pagamento aprovado.
+    """
     enrollments = []
     if not os.path.exists(VINDI_CACHE_FILE):
         return enrollments
@@ -169,25 +211,47 @@ def get_vindi_enrollments():
         for em, st in st_map.items():
             if not isinstance(st, dict):
                 continue
-            if (st.get("total_pago") or 0) <= 0 and st.get("status_assinatura") != "active":
-                continue
-                
+            
             em_clean = str(em).lower().strip()
-            if not em_clean or "@" not in em_clean or em_clean.endswith("@infectocast.com") or "teste" in em_clean:
+            nome = str(st.get("customer_name") or "Aluno Vindi").strip()
+            if is_internal_or_test(em_clean, nome):
                 continue
                 
-            nome = str(st.get("customer_name") or "Aluno Vindi").strip()
+            faturas = st.get("faturas", [])
+            paid_fats = [f for f in faturas if str(f.get("status", "")).lower() in ["pago", "paid"]]
+            
+            # REGRA ESTRITA: Apenas se tiver fatura paga confirmada
+            if len(paid_fats) == 0 and float(st.get("total_pago") or 0) <= 0:
+                continue
+                
             subs = st.get("subscriptions", [])
-            for sub in subs:
-                p_name = sub.get("plan_name") or "Pós-Graduação InfectoCast"
+            if subs:
+                for sub in subs:
+                    p_name = sub.get("plan_name") or "Pós-Graduação InfectoCast"
+                    c_norm = normalize_curso_name(p_name)
+                    enrollments.append({
+                        "email": em_clean,
+                        "nome": nome,
+                        "curso": c_norm,
+                        "valor": sub.get("valor"),
+                        "gateway": "Vindi",
+                        "origem": "Vindi",
+                        "data_matricula": sub.get("start_at") or (paid_fats[0].get("data_pagamento") if paid_fats else datetime.now().strftime("%Y-%m-%d")),
+                        "id": str(sub.get("id") or f"VINDI-{em_clean}")
+                    })
+            else:
+                p_name = st.get("plano") or "Pós-Graduação InfectoCast"
+                c_norm = normalize_curso_name(p_name)
+                first_date = paid_fats[0].get("data_pagamento") if paid_fats else datetime.now().strftime("%Y-%m-%d")
                 enrollments.append({
                     "email": em_clean,
                     "nome": nome,
-                    "curso": p_name,
-                    "valor": sub.get("valor"),
+                    "curso": c_norm,
+                    "valor": float(paid_fats[0].get("valor") or 0) if paid_fats else None,
                     "gateway": "Vindi",
                     "origem": "Vindi",
-                    "id": str(sub.get("id") or f"VINDI-{em_clean}")
+                    "data_matricula": first_date,
+                    "id": f"VINDI-{em_clean}"
                 })
     except Exception as e:
         logger.error(f"Erro ao processar alunos da Vindi: {e}")
@@ -196,7 +260,8 @@ def get_vindi_enrollments():
 
 def sync_pending_matriculas(dry_run=False):
     """
-    Identifica matrículas confirmadas (Academy + Cativa Digital + Asaas + Vindi) que ainda não foram marcadas no RD Station e realiza o disparo.
+    Identifica matrículas confirmadas por pagamento (Cativa Digital + Asaas + Vindi)
+    que ainda não foram disparadas para o RD Station e realiza o disparo oficial.
     """
     history = load_tagged_history()
     novos_tagueados = 0
@@ -204,55 +269,16 @@ def sync_pending_matriculas(dry_run=False):
 
     todas_matriculas = []
 
-    # 1. Carregar Inscrições / Matrículas da InfectoCast Academy API
-    academy_students_path = os.path.join(BASE_DIR, "academy_students_cache.json")
-    academy_logs_path = os.path.join(BASE_DIR, "academy_logs_cache.json")
-    
-    academy_course_map = {}
-    if os.path.exists(academy_logs_path):
-        try:
-            with open(academy_logs_path, "r", encoding="utf-8") as f_al:
-                logs_data = json.load(f_al)
-                for l in logs_data:
-                    em = str(l.get("E-mail", "")).lower().strip()
-                    acao = str(l.get("Ação / Local", "")).upper()
-                    item = str(l.get("ID Item") or l.get("Desc. Item") or "").strip()
-                    if "TURMA" in acao and item and item != "nan":
-                        academy_course_map[em] = item
-        except Exception:
-            pass
+    # 1. Carregar Matrículas Confirmadas da Cativa Digital
+    todas_matriculas.extend(get_cativa_confirmed_enrollments())
 
-    if os.path.exists(academy_students_path):
-        try:
-            with open(academy_students_path, "r", encoding="utf-8") as f_ast:
-                ast_data = json.load(f_ast)
-                for aid, s in ast_data.items():
-                    em = str(s.get("email", "")).lower().strip()
-                    if not em or "@" not in em or em.endswith("@infectocast.com") or "teste" in em:
-                        continue
-                    curso_resolved = academy_course_map.get(em, "Pós-Graduação InfectoCast")
-                    todas_matriculas.append({
-                        "email": em,
-                        "nome": str(s.get("nome") or "Aluno Academy").strip(),
-                        "curso": curso_resolved,
-                        "valor": None,
-                        "gateway": "Academy",
-                        "origem": "Academy",
-                        "id": f"MAT-AC-{aid}"
-                    })
-        except Exception as e:
-            logger.error(f"Erro ao carregar alunos da Academy API: {e}")
+    # 2. Carregar Matrículas Confirmadas do Asaas (1º Pagamento Aprovado)
+    todas_matriculas.extend(get_asaas_confirmed_enrollments())
 
-    # 2. Carregar Matrículas da Cativa Digital
-    todas_matriculas.extend(get_cativa_enrollments())
+    # 3. Carregar Matrículas Confirmadas da Vindi (1º Pagamento Aprovado)
+    todas_matriculas.extend(get_vindi_confirmed_enrollments())
 
-    # 3. Carregar Matrículas do Asaas
-    todas_matriculas.extend(get_asaas_enrollments())
-
-    # 4. Carregar Matrículas da Vindi
-    todas_matriculas.extend(get_vindi_enrollments())
-
-    # Deduplicação por chave única email + curso slug
+    # Deduplicação estrita por chave única email + curso slug
     unique_matriculas = {}
     for m in todas_matriculas:
         key = f"{m['email']}|{rd_service.slugify_tag(m.get('curso', ''))}"
@@ -260,23 +286,25 @@ def sync_pending_matriculas(dry_run=False):
             unique_matriculas[key] = m
 
     total_encontrados = len(unique_matriculas)
-    logger.info(f"Analisando total consolidado de {total_encontrados} matrículas únicas (Academy + Cativa + Asaas + Vindi)...")
+    logger.info(f"Analisando total de {total_encontrados} matrículas pagas confirmadas (Cativa + Asaas + Vindi)...")
 
     for unique_key, m in unique_matriculas.items():
         email = m["email"]
         nome = m.get("nome", "")
         curso = m.get("curso", "Pós-Graduação InfectoCast")
         valor = m.get("valor")
-        gateway = m.get("gateway", "Academy")
+        gateway = m.get("gateway", "Gateway")
         id_matricula = m.get("id", f"MAT-{email}")
+        data_mat = m.get("data_matricula")
 
+        # Se já foi disparado com sucesso para este curso, NÃO redispara (idempotência)
         if unique_key in history and history[unique_key].get("status") == "success":
             continue
 
-        logger.info(f"📢 [{m['origem']}] Nova matrícula a taguear no RD: {nome} ({email}) - Curso: {curso}")
+        logger.info(f"📢 [{m['origem']}] Disparando conversão de matrícula confirmada no RD: {nome} ({email}) - Curso: {curso} - Gateway: {gateway}")
 
         if dry_run:
-            logger.info(f"   [DRY-RUN] Dispararia tag para {email}")
+            logger.info(f"   [DRY-RUN] Simulação: dispararia conversão e tags para {email} (Curso: {curso})")
             novos_tagueados += 1
             continue
 
@@ -303,6 +331,7 @@ def sync_pending_matriculas(dry_run=False):
                 "nome": nome,
                 "curso": curso,
                 "origem": m["origem"],
+                "data_matricula": data_mat,
                 "status": "success",
                 "data_tagueamento": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "tags_aplicadas": res.get("tags_applied", [])
@@ -312,9 +341,9 @@ def sync_pending_matriculas(dry_run=False):
             time.sleep(0.3)
         except Exception as e:
             erros += 1
-            logger.error(f"❌ Falha ao processar {email}: {e}")
+            logger.error(f"❌ Falha ao disparar conversão de {email}: {e}")
 
-    logger.info(f"🏁 Sincronização concluída! Novos tagueados: {novos_tagueados}, Erros: {erros}, Total histórico: {len(history)}")
+    logger.info(f"🏁 Sincronização concluída! Novos disparos: {novos_tagueados}, Erros: {erros}, Total histórico: {len(history)}")
     return {
         "status": "completed",
         "novos_tagueados": novos_tagueados,
@@ -324,8 +353,8 @@ def sync_pending_matriculas(dry_run=False):
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="Sincronizador Unificado de Matrículas RD Station (Academy + Cativa + Asaas + Vindi)")
-    parser.add_argument("--dry-run", action="store_true", help="Apenas simula sem enviar para o RD")
+    parser = argparse.ArgumentParser(description="Sincronizador Oficial de Matrículas Confirmadas para RD Station")
+    parser.add_argument("--dry-run", action="store_true", help="Apenas simula sem enviar para a API do RD")
     args = parser.parse_args()
     
     sync_pending_matriculas(dry_run=args.dry_run)
