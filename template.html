@@ -5424,6 +5424,7 @@ function drawExecView(force) {
     const funil = (DATA && DATA.funil) ? DATA.funil : {};
     const rawStudents = (DATA && DATA.students) ? DATA.students : [];
     const ev = (CURRENT_DATA && CURRENT_DATA.action_counts) ? CURRENT_DATA.action_counts : ((DATA && DATA.action_counts) ? DATA.action_counts : {});
+    const rdConversasData = (DATA && DATA.rd_conversas) ? DATA.rd_conversas : {};
 
     // Regra de exclusão para contas internas, testes e curso Nutrify Connect
     const isInvalidOrInternal = s => {
