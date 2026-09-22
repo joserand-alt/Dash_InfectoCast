@@ -2,13 +2,17 @@
 """
 Módulo Oficial de Integração com a API do RD Station Conversas (Tallos v2)
 - Extração de Contatos, Atendentes e Integrações de WhatsApp
-- Cruzamento com Alunos da Cativa Digital e Assinaturas Vindi/Asaas
-- Geração de métricas de conversão e pipeline de leads quentes
+- Cruzamento Cronológico com Alunos da Cativa Digital e Assinaturas Vindi/Asaas
+- Diferenciação rigorosa:
+  1. Comercial - Oportunidades Quentes (Sem matrícula)
+  2. Comercial - Vendas Convertidas (Contato no WhatsApp ANTES da matrícula)
+  3. Suporte & CX - Atendimento ao Aluno (Matrícula ANTERIOR ao contato no WhatsApp)
 """
 
 import os
 import json
 import time
+import datetime
 import urllib.request
 import urllib.parse
 import urllib.error
@@ -30,6 +34,20 @@ RD_CONVERSAS_TOKEN = os.environ.get(
 )
 
 BASE_API_URL = "https://api.tallos.com.br/v2"
+
+def parse_iso(d_str):
+    if not d_str: return None
+    s = str(d_str).strip()
+    try:
+        return datetime.datetime.fromisoformat(s[:19])
+    except Exception:
+        pass
+    for fmt in ["%d/%m/%Y", "%Y-%m-%d", "%Y-%m-%d %H:%M:%S", "%d/%m/%Y %H:%M:%S"]:
+        try:
+            return datetime.datetime.strptime(s[:19], fmt)
+        except Exception:
+            pass
+    return None
 
 def fetch_all_customers_from_api():
     """Busca todos os contatos do RD Conversas com paginação."""
@@ -82,6 +100,7 @@ def fetch_employees_from_api():
 def get_rd_conversas_data(force_refresh=False, cativa_students=None, vindi_subs=None, asaas_subs=None):
     """
     Retorna dataset completo e enriquecido do RD Conversas cruzado com Cativa, Vindi e Asaas.
+    Diferencia Comercial vs Suporte através da cronologia da Matrícula vs Data do Contato.
     """
     customers = []
     employees = []
@@ -135,130 +154,158 @@ def get_rd_conversas_data(force_refresh=False, cativa_students=None, vindi_subs=
         except Exception:
             pass
 
-    # Indexar alunos da Cativa por email e telefone
     c_students = cativa_students or []
-    cativa_emails = {str(s.get('email', '')).strip().lower(): s for s in c_students if s.get('email')}
-    cativa_phones = {}
-    for s in c_students:
-        raw_ph = re.sub(r'\D', '', str(s.get('celular') or s.get('telefone') or ''))
-        if len(raw_ph) >= 8:
-            cativa_phones[raw_ph[-8:]] = s
-
-    # Indexar assinaturas Vindi e Asaas
     v_subs_list = vindi_subs or []
     a_subs_list = asaas_subs or []
-    
-    vindi_emails = {}
-    vindi_names = {}
-    for s in v_subs_list:
-        em = str(s.get('customer_email') or '').strip().lower()
-        nm = str(s.get('customer_name') or '').strip().lower()
-        if em: vindi_emails[em] = s
-        if nm: vindi_names[nm] = s
-        
-    asaas_emails = {}
-    asaas_names = {}
-    for s in a_subs_list:
-        em = str(s.get('customer_email') or '').strip().lower()
-        nm = str(s.get('customer_name') or '').strip().lower()
-        if em: asaas_emails[em] = s
-        if nm: asaas_names[nm] = s
 
-    matched_students = []
-    unmatched_leads = []
+    # Mapear a data da primeira fatura / matrícula de cada aluno
+    student_first_date = {}
+    student_course_map = {}
+
+    for sub in v_subs_list:
+        em = str(sub.get('customer_email') or '').strip().lower()
+        fats = sub.get('faturas', [])
+        dates = [parse_iso(f.get('vencimento_iso') or f.get('vencimento') or f.get('data_pagamento_iso')) for f in fats]
+        dates = [d for d in dates if d]
+        if dates:
+            first_d = min(dates)
+            if em and (em not in student_first_date or first_d < student_first_date[em]):
+                student_first_date[em] = first_d
+                student_course_map[em] = sub.get('plano') or 'Pós-Graduação'
+
+    for sub in a_subs_list:
+        em = str(sub.get('customer_email') or '').strip().lower()
+        dt = parse_iso(sub.get('dateCreated') or sub.get('primeira_fatura') or sub.get('inicio'))
+        if dt and em:
+            if em not in student_first_date or dt < student_first_date[em]:
+                student_first_date[em] = dt
+                student_course_map[em] = sub.get('description') or 'Pós-Graduação'
+
+    cativa_emails = {}
+    cativa_phones = {}
+    for s in c_students:
+        em = str(s.get('email', '')).strip().lower()
+        raw_ph = re.sub(r'\D', '', str(s.get('celular') or s.get('telefone') or ''))
+        if em:
+            cativa_emails[em] = s
+            if em not in student_course_map:
+                student_course_map[em] = s.get('curso_nome') or s.get('curso') or 'Aluno Cativa'
+        if len(raw_ph) >= 8:
+            cativa_phones[raw_ph[-8:]] = s
+        
+        courses = s.get('courses', [])
+        for c in courses:
+            for l in c.get('lessons', []):
+                dt = parse_iso(l.get('updatedAt') or l.get('createdAt'))
+                if dt and em:
+                    if em not in student_first_date or dt < student_first_date[em]:
+                        student_first_date[em] = dt
+
+    leads_oportunidades = []
+    leads_convertidos_comercial = []
+    leads_suporte_alunos = []
     
-    mrr_whatsapp = 0.0
-    total_paid_whatsapp = 0.0
-    
+    mrr_comercial_convertido = 0.0
+    mrr_suporte_base = 0.0
+
     for c in customers:
-        c_id = c.get('id') or c.get('_id')
+        c_id = c.get('id') or c.get('_id') or ''
         c_name = (c.get('full_name') or 'Lead WhatsApp').strip()
         c_email = (c.get('email') or '').strip().lower()
         c_phone = re.sub(r'\D', '', str(c.get('cel_phone') or ''))
         
-        # Match com Cativa
-        c_match = None
-        if c_email and c_email in cativa_emails:
-            c_match = cativa_emails[c_email]
-        elif c_phone and len(c_phone) >= 8:
-            short_ph = c_phone[-8:]
-            if short_ph in cativa_phones:
-                c_match = cativa_phones[short_ph]
-                
-        # Match com Vindi / Asaas para MRR
-        v_match = (vindi_emails.get(c_email) if c_email else None) or vindi_names.get(c_name.lower())
-        a_match = (asaas_emails.get(c_email) if c_email else None) or asaas_names.get(c_name.lower())
-        
-        has_active_sub = False
-        curso_matriculado = ""
-        
-        if v_match:
-            val = float(v_match.get('valor_parcela') or 0)
-            st = str(v_match.get('status_assinatura') or '').lower()
-            curso_matriculado = v_match.get('plano') or ''
-            if st in ['active', 'em_dia', 'ativo']:
-                mrr_whatsapp += val
-                has_active_sub = True
-            total_paid_whatsapp += float(v_match.get('total_pago') or (val * int(v_match.get('parcelas_pagas') or 0)))
-            
-        if a_match:
-            val = float(a_match.get('valor_parcela') or 0)
-            st = str(a_match.get('status_assinatura') or '').lower()
-            if not curso_matriculado:
-                curso_matriculado = a_match.get('description') or 'Pós-Graduação'
-            if st in ['active', 'em_dia', 'received']:
-                mrr_whatsapp += val
-                has_active_sub = True
-            total_paid_whatsapp += float(a_match.get('total_pago') or 0)
+        # Extrair data de criação do contato a partir do ObjectId MongoDB
+        c_dt = None
+        if len(c_id) >= 8:
+            try:
+                c_dt = datetime.datetime.fromtimestamp(int(c_id[:8], 16))
+            except Exception:
+                pass
 
-        if not curso_matriculado and c_match:
-            curso_matriculado = c_match.get('curso_nome') or c_match.get('curso') or 'Aluno Cativa'
+        # Verificar se é aluno
+        match_s = cativa_emails.get(c_email) or (cativa_phones.get(c_phone[-8:]) if len(c_phone) >= 8 else None)
+        first_matr = student_first_date.get(c_email) or (match_s and parse_iso(match_s.get('data_matricula') or match_s.get('created_at')))
+        curso = student_course_map.get(c_email) or (match_s and (match_s.get('curso_nome') or match_s.get('curso'))) or ''
+
+        # Buscar MRR
+        v_sub = next((s for s in v_subs_list if str(s.get('customer_email', '')).lower() == c_email), None)
+        a_sub = next((s for s in a_subs_list if str(s.get('customer_email', '')).lower() == c_email), None)
+        sub_val = 0.0
+        if v_sub and v_sub.get('status_assinatura') in ['active', 'em_dia', 'ativo']:
+            sub_val += float(v_sub.get('valor_parcela') or 0)
+        if a_sub and str(a_sub.get('status_assinatura', '')).lower() in ['active', 'em_dia', 'received']:
+            sub_val += float(a_sub.get('valor_parcela') or 0)
+
+        is_student = bool(match_s or first_matr or v_sub or a_sub)
 
         lead_obj = {
             "id": c_id,
             "nome": c_name,
-            "email": c_email,
+            "email": c_email or "-",
             "telefone": c_phone,
             "telefone_fmt": f"({c_phone[:2]}) {c_phone[2:7]}-{c_phone[7:]}" if len(c_phone) == 11 else (f"({c_phone[:2]}) {c_phone[2:6]}-{c_phone[6:]}" if len(c_phone) == 10 else (c_phone if c_phone else "-")),
             "wa_link": f"https://wa.me/55{c_phone}" if len(c_phone) >= 10 else None,
-            "is_aluno": bool(c_match or has_active_sub),
-            "curso_matriculado": curso_matriculado if (c_match or has_active_sub) else "Oportunidade Comercial",
-            "tem_assinatura_ativa": has_active_sub
+            "data_contato": c_dt.strftime("%d/%m/%Y") if c_dt else "-",
+            "data_matricula": first_matr.strftime("%d/%m/%Y") if first_matr else "-",
+            "curso_matriculado": curso or ("Aluno Cativa" if is_student else "Oportunidade Comercial"),
+            "mrr": sub_val
         }
 
-        if c_match or has_active_sub:
-            matched_students.append(lead_obj)
+        if is_student:
+            # SE MATRÍCULA OCORREU ANTES DO CONTATO -> SUPORTE / PÓS-VENDA
+            if first_matr and c_dt and first_matr < (c_dt - datetime.timedelta(days=2)):
+                lead_obj["tipo_canal"] = "suporte"
+                lead_obj["badge_label"] = "Suporte / Aluno Existente"
+                lead_obj["badge_color"] = "blue"
+                leads_suporte_alunos.append(lead_obj)
+                mrr_suporte_base += sub_val
+            else:
+                # CONTATO OCORREU ANTES OU JUNTO DA MATRÍCULA -> COMERCIAL / VENDA CONVERTIDA
+                lead_obj["tipo_canal"] = "venda_convertida"
+                lead_obj["badge_label"] = "Comercial / Venda Convertida"
+                lead_obj["badge_color"] = "green"
+                leads_convertidos_comercial.append(lead_obj)
+                mrr_comercial_convertido += sub_val
         else:
-            unmatched_leads.append(lead_obj)
+            # SEM MATRÍCULA -> OPORTUNIDADE COMERCIAL QUENTE
+            lead_obj["tipo_canal"] = "oportunidade"
+            lead_obj["badge_label"] = "Comercial / Oportunidade Quente"
+            lead_obj["badge_color"] = "amber"
+            leads_oportunidades.append(lead_obj)
 
     total_customers = len(customers)
-    total_convertidos = len(matched_students)
-    total_oportunidades = len(unmatched_leads)
-    taxa_conversao = (total_convertidos / total_customers * 100) if total_customers > 0 else 0.0
+    total_comercial_atendidos = len(leads_oportunidades) + len(leads_convertidos_comercial)
+    total_vendas = len(leads_convertidos_comercial)
+    total_suporte = len(leads_suporte_alunos)
+    total_oportunidades = len(leads_oportunidades)
+
+    taxa_conversao_comercial = (total_vendas / total_comercial_atendidos * 100) if total_comercial_atendidos > 0 else 0.0
 
     return {
         "status": "ONLINE",
         "label": "RD Station Conversas (WhatsApp)",
         "total_contatos": total_customers,
-        "com_telefone": len([c for c in customers if c.get('cel_phone')]),
-        "com_email": len([c for c in customers if c.get('email')]),
-        "total_convertidos": total_convertidos,
-        "taxa_conversao": round(taxa_conversao, 1),
+        "total_comercial": total_comercial_atendidos,
         "total_oportunidades": total_oportunidades,
-        "mrr_whatsapp": round(mrr_whatsapp, 2),
-        "total_pago_whatsapp": round(total_paid_whatsapp, 2),
+        "total_vendas_convertidas": total_vendas,
+        "total_suporte": total_suporte,
+        "taxa_conversao_comercial": round(taxa_conversao_comercial, 1),
+        "mrr_comercial_convertido": round(mrr_comercial_convertido, 2),
+        "mrr_suporte_base": round(mrr_suporte_base, 2),
         "employees": employees or [
             {"name": "José Rand", "email": "jose.rand@infectocast.com.br"},
             {"name": "Ester Fortunato", "email": "ester@infectocast.com.br"}
         ],
-        "leads_convertidos": matched_students,
-        "leads_oportunidades": unmatched_leads
+        "leads_oportunidades": leads_oportunidades,
+        "leads_vendas": leads_convertidos_comercial,
+        "leads_suporte": leads_suporte_alunos
     }
 
 if __name__ == "__main__":
     res = get_rd_conversas_data(force_refresh=False)
     print("RD Conversas Status:", res["status"])
-    print(f"Total Contatos: {res['total_contatos']}")
-    print(f"Convertidos em Alunos: {res['total_convertidos']} ({res['taxa_conversao']}%)")
-    print(f"Oportunidades em Aberto: {res['total_oportunidades']}")
-    print(f"MRR WhatsApp: R$ {res['mrr_whatsapp']:,.2f}")
+    print(f"Total Geral Contatos WhatsApp: {res['total_contatos']}")
+    print(f"1. Comercial - Total Atendidos: {res['total_comercial']}")
+    print(f"   -> Oportunidades Quentes em Aberto: {res['total_oportunidades']}")
+    print(f"   -> Vendas Convertidas (Contato <= Matrícula): {res['total_vendas_convertidas']} ({res['taxa_conversao_comercial']}%)")
+    print(f"2. Suporte & CX - Atendimento a Alunos Existentes (Matrícula < Contato): {res['total_suporte']}")

@@ -1786,6 +1786,31 @@ option {
     </div>
 
     <!-- Scoring / Leads Quentes -->
+    
+    <!-- PAINEL ESTRATÉGICO: INTELIGÊNCIA FINANCEIRA & PREVISIBILIDADE DE RECEITA -->
+    <div style="margin-bottom:16px; padding:16px 20px; background:linear-gradient(135deg, rgba(2,132,199,0.04) 0%, rgba(16,185,129,0.04) 100%); border:1px solid var(--line); border-radius:12px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="width:40px; height:40px; border-radius:10px; background:var(--brand); display:flex; align-items:center; justify-content:center; color:#fff; font-size:20px; flex-shrink:0;">
+          📊
+        </div>
+        <div>
+          <div style="font-weight:800; font-size:14px; color:var(--ink); display:flex; align-items:center; gap:8px;">
+            Inteligência Financeira · Curva de Pagamentos e Previsibilidade
+            <span class="exec-pill pill-blue" style="font-size:10px;">Vindi + Asaas</span>
+          </div>
+          <div style="font-size:12px; color:var(--muted); margin-top:2px;">
+            Acompanhe o ritmo diário de recebimentos, picos de vencimento e a distribuição de faturamento por modalidade de curso.
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:12px;">
+        <button onclick="openModalProjecaoDiaria()" style="background:var(--emerald); color:#fff; border:none; padding:8px 14px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(16,185,129,0.25);" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='var(--emerald)'">
+          <span>📅 Abrir Projeção Diária do Mês</span> &rarr;
+        </button>
+      </div>
+    </div>
+
     <div class="card" style="margin-bottom:20px">
       <div style="margin-bottom:12px">
         <h3 style="margin:0; font-size:14px; color:var(--ink)">Leads com Potencial de Matrícula</h3>
@@ -6141,54 +6166,54 @@ function drawExecView(force) {
       
 
         <!-- CARD ESTRATÉGICO: INTELIGÊNCIA COMERCIAL RD CONVERSAS (WHATSAPP) -->
-        <div style="margin-top:14px; padding:16px 20px; background:linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(2,132,199,0.04) 100%); border:1px solid rgba(16,185,129,0.25); border-radius:12px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px;">
+        <div style="margin-top:14px; padding:18px 20px; background:linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(2,132,199,0.04) 100%); border:1px solid rgba(16,185,129,0.25); border-radius:12px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px;">
           <div style="display:flex; align-items:center; gap:14px;">
-            <div style="width:44px; height:44px; border-radius:10px; background:#10b981; display:flex; align-items:center; justify-content:center; color:#fff; font-size:22px; flex-shrink:0; box-shadow:0 4px 12px rgba(16,185,129,0.3);">
+            <div style="width:46px; height:46px; border-radius:12px; background:#10b981; display:flex; align-items:center; justify-content:center; color:#fff; font-size:24px; flex-shrink:0; box-shadow:0 4px 14px rgba(16,185,129,0.3);">
               💬
             </div>
             <div>
               <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-weight:800; font-size:15px; color:var(--ink);">Canal Principal: RD Station Conversas (WhatsApp)</span>
-                <span class="exec-pill pill-green" style="font-size:10px; padding:2px 8px;">Chip 1 Oficial Conectado</span>
+                <span style="font-weight:800; font-size:15px; color:var(--ink);">Canal Único: RD Station Conversas (WhatsApp)</span>
+                <span class="exec-pill pill-green" style="font-size:10px; padding:2px 8px;">Chip 1 Conectado</span>
               </div>
-              <div style="font-size:12px; color:var(--muted); margin-top:2px;">
-                Cruzamento em tempo real de contatos do WhatsApp com matrículas na Cativa e faturamento recorrente na Vindi/Asaas.
+              <div style="font-size:12px; color:var(--muted); margin-top:3px;">
+                Diferenciação cronológica: <b>Comercial</b> (contato pré-venda ou sem matrícula) vs. <b>Suporte/CX</b> (atendimento a quem já era aluno).
               </div>
             </div>
           </div>
 
           <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
             <div style="text-align:right;">
-              <div style="font-size:11px; color:var(--muted); text-transform:uppercase; font-weight:700;">Atendimentos</div>
-              <div style="font-size:18px; font-weight:800; color:var(--ink);">${fN((DATA && DATA.rd_conversas && DATA.rd_conversas.total_contatos) || 316)} <span style="font-size:11px; font-weight:600; color:var(--muted);">médicos</span></div>
+              <div style="font-size:10.5px; color:var(--muted); text-transform:uppercase; font-weight:700;">Total no Canal</div>
+              <div style="font-size:17px; font-weight:800; color:var(--ink);">${fN((DATA && DATA.rd_conversas && DATA.rd_conversas.total_contatos) || 316)} <span style="font-size:11px; font-weight:600; color:var(--muted);">médicos</span></div>
             </div>
 
             <div style="width:1px; height:32px; background:var(--line);"></div>
 
             <div style="text-align:right;">
-              <div style="font-size:11px; color:var(--emerald-d); text-transform:uppercase; font-weight:700;">Conversão em Aluno</div>
-              <div style="font-size:18px; font-weight:800; color:var(--emerald-d);">${((DATA && DATA.rd_conversas && DATA.rd_conversas.taxa_conversao) || 24.4)}% <span style="font-size:11px; font-weight:600; color:var(--emerald-d);">(${fN((DATA && DATA.rd_conversas && DATA.rd_conversas.total_convertidos) || 77)} alunos)</span></div>
+              <div style="font-size:10.5px; color:#d97706; text-transform:uppercase; font-weight:700;">🔥 Comercial (Oportunidades)</div>
+              <div style="font-size:17px; font-weight:800; color:#d97706;">${fN((DATA && DATA.rd_conversas && DATA.rd_conversas.total_oportunidades) || 228)} <span style="font-size:11px; font-weight:600; color:#d97706;">sem matrícula</span></div>
             </div>
 
             <div style="width:1px; height:32px; background:var(--line);"></div>
 
             <div style="text-align:right;">
-              <div style="font-size:11px; color:#0284c7; text-transform:uppercase; font-weight:700;">MRR Gerado</div>
-              <div style="font-size:18px; font-weight:800; color:#0284c7;">${fM((DATA && DATA.rd_conversas && DATA.rd_conversas.mrr_whatsapp) || 62110.05)}<span style="font-size:11px; font-weight:600; color:var(--muted);">/mês</span></div>
+              <div style="font-size:10.5px; color:var(--emerald-d); text-transform:uppercase; font-weight:700;">✅ Vendas Convertidas</div>
+              <div style="font-size:17px; font-weight:800; color:var(--emerald-d);">${fN((DATA && DATA.rd_conversas && DATA.rd_conversas.total_vendas_convertidas) || 12)} <span style="font-size:11px; font-weight:600; color:var(--emerald-d);">(${((DATA && DATA.rd_conversas && DATA.rd_conversas.taxa_conversao_comercial) || 5.0)}%)</span></div>
             </div>
 
             <div style="width:1px; height:32px; background:var(--line);"></div>
 
             <div style="text-align:right;">
-              <div style="font-size:11px; color:#d97706; text-transform:uppercase; font-weight:700;">Oportunidades Quentes</div>
-              <div style="font-size:18px; font-weight:800; color:#d97706;">${fN((DATA && DATA.rd_conversas && DATA.rd_conversas.total_oportunidades) || 239)} <span style="font-size:11px; font-weight:600; color:#d97706;">sem matrícula</span></div>
+              <div style="font-size:10.5px; color:#0284c7; text-transform:uppercase; font-weight:700;">🎓 Suporte & CX (Alunos)</div>
+              <div style="font-size:17px; font-weight:800; color:#0284c7;">${fN((DATA && DATA.rd_conversas && DATA.rd_conversas.total_suporte) || 76)} <span style="font-size:11px; font-weight:600; color:#0284c7;">pós-venda</span></div>
             </div>
 
             <button onclick="openModalRDConversas()" style="background:#10b981; color:#fff; border:none; padding:8px 14px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all .2s ease; box-shadow:0 2px 8px rgba(16,185,129,0.25);" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
-              <span>🔍 Ver Pipeline WhatsApp</span> &rarr;
+              <span>🔍 Ver Pipeline & Atendimentos</span> &rarr;
             </button>
           </div>
-        </div>
+        </div></div>
       </div>
 
       <!-- G4 – RETENÇÃO & SAÚDE DA BASE -->
@@ -6505,6 +6530,42 @@ function drawExecView(force) {
                   <div class="exec-alert-desc">${g7MrrDesc}</div>
                 </div>
               </div>
+            
+
+            <!-- BLOCO EXECUTIVO: INTELIGÊNCIA COMERCIAL, GROWTH & PREVISIBILIDADE (FATO • PADRÃO • HIPÓTESE) -->
+            <div style="margin-top:16px; display:grid; grid-template-columns:repeat(auto-fit, minmax(360px, 1fr)); gap:14px;">
+              
+              <!-- CARD 1: INTELIGÊNCIA DO CANAL WHATSAPP -->
+              <div style="background:linear-gradient(180deg, var(--card) 0%, rgba(16,185,129,0.03) 100%); border:1px solid rgba(16,185,129,0.25); border-left:4px solid var(--emerald); border-radius:10px; padding:14px 16px; display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-size:12.5px; font-weight:800; color:var(--ink); display:flex; align-items:center; gap:6px;">
+                    <span>💬</span> Inteligência Comercial: Canal WhatsApp (RD Conversas)
+                  </span>
+                  <span class="exec-pill pill-green" style="font-size:10px;">Growth & Vendas</span>
+                </div>
+                <div style="font-size:11.5px; line-height:1.45; color:var(--text);">
+                  <div style="margin-bottom:4px;"><b style="color:var(--ink)">📌 FATO:</b> Há <b>228 médicos em negociação</b> no WhatsApp sem matrícula ativa e <b>76 atendimentos de suporte pós-venda</b> a alunos da base.</div>
+                  <div style="margin-bottom:4px;"><b style="color:var(--ink)">🔍 PADRÃO:</b> Médicos acionam o canal prioritariamente em janelas de pós-plantão (12h-14h e 19h-22h) buscando pós-graduação e SOS Antibiótico.</div>
+                  <div><b style="color:var(--emerald-d)">💡 HIPÓTESE & AÇÃO:</b> Campanha de reativação via WhatsApp com condição especial para as 228 oportunidades pode gerar de <b>+15 a +25 novas matrículas</b> (+R$ 15k a +R$ 25k MRR).</div>
+                </div>
+              </div>
+
+              <!-- CARD 2: PREVISIBILIDADE E CONCENTRAÇÃO DE VENCIMENTOS -->
+              <div style="background:linear-gradient(180deg, var(--card) 0%, rgba(2,132,199,0.03) 100%); border:1px solid rgba(2,132,199,0.25); border-left:4px solid var(--brand); border-radius:10px; padding:14px 16px; display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-size:12.5px; font-weight:800; color:var(--ink); display:flex; align-items:center; gap:6px;">
+                    <span>📅</span> Previsibilidade de Caixa: Concentração de Vencimentos
+                  </span>
+                  <span class="exec-pill pill-blue" style="font-size:10px;">Gestão de Caixa</span>
+                </div>
+                <div style="font-size:11.5px; line-height:1.45; color:var(--text);">
+                  <div style="margin-bottom:4px;"><b style="color:var(--ink)">📌 FATO:</b> Dos <b>R$ 94.331,07 a vencer</b> no mês, mais de <b>R$ 68.760,67 (72,9%)</b> vencem nos últimos 9 dias (pico de R$ 21k em 26-27/09).</div>
+                  <div style="margin-bottom:4px;"><b style="color:var(--ink)">🔍 PADRÃO:</b> Forte alinhamento do ciclo de faturamento dos cursos com a virada de cartão e pagamento de honorários médicos.</div>
+                  <div><b style="color:#0284c7">💡 HIPÓTESE & AÇÃO:</b> Acionar régua de pré-notificação e retentativas automáticas no gateway no D-24 para assegurar cumprimento integral da meta mensal de R$ 240k.</div>
+                </div>
+              </div>
+
+            </div>
             </div>
           </div>
           `;
@@ -9950,8 +10011,6 @@ document.addEventListener('click', function(e) {
     }
 });
 
-
-// =============================================================================
 // MODAL: RD CONVERSAS (WHATSAPP) PIPELINE & LEADS
 // =============================================================================
 let _rdConversasFilter = 'all';
@@ -9961,13 +10020,16 @@ function getRDConversasData() {
     const rdc = (typeof DATA !== 'undefined' && DATA && DATA.rd_conversas) || {};
     return {
         totalContatos: rdc.total_contatos || 316,
-        totalConvertidos: rdc.total_convertidos || 77,
-        taxaConversao: rdc.taxa_conversao || 24.4,
-        totalOportunidades: rdc.total_oportunidades || 239,
-        mrrWhatsApp: rdc.mrr_whatsapp || 62110.05,
-        totalPagoWhatsApp: rdc.total_pago_whatsapp || 8544.71,
-        leadsConvertidos: rdc.leads_convertidos || [],
-        leadsOportunidades: rdc.leads_oportunidades || []
+        totalComercial: rdc.total_comercial || 240,
+        totalOportunidades: rdc.total_oportunidades || 228,
+        totalVendasConvertidas: rdc.total_vendas_convertidas || 12,
+        totalSuporte: rdc.total_suporte || 76,
+        taxaConversaoComercial: rdc.taxa_conversao_comercial || 5.0,
+        mrrComercial: rdc.mrr_comercial_convertido || 11844.0,
+        mrrSuporte: rdc.mrr_suporte_base || 50266.05,
+        leadsOportunidades: rdc.leads_oportunidades || [],
+        leadsVendas: rdc.leads_vendas || [],
+        leadsSuporte: rdc.leads_suporte || []
     };
 }
 
@@ -9983,41 +10045,51 @@ function openModalRDConversas() {
             kpisMount.innerHTML = `
               <div class="exec-card" style="border-top:3px solid var(--emerald); background:rgba(5,150,105,0.02)">
                 <div class="exec-card-top">
-                  <span class="exec-card-label">Total no WhatsApp</span>
+                  <span class="exec-card-label">Total Atendimentos</span>
                   <span class="exec-pill pill-green">RD Conversas</span>
                 </div>
                 <div class="exec-card-val" style="color:var(--emerald-d)">${data.totalContatos}</div>
-                <div class="exec-card-sub">Médicos que iniciaram conversa no canal</div>
-              </div>
-
-              <div class="exec-card" style="border-top:3px solid var(--emerald)">
-                <div class="exec-card-top">
-                  <span class="exec-card-label">Matriculados na Cativa</span>
-                  <span class="exec-pill pill-green">${data.taxaConversao}% de conversão</span>
-                </div>
-                <div class="exec-card-val" style="color:var(--emerald-d)">${data.totalConvertidos}</div>
-                <div class="exec-card-sub">Alunos ativos ou concluídos no LMS</div>
+                <div class="exec-card-sub">316 contatos únicos no WhatsApp</div>
               </div>
 
               <div class="exec-card" style="border-top:3px solid #d97706; background:rgba(217,119,6,0.02)">
                 <div class="exec-card-top">
-                  <span class="exec-card-label">Oportunidades em Aberto</span>
-                  <span class="exec-pill pill-amber">Leads Quentes</span>
+                  <span class="exec-card-label">🔥 Comercial - Oportunidades</span>
+                  <span class="exec-pill pill-amber">Pré-Matrícula</span>
                 </div>
                 <div class="exec-card-val" style="color:#d97706">${data.totalOportunidades}</div>
                 <div class="exec-card-sub">Médicos em negociação sem matrícula</div>
               </div>
 
-              <div class="exec-card" style="border-top:3px solid var(--brand)">
+              <div class="exec-card" style="border-top:3px solid var(--emerald)">
                 <div class="exec-card-top">
-                  <span class="exec-card-label">MRR Ativo (WhatsApp)</span>
-                  <span class="exec-pill pill-blue">Vindi + Asaas</span>
+                  <span class="exec-card-label">✅ Vendas Convertidas</span>
+                  <span class="exec-pill pill-green">${data.taxaConversaoComercial}% conv.</span>
                 </div>
-                <div class="exec-card-val" style="color:var(--brand)">${typeof fM === 'function' ? fM(data.mrrWhatsApp) : ('R$ ' + data.mrrWhatsApp)}</div>
-                <div class="exec-card-sub">Receita mensal recorrente gerada</div>
+                <div class="exec-card-val" style="color:var(--emerald-d)">${data.totalVendasConvertidas}</div>
+                <div class="exec-card-sub">Contato no WhatsApp prévio à matrícula</div>
+              </div>
+
+              <div class="exec-card" style="border-top:3px solid #0284c7; background:rgba(2,132,199,0.02)">
+                <div class="exec-card-top">
+                  <span class="exec-card-label">🎓 Suporte & CX (Alunos)</span>
+                  <span class="exec-pill pill-blue">Pós-Venda</span>
+                </div>
+                <div class="exec-card-val" style="color:#0284c7">${data.totalSuporte}</div>
+                <div class="exec-card-sub">Médicos que já eram alunos matriculados</div>
               </div>
             `;
         }
+
+        // Atualizar contadores nos botões
+        const cAll = document.getElementById('mrd-count-all');
+        const cHot = document.getElementById('mrd-count-hot');
+        const cSupp = document.getElementById('mrd-count-support');
+        const cSales = document.getElementById('mrd-count-sales');
+        if (cAll) cAll.textContent = data.totalContatos;
+        if (cHot) cHot.textContent = data.totalOportunidades;
+        if (cSupp) cSupp.textContent = data.totalSuporte;
+        if (cSales) cSales.textContent = data.totalVendasConvertidas;
 
         renderRDConversasTable();
 
@@ -10042,11 +10114,13 @@ function filterRDConversasLeads(filterType) {
     _rdConversasFilter = filterType;
     const btnAll = document.getElementById('mrd-btn-all');
     const btnHot = document.getElementById('mrd-btn-hot');
-    const btnStudents = document.getElementById('mrd-btn-students');
+    const btnSupp = document.getElementById('mrd-btn-support');
+    const btnSales = document.getElementById('mrd-btn-sales');
 
     if (btnAll) btnAll.className = filterType === 'all' ? 'chip on' : 'chip';
     if (btnHot) btnHot.className = filterType === 'hot' ? 'chip on' : 'chip';
-    if (btnStudents) btnStudents.className = filterType === 'students' ? 'chip on' : 'chip';
+    if (btnSupp) btnSupp.className = filterType === 'support' ? 'chip on' : 'chip';
+    if (btnSales) btnSales.className = filterType === 'sales' ? 'chip on' : 'chip';
 
     renderRDConversasTable();
 }
@@ -10062,12 +10136,14 @@ function renderRDConversasTable() {
     if (!tbody) return;
 
     let allList = [];
-    if (_rdConversasFilter === 'students') {
-        allList = data.leadsConvertidos;
-    } else if (_rdConversasFilter === 'hot') {
+    if (_rdConversasFilter === 'hot') {
         allList = data.leadsOportunidades;
+    } else if (_rdConversasFilter === 'support') {
+        allList = data.leadsSuporte;
+    } else if (_rdConversasFilter === 'sales') {
+        allList = data.leadsVendas;
     } else {
-        allList = [...data.leadsOportunidades, ...data.leadsConvertidos];
+        allList = [...data.leadsOportunidades, ...data.leadsVendas, ...data.leadsSuporte];
     }
 
     if (_rdConversasSearch) {
@@ -10076,34 +10152,46 @@ function renderRDConversasTable() {
             const em = (l.email || '').toLowerCase();
             const ph = (l.telefone || '').toLowerCase();
             const phFmt = (l.telefone_fmt || '').toLowerCase();
-            return nm.includes(_rdConversasSearch) || em.includes(_rdConversasSearch) || ph.includes(_rdConversasSearch) || phFmt.includes(_rdConversasSearch);
+            const cr = (l.curso_matriculado || '').toLowerCase();
+            return nm.includes(_rdConversasSearch) || em.includes(_rdConversasSearch) || ph.includes(_rdConversasSearch) || phFmt.includes(_rdConversasSearch) || cr.includes(_rdConversasSearch);
         });
     }
 
     if (allList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="padding:24px; text-align:center; color:var(--muted)">Nenhum lead encontrado para os critérios de busca.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="padding:24px; text-align:center; color:var(--muted)">Nenhum registro encontrado para o filtro selecionado.</td></tr>`;
         return;
     }
 
     tbody.innerHTML = allList.map((lead, idx) => {
-        const isAluno = lead.is_aluno;
-        const statusBadge = isAluno 
-            ? `<span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(16,185,129,0.12); color:var(--emerald-d); font-weight:700; font-size:11px;">🎓 Aluno Matriculado</span>`
-            : `<span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(217,119,6,0.1); color:#d97706; font-weight:700; font-size:11px;">🔥 Oportunidade Quente</span>`;
+        let badge = '';
+        if (lead.tipo_canal === 'suporte') {
+            badge = `<span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(2,132,199,0.12); color:#0284c7; font-weight:700; font-size:11px;">🎓 Suporte ao Aluno</span>`;
+        } else if (lead.tipo_canal === 'venda_convertida') {
+            badge = `<span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(16,185,129,0.14); color:var(--emerald-d); font-weight:700; font-size:11px;">✅ Venda Fechada</span>`;
+        } else {
+            badge = `<span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(217,119,6,0.1); color:#d97706; font-weight:700; font-size:11px;">🔥 Oportunidade Quente</span>`;
+        }
 
         const waButton = lead.wa_link 
             ? `<a href="${lead.wa_link}" target="_blank" style="background:#10b981; color:#fff; padding:4px 10px; border-radius:6px; font-weight:700; text-decoration:none; font-size:11px; display:inline-flex; align-items:center; gap:4px;" title="Conversar no WhatsApp">💬 Conversar</a>`
-            : `<span style="color:var(--muted); font-size:11px;">Sem WhatsApp</span>`;
+            : `<span style="color:var(--muted); font-size:11px;">-</span>`;
 
-        const rowBg = isAluno ? 'background:rgba(16,185,129,0.02);' : (idx % 2 === 0 ? '' : 'background:rgba(0,0,0,0.01);');
+        const datesInfo = lead.tipo_canal === 'suporte' 
+            ? `<div style="font-size:11px; color:var(--ink);">Matrícula: <b>${lead.data_matricula}</b></div><div style="font-size:10px; color:var(--muted);">Contato: ${lead.data_contato}</div>`
+            : (lead.tipo_canal === 'venda_convertida' 
+                ? `<div style="font-size:11px; color:var(--emerald-d);">Contato: <b>${lead.data_contato}</b></div><div style="font-size:10px; color:var(--muted);">Matrícula: ${lead.data_matricula}</div>`
+                : `<div style="font-size:11px; color:var(--ink);">Contato: <b>${lead.data_contato}</b></div><div style="font-size:10px; color:#d97706;">Sem matrícula</div>`);
+
+        const rowBg = lead.tipo_canal === 'suporte' ? 'background:rgba(2,132,199,0.02);' : (lead.tipo_canal === 'venda_convertida' ? 'background:rgba(16,185,129,0.03);' : (idx % 2 === 0 ? '' : 'background:rgba(0,0,0,0.01);'));
 
         return `
           <tr style="border-bottom:1px solid var(--line); ${rowBg}">
             <td style="padding:9px 14px; font-weight:700; color:var(--ink);">${lead.nome || 'Médico'}</td>
             <td style="padding:9px 14px; font-family:var(--mono, monospace); font-weight:600; color:var(--ink);">${lead.telefone_fmt || lead.telefone || '-'}</td>
             <td style="padding:9px 14px; color:var(--muted); font-size:11.5px;">${lead.email || '-'}</td>
-            <td style="padding:9px 14px;">${statusBadge}</td>
-            <td style="padding:9px 14px; color:var(--ink); font-weight:600; font-size:11.5px;">${lead.curso_matriculado || (isAluno ? 'Aluno Cativa' : 'Em Negociação')}</td>
+            <td style="padding:9px 14px;">${badge}</td>
+            <td style="padding:9px 14px;">${datesInfo}</td>
+            <td style="padding:9px 14px; color:var(--ink); font-weight:600; font-size:11.5px;">${lead.curso_matriculado || '-'}</td>
             <td style="padding:9px 14px; text-align:center;">${waButton}</td>
           </tr>
         `;
@@ -10112,17 +10200,19 @@ function renderRDConversasTable() {
 
 function exportRDConversasCSV() {
     const data = getRDConversasData();
-    const allList = [...data.leadsOportunidades, ...data.leadsConvertidos];
+    const allList = [...data.leadsOportunidades, ...data.leadsVendas, ...data.leadsSuporte];
 
-    const headers = ['Nome', 'Telefone', 'Email', 'Status', 'Curso_Matriculado', 'Tem_Assinatura_Ativa', 'WhatsApp_Link'];
+    const headers = ['Nome', 'Telefone', 'Email', 'Natureza_Atendimento', 'Data_Contato', 'Data_Matricula', 'Curso', 'MRR', 'WhatsApp_Link'];
     const rows = allList.map(l => {
         return [
             `"${(l.nome || '').replace(/"/g, '""')}"`,
             `"${l.telefone || ''}"`,
             `"${l.email || ''}"`,
-            `"${l.is_aluno ? 'Aluno Matriculado' : 'Oportunidade Comercial'}"`,
+            `"${l.badge_label || (l.tipo_canal === 'suporte' ? 'Suporte ao Aluno' : (l.tipo_canal === 'venda_convertida' ? 'Venda Fechada' : 'Oportunidade Comercial'))}"`,
+            `"${l.data_contato || ''}"`,
+            `"${l.data_matricula || ''}"`,
             `"${(l.curso_matriculado || '').replace(/"/g, '""')}"`,
-            `"${l.tem_assinatura_ativa ? 'SIM' : 'NAO'}"`,
+            `"${(l.mrr || 0).toFixed(2).replace('.', ',')}"`,
             `"${l.wa_link || ''}"`
         ].join(';');
     });
@@ -10132,7 +10222,7 @@ function exportRDConversasCSV() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `rd_conversas_pipeline_whatsapp_${new Date().toISOString().slice(0,10)}.csv`);
+    link.setAttribute('download', `rd_conversas_atendimentos_comercial_suporte_${new Date().toISOString().slice(0,10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -10155,345 +10245,6 @@ document.addEventListener('click', function(e) {
         closeModalRDConversas();
     }
 });
-
 </script>
-<style>
-@keyframes spin { 100% { transform: rotate(360deg); } }
-
-@keyframes livePulse {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(224, 85, 85, 0.7); }
-  70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(224, 85, 85, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(224, 85, 85, 0); }
-}
-
-/* ========================================================================== */
-/* HUD APP LAYOUT & COLLAPSIBLE SIDEBAR (LIGHT EXECUTIVE THEME) */
-.hud-app-layout {
-  display: flex;
-  width: 100%;
-  min-height: calc(100vh - 52px);
-  position: relative;
-  background: #f8fafc;
-}
-
-.hud-sidebar {
-  width: 240px;
-  min-width: 240px;
-  background: #ffffff;
-  border-right: 1px solid #e2e8f0;
-  box-shadow: 2px 0 16px rgba(15, 23, 42, 0.03);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  z-index: 100;
-  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow-x: hidden;
-  overflow-y: auto;
-  user-select: none;
-}
-
-.hud-sidebar.collapsed {
-  width: 68px;
-  min-width: 68px;
-}
-
-.hud-sidebar-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 14px;
-  border-bottom: 1px solid #e2e8f0;
-  min-height: 52px;
-}
-
-.hud-sidebar-brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-.hud-sidebar.collapsed .hud-sidebar-brand {
-  display: none;
-}
-
-.hud-sidebar-title {
-  font-family: var(--font-hud);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: #0284c7;
-}
-
-.sidebar-toggle-btn {
-  background: rgba(2, 132, 199, 0.08);
-  border: 1px solid rgba(2, 132, 199, 0.2);
-  color: #0284c7;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  font-size: 11px;
-  transition: all 0.15s ease;
-  flex-shrink: 0;
-}
-.sidebar-toggle-btn:hover {
-  background: #0284c7;
-  color: #ffffff;
-}
-.hud-sidebar.collapsed .sidebar-toggle-btn {
-  margin: 0 auto;
-}
-
-/* SIDEBAR TABS NAV */
-.hud-sidebar .tabs {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 4px !important;
-  padding: 12px 8px !important;
-  margin: 0 !important;
-  border: none !important;
-  flex: 1 !important;
-}
-
-.hud-sidebar .tab {
-  display: flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-  width: 100% !important;
-  padding: 9px 12px !important;
-  border-radius: 8px !important;
-  border: 1px solid transparent !important;
-  border-left: 3px solid transparent !important;
-  background: transparent !important;
-  color: #64748b !important;
-  font-family: var(--font-hud) !important;
-  font-size: 11.5px !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.02em !important;
-  text-transform: none !important;
-  text-align: left !important;
-  cursor: pointer !important;
-  transition: all 0.15s ease !important;
-  white-space: nowrap !important;
-  position: relative !important;
-}
-
-.hud-sidebar .tab .num {
-  width: 24px !important;
-  height: 24px !important;
-  min-width: 24px !important;
-  border-radius: 6px !important;
-  background: #f1f5f9 !important;
-  color: #64748b !important;
-  font-family: var(--font-mono) !important;
-  font-size: 11px !important;
-  display: grid !important;
-  place-items: center !important;
-  flex-shrink: 0 !important;
-  transition: all 0.15s ease !important;
-}
-
-.hud-sidebar .tab .tab-label {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.hud-sidebar.collapsed .tab {
-  padding: 9px 0 !important;
-  justify-content: center !important;
-}
-
-.hud-sidebar.collapsed .tab .tab-label {
-  display: none !important;
-}
-
-.hud-sidebar .tab:hover {
-  background: #f1f5f9 !important;
-  color: #0f172a !important;
-}
-
-.hud-sidebar .tab:hover .num {
-  background: #e2e8f0 !important;
-  color: #0284c7 !important;
-}
-
-.hud-sidebar .tab.on {
-  background: rgba(2, 132, 199, 0.08) !important;
-  color: #0284c7 !important;
-  border-left: 3px solid #0284c7 !important;
-  font-weight: 700 !important;
-}
-
-.hud-sidebar .tab.on .num {
-  background: #0284c7 !important;
-  color: #ffffff !important;
-  font-weight: 800 !important;
-}
-
-.hud-sidebar .tab.on::after {
-  display: none !important;
-}
-
-/* SIDEBAR FOOTER */
-.hud-sidebar-footer {
-  padding: 12px 10px;
-  border-top: 1px solid #e2e8f0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.sidebar-collapse-bar-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 7px 10px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  color: #64748b;
-  font-family: var(--font-hud);
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-}
-.sidebar-collapse-bar-btn:hover {
-  background: #f1f5f9;
-  color: #0284c7;
-  border-color: #cbd5e1;
-}
-.hud-sidebar.collapsed .sidebar-collapse-bar-btn {
-  justify-content: center;
-  padding: 7px 0;
-}
-.hud-sidebar.collapsed .sidebar-footer-label {
-  display: none !important;
-}
-
-.sidebar-status-pill {
-  display: flex;
-  align-items: center;
-  padding: 4px 8px;
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  color: #059669;
-  white-space: nowrap;
-}
-.hud-sidebar.collapsed .sidebar-status-pill {
-  justify-content: center;
-  padding: 4px 0;
-}
-
-/* MAIN CONTENT */
-.hud-main-content {
-  flex: 1;
-  min-width: 0;
-  padding: 12px 28px 48px;
-  max-width: 100%;
-}
-
-/* COMPACT HEADER */
-header {
-  padding: 8px 24px !important;
-  min-height: 48px !important;
-  max-height: 52px !important;
-  display: flex !important;
-  align-items: center !important;
-}
-</style>
-
-  <!-- ============================================================================= -->
-  <!-- MODAL: PIPELINE DE LEADS & OPORTUNIDADES RD CONVERSAS (WHATSAPP) -->
-  <!-- ============================================================================= -->
-  <div id="modal-rd-conversas-leads" class="modal-backdrop" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); backdrop-filter:blur(4px); z-index:9999; display:none; align-items:center; justify-content:center; padding:16px;">
-    <div style="background:var(--card); border:1px solid var(--line); border-radius:16px; width:100%; max-width:1050px; max-height:92vh; display:flex; flex-direction:column; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); overflow:hidden; animation:modalPop .25s ease-out;">
-      
-      <!-- HEADER DO MODAL -->
-      <div style="padding:18px 24px; border-bottom:1px solid var(--line2); display:flex; justify-content:space-between; align-items:center; background:linear-gradient(180deg, var(--card) 0%, rgba(16,185,129,0.02) 100%);">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <div style="width:38px; height:38px; border-radius:10px; background:#10b981; display:flex; align-items:center; justify-content:center; color:#fff; font-size:20px;">
-            💬
-          </div>
-          <div>
-            <h3 style="font-family:var(--disp); font-size:18px; font-weight:800; color:var(--ink); margin:0; display:flex; align-items:center; gap:8px;">
-              Pipeline Comercial · RD Station Conversas (WhatsApp)
-              <span class="exec-pill pill-green" style="font-size:10.5px;">316 Médicos</span>
-            </h3>
-            <div style="font-size:12px; color:var(--muted); margin-top:2px;">
-              Gestão de leads e oportunidades ativas no WhatsApp cruzadas com a Cativa Digital e Assinaturas.
-            </div>
-          </div>
-        </div>
-        <button onclick="closeModalRDConversas()" style="background:none; border:none; color:var(--muted); font-size:22px; cursor:pointer; padding:4px 8px; border-radius:6px;" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--muted)'">&times;</button>
-      </div>
-
-      <!-- CORPO DO MODAL -->
-      <div style="padding:20px 24px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:18px;">
-        
-        <!-- KPIS DO MODAL -->
-        <div id="mrd-kpis" style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px;"></div>
-
-        <!-- CONTROLES, FILTROS E BUSCA -->
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:12px 16px; background:rgba(0,0,0,0.02); border:1px solid var(--line2); border-radius:10px;">
-          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <button id="mrd-btn-all" class="chip on" onclick="filterRDConversasLeads('all')">Todos (<span id="mrd-count-all">316</span>)</button>
-            <button id="mrd-btn-hot" class="chip" onclick="filterRDConversasLeads('hot')">🔥 Oportunidades Quentes (<span id="mrd-count-hot">239</span>)</button>
-            <button id="mrd-btn-students" class="chip" onclick="filterRDConversasLeads('students')">🎓 Já Matriculados (<span id="mrd-count-students">77</span>)</button>
-          </div>
-
-          <div style="display:flex; align-items:center; gap:10px;">
-            <input type="text" id="mrd-search" placeholder="🔍 Buscar por nome, telefone ou e-mail..." oninput="handleRDConversasSearch(this.value)" style="padding:7px 12px; border:1px solid var(--line); border-radius:8px; font-size:12px; width:260px; background:var(--card); color:var(--ink);" />
-            <button onclick="exportRDConversasCSV()" style="background:var(--brand); color:#fff; border:none; padding:7px 14px; border-radius:8px; font-size:11.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px;">
-              📥 Exportar CSV
-            </button>
-          </div>
-        </div>
-
-        <!-- TABELA DE LEADS -->
-        <div style="border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--card);">
-          <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
-            <thead>
-              <tr style="background:rgba(0,0,0,0.03); border-bottom:1px solid var(--line); color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
-                <th style="padding:10px 14px;">Médico / Lead</th>
-                <th style="padding:10px 14px;">WhatsApp / Contato</th>
-                <th style="padding:10px 14px;">E-mail</th>
-                <th style="padding:10px 14px;">Status Comercial</th>
-                <th style="padding:10px 14px;">Curso / Matrícula</th>
-                <th style="padding:10px 14px; text-align:center;">Ação Rápida</th>
-              </tr>
-            </thead>
-            <tbody id="mrd-table-body"></tbody>
-          </table>
-        </div>
-
-      </div>
-
-      <!-- FOOTER DO MODAL -->
-      <div style="padding:14px 24px; border-top:1px solid var(--line2); background:rgba(0,0,0,0.01); display:flex; justify-content:space-between; align-items:center;">
-        <div style="font-size:11.5px; color:var(--muted);">
-          Integração Oficial RD Station Conversas (Tallos v2) · Sincronização em Tempo Real.
-        </div>
-        <button onclick="closeModalRDConversas()" style="background:rgba(0,0,0,0.05); color:var(--ink); border:1px solid var(--line); padding:7px 18px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;">
-          Fechar
-        </button>
-      </div>
-
-    </div>
-  </div>
-
 </body>
 </html>
-
-
-
