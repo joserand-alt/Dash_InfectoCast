@@ -5247,37 +5247,45 @@ function getMatriculasAuditoriaData() {
         return false;
     };
 
-    // Mapa de telemetria de sincronização com RD Station
-    const telemetriaMap = new Map();
-    telemetria.forEach(t => {
-        const em = (t.email || '').toLowerCase().trim();
-        const dt = parseDateUniversal(t.data_tagueamento);
-        if (em && dt) {
-            if (!telemetriaMap.has(em) || dt > telemetriaMap.get(em).date) {
-                telemetriaMap.set(em, { date: dt, curso: t.curso, origem: t.origem, raw: t });
-            }
-        }
-    });
+    function normalizeCourse(cName) {
+        if (!cName) return 'GERAL';
+        let s = String(cName).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (s.includes('INFECTOPEDIATRIA') || s.includes('PEDIATRIA')) return 'POS-GRADUACAO EM INFECTOPEDIATRIA';
+        if (s.includes('IMUNODEPRIMIDO')) return 'POS-GRADUACAO EM INFECTOLOGIA DO PACIENTE IMUNODEPRIMIDO';
+        if (s.includes('ORTOPEDIC') || s.includes('PARTES MOLES')) return 'POS-GRADUACAO EM INFECCOES ORTOPEDICAS E DE PARTES MOLES';
+        if (s.includes('CCIH') || s.includes('HOSPITALAR')) return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)';
+        if (s.includes('TERAPIA INTENSIVA') || s.includes('UTI')) return 'POS-GRADUACAO EM INFECTOLOGIA EM TERAPIA INTENSIVA';
+        if (s.includes('ANTIBIOTICO') || s.includes('SOS')) return 'S.O.S ANTIBIOTICO';
+        if (s.includes('FUNGO') || s.includes('ANTIFUNGICO')) return 'DO FUNGO AO ANTIFUNGICO';
+        if (s.includes('MULTI-R') || s.includes('JORNADA')) return 'JORNADA MULTI-R';
+        if (s.includes('GESTACAO') || s.includes('GESTANTE')) return 'INFECCOES NA GESTACAO';
+        if (s.includes('HIV') || s.includes('HEPATITE')) return 'HIV E HEPATITES VIRAIS';
+        if (s.includes('INFECTOCAST')) return 'POS-GRADUACAO INFECTOCAST';
+        return s;
+    }
 
-    // Mapear pagamentos e primeiro pagamento
-    const paymentsMap = new Map();
-    [...vFaturas, ...aFaturas].forEach(f => {
+    // 1. Mapear TODOS os pagamentos aprovados no gateway por aluno e por curso
+    const studentCoursePaidBills = new Map();
+    const allFats = [...vFaturas, ...aFaturas];
+
+    allFats.forEach(f => {
         const st = (f.status || '').toLowerCase();
         if (st === 'pago' || st === 'paid' || st === 'received' || st === 'confirmed') {
             const em = (f.email || '').toString().toLowerCase().trim();
             const nm = (f.aluno || '').toString().toLowerCase().trim();
-            const dtStr = (f.data_pagamento || f.data_pagamento_iso || f.vencimento || f.vencimento_iso || f.data || '').toString();
-            const d = parseDateUniversal(dtStr);
-            const gw = (f.gateway || (vFaturas.includes(f) ? 'Vindi' : 'Asaas'));
-            if (d) {
-                if (em) {
-                    if (!paymentsMap.has(em)) paymentsMap.set(em, []);
-                    paymentsMap.get(em).push({ date: d, gateway: gw, valor: f.valor, status: st });
-                }
-                if (nm) {
-                    if (!paymentsMap.has(nm)) paymentsMap.set(nm, []);
-                    paymentsMap.get(nm).push({ date: d, gateway: gw, valor: f.valor, status: st });
-                }
+            const dt = parseDateUniversal(f.data_pagamento || f.data_pagamento_iso || f.vencimento || f.vencimento_iso);
+            const gw = f.gateway || (vFaturas.includes(f) ? 'Vindi' : 'Asaas');
+            const cNorm = normalizeCourse(f.plano || f.description || f.curso || '');
+            
+            if (dt) {
+                const keys = [];
+                if (em) keys.push(em + '___' + cNorm, em + '___GLOBAL');
+                if (nm) keys.push(nm + '___' + cNorm, nm + '___GLOBAL');
+                
+                keys.forEach(k => {
+                    if (!studentCoursePaidBills.has(k)) studentCoursePaidBills.set(k, []);
+                    studentCoursePaidBills.get(k).push({ date: dt, gateway: gw, valor: f.valor, plano: f.plano || f.description });
+                });
             }
         }
     });
@@ -5288,94 +5296,69 @@ function getMatriculasAuditoriaData() {
 
     const validStudents = rawStudents.filter(s => !isInvalidOrInternal(s));
     const allMatriculas = [];
+    const processedPairs = new Set();
 
     validStudents.forEach(s => {
         const em = (s.email || '').toString().toLowerCase().trim();
         const nm = (s.nome || '').toString().trim();
+        const cNorm = normalizeCourse(s.curso || '');
+        const pairKey = em + '___' + cNorm;
         
-        // Candidatos temporais (todos os eventos reais do aluno)
-        const candidates = [];
+        if (processedPairs.has(pairKey)) return;
+        processedPairs.add(pairKey);
         
-        // 1. Data de Inscrição da Plataforma
-        const dtInsc = parseDateUniversal(s.data_insc || s.data_inscricao || s.data_matricula);
-        if (dtInsc && dtInsc <= now) {
-            const plat = s.plataforma || 'Academy';
-            candidates.push({ date: dtInsc, origem: `Cadastro ${plat}`, tipo: 'plataforma' });
-        }
-
-        // 2. Telemetria de Sincronização RD Station
-        const tSync = telemetriaMap.get(em);
-        if (tSync && tSync.date && tSync.date <= now) {
-            candidates.push({ date: tSync.date, origem: `Sincronização RD (${tSync.origem || 'CRM'})`, tipo: 'rd_sync' });
-        }
-
-        // 3. Pagamentos de Faturas Vindi / Asaas
-        const studentPays = paymentsMap.get(em) || paymentsMap.get(nm.toLowerCase()) || [];
-        studentPays.forEach(p => {
-            if (p.date && p.date <= now) {
-                candidates.push({ date: p.date, origem: `Pagamento (${p.gateway})`, tipo: 'gateway' });
+        // REGRA DE OURO:
+        // Se o aluno tem faturas pagas no gateway para este curso, o marco da matricula e a DATA DO PRIMEIRO PAGAMENTO PAGO.
+        // Se nao tem pagamento no gateway (acesso direto/plataforma), o marco e a data de inscricao na plataforma.
+        
+        let effDate = null;
+        let origem = '';
+        let valor = 0;
+        let tipo = '';
+        
+        const paidBillsCourse = studentCoursePaidBills.get(em + '___' + cNorm) || studentCoursePaidBills.get(nm.toLowerCase() + '___' + cNorm);
+        const paidBillsGlobal = studentCoursePaidBills.get(em + '___GLOBAL') || studentCoursePaidBills.get(nm.toLowerCase() + '___GLOBAL');
+        
+        const targetBills = paidBillsCourse || paidBillsGlobal;
+        
+        if (targetBills && targetBills.length > 0) {
+            targetBills.sort((a, b) => a.date - b.date);
+            const firstPaid = targetBills[0];
+            effDate = firstPaid.date;
+            origem = 'Primeiro Pagamento (' + firstPaid.gateway + ')';
+            valor = firstPaid.valor;
+            tipo = 'gateway';
+        } else {
+            const dtInsc = parseDateUniversal(s.data_insc || s.data_inscricao || s.data_matricula || s.first);
+            if (dtInsc) {
+                effDate = dtInsc;
+                origem = 'Cadastro Plataforma (' + (s.plataforma || 'Academy') + ')';
+                tipo = 'plataforma';
             }
-        });
-
-        // 4. Faturas no objeto individual do aluno
-        if (s.vindi && s.vindi.faturas && Array.isArray(s.vindi.faturas)) {
-            s.vindi.faturas.forEach(vf => {
-                const d = parseDateUniversal(vf.data_pagamento || vf.vencimento);
-                if (d && d <= now) candidates.push({ date: d, origem: 'Fatura Vindi', tipo: 'gateway' });
+        }
+        
+        if (effDate && effDate <= now) {
+            const is24h = effDate >= t24h;
+            const is30d = effDate >= t30d;
+            
+            const pad = n => n < 10 ? '0' + n : n;
+            const dtFmt = pad(effDate.getDate()) + '/' + pad(effDate.getMonth()+1) + '/' + effDate.getFullYear() + ' ' + pad(effDate.getHours()) + ':' + pad(effDate.getMinutes());
+            
+            allMatriculas.push({
+                nome: nm || 'Aluno',
+                email: em,
+                curso: s.curso || 'PLATAFORMA GERAL',
+                data: effDate,
+                data_fmt: dtFmt,
+                origem: origem,
+                tipo: tipo,
+                valor: valor,
+                is_24h: is24h,
+                is_30d: is30d
             });
-        }
-        if (s.asaas && s.asaas.faturas && Array.isArray(s.asaas.faturas)) {
-            s.asaas.faturas.forEach(af => {
-                const d = parseDateUniversal(af.data_pagamento || af.vencimento);
-                if (d && d <= now) candidates.push({ date: d, origem: 'Fatura Asaas', tipo: 'gateway' });
-            });
-        }
-
-        // 5. Primeiro Acesso / Log
-        if (s.first) {
-            const d = parseDateUniversal(s.first);
-            if (d && d <= now) candidates.push({ date: d, origem: 'Primeiro Acesso / Log', tipo: 'log' });
-        }
-
-        if (candidates.length > 0) {
-            const valid = candidates.filter(c => c.date && c.date <= now);
-            if (valid.length > 0) {
-                const has24hEvent = valid.some(c => c.date >= t24h);
-                const has30dEvent = valid.some(c => c.date >= t30d);
-                
-                let chosen;
-                if (has24hEvent) {
-                    const evts24h = valid.filter(c => c.date >= t24h).sort((a, b) => b.date - a.date);
-                    chosen = evts24h[0];
-                } else if (has30dEvent) {
-                    const evts30d = valid.filter(c => c.date >= t30d).sort((a, b) => b.date - a.date);
-                    chosen = evts30d[0];
-                } else {
-                    valid.sort((a, b) => a.date - b.date);
-                    chosen = valid[0];
-                }
-
-                const effDate = chosen.date;
-                const pad = n => n < 10 ? '0' + n : n;
-                const dtFmt = `${pad(effDate.getDate())}/${pad(effDate.getMonth()+1)}/${effDate.getFullYear()} ${pad(effDate.getHours())}:${pad(effDate.getMinutes())}`;
-                
-                allMatriculas.push({
-                    nome: nm || 'Aluno',
-                    email: em,
-                    curso: s.curso || 'PLATAFORMA GERAL',
-                    data: effDate,
-                    data_fmt: dtFmt,
-                    origem_sinal: chosen.origem,
-                    tipo_sinal: chosen.tipo,
-                    status: s.status || 'Ativo',
-                    is_24h: has24hEvent,
-                    is_30d: has30dEvent
-                });
-            }
         }
     });
 
-    // Ordenar decrescente por data de matrícula para exibição
     allMatriculas.sort((a, b) => b.data - a.data);
 
     const list24h = allMatriculas.filter(m => m.is_24h);

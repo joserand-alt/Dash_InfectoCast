@@ -1944,13 +1944,13 @@ def main():
                 pass
 
         def _infer_curso_from_asaas(asaas_st, email):
-            """Tenta resolver o curso do aluno Asaas usando student_course_map, RD Station, preço ou descrição da fatura.
+            """Tenta resolver o curso do aluno Asaas usando student_course_map, RD Station, preco ou descricao da fatura.
             Retorna: (curso_nome, is_inferred, origem_str)"""
             if email in student_course_map and student_course_map[email] != normalize_curso('PLATAFORMA GERAL'):
                 return student_course_map[email], False, "Oficial"
             
             if email in rd_tagged_courses:
-                return rd_tagged_courses[email], False, "RD Station (Matrícula)"
+                return rd_tagged_courses[email], False, "RD Station (Matricula)"
 
             if 'rd_course_hints' in locals() and email in rd_course_hints:
                 return rd_course_hints[email], True, "RD Station"
@@ -1961,10 +1961,14 @@ def main():
             if c_res and c_res != normalize_curso('PLATAFORMA GERAL'):
                 return c_res, True, "Fatura Asaas"
 
-            # Detecção por preço / produto oficial
+            # Deteccao inteligente por preco / produto oficial do catalogo
             tot_pago = float(asaas_st.get('total_pago') or 0)
-            if abs(tot_pago - 487.0) < 5 or any(abs(float(ft.get('valor') or 0) - 487.0) < 5 for ft in faturas):
-                return normalize_curso('S.O.S ANTIBIÓTICO'), True, "Preço Asaas (R$ 487,00)"
+            f_vals = [float(ft.get('valor') or 0) for ft in faturas]
+            
+            # SOS Antibiotico precos conhecidos: R$ 819 (4x 204.75, 12x 68.25), R$ 487, R$ 2187, R$ 1968.30, R$ 519
+            sos_prices = [819.0, 487.0, 2187.0, 1968.30, 519.0, 204.75, 68.25, 182.25, 218.70, 437.40, 196.83]
+            if any(any(abs(v - sp) < 2 for sp in sos_prices) for v in ([tot_pago] + f_vals)):
+                return normalize_curso('S.O.S ANTIBIOTICO'), True, "Preco Asaas (S.O.S Antibiotico)"
             
             return normalize_curso('PLATAFORMA GERAL'), False, "Geral" 
 
