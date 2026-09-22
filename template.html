@@ -5232,6 +5232,7 @@ function getMatriculasAuditoriaData() {
     const rawStudents = (DATA && DATA.students) ? DATA.students : [];
     const vindi = (DATA && DATA.financeiro) ? DATA.financeiro : {};
     const asaas = (DATA && DATA.financeiro_asaas) ? DATA.financeiro_asaas : {};
+    const telemetria = (DATA && DATA.telemetria_sync) ? DATA.telemetria_sync : [];
     const vFaturas = (vindi.faturas_tabela || []);
     const aFaturas = (asaas.faturas_tabela || []);
 
@@ -5246,8 +5247,20 @@ function getMatriculasAuditoriaData() {
         return false;
     };
 
-    // Mapear primeiro pagamento de cada aluno (menor data de pagamento ou vencimento da fatura paga)
-    const firstPayMap = new Map();
+    // Mapa de telemetria de sincronização com RD Station
+    const telemetriaMap = new Map();
+    telemetria.forEach(t => {
+        const em = (t.email || '').toLowerCase().trim();
+        const dt = parseDateUniversal(t.data_tagueamento);
+        if (em && dt) {
+            if (!telemetriaMap.has(em) || dt > telemetriaMap.get(em).date) {
+                telemetriaMap.set(em, { date: dt, curso: t.curso, origem: t.origem, raw: t });
+            }
+        }
+    });
+
+    // Mapear pagamentos e primeiro pagamento
+    const paymentsMap = new Map();
     [...vFaturas, ...aFaturas].forEach(f => {
         const st = (f.status || '').toLowerCase();
         if (st === 'pago' || st === 'paid' || st === 'received' || st === 'confirmed') {
@@ -5258,14 +5271,12 @@ function getMatriculasAuditoriaData() {
             const gw = (f.gateway || (vFaturas.includes(f) ? 'Vindi' : 'Asaas'));
             if (d) {
                 if (em) {
-                    if (!firstPayMap.has(em) || d < firstPayMap.get(em).date) {
-                        firstPayMap.set(em, { date: d, gateway: gw, valor: f.valor });
-                    }
+                    if (!paymentsMap.has(em)) paymentsMap.set(em, []);
+                    paymentsMap.get(em).push({ date: d, gateway: gw, valor: f.valor, status: st });
                 }
                 if (nm) {
-                    if (!firstPayMap.has(nm) || d < firstPayMap.get(nm).date) {
-                        firstPayMap.set(nm, { date: d, gateway: gw, valor: f.valor });
-                    }
+                    if (!paymentsMap.has(nm)) paymentsMap.set(nm, []);
+                    paymentsMap.get(nm).push({ date: d, gateway: gw, valor: f.valor, status: st });
                 }
             }
         }
@@ -5282,53 +5293,71 @@ function getMatriculasAuditoriaData() {
         const em = (s.email || '').toString().toLowerCase().trim();
         const nm = (s.nome || '').toString().trim();
         
-        // Candidatos temporais (menor data = primeiro evento real do aluno)
+        // Candidatos temporais (todos os eventos reais do aluno)
         const candidates = [];
         
-        // 1. Primeiro Pagamento
-        const payInfo = firstPayMap.get(em) || firstPayMap.get(nm.toLowerCase());
-        if (payInfo) {
-            candidates.append ? null : candidates.push({ date: payInfo.date, origem: `Primeiro Pagamento (${payInfo.gateway})`, tipo: 'gateway' });
-        }
-
-        // 2. Faturas Vindi no objeto do aluno (menor vencimento)
-        if (s.vindi && s.vindi.faturas && Array.isArray(s.vindi.faturas)) {
-            s.vindi.faturas.forEach(vf => {
-                const d = parseDateUniversal(vf.data_pagamento || vf.vencimento);
-                if (d) candidates.push({ date: d, origem: 'Primeiro Pagamento (Vindi)', tipo: 'gateway' });
-            });
-        }
-
-        // 3. Faturas Asaas no objeto do aluno
-        if (s.asaas && s.asaas.faturas && Array.isArray(s.asaas.faturas)) {
-            s.asaas.faturas.forEach(af => {
-                const d = parseDateUniversal(af.data_pagamento || af.vencimento);
-                if (d) candidates.push({ date: d, origem: 'Primeiro Pagamento (Asaas)', tipo: 'gateway' });
-            });
-        }
-
-        // 4. Primeiro Acesso / Log
-        if (s.first) {
-            const d = parseDateUniversal(s.first);
-            if (d) candidates.push({ date: d, origem: 'Primeiro Acesso / Log', tipo: 'log' });
-        }
-
-        // 5. Data de Inscrição da Plataforma
+        // 1. Data de Inscrição da Plataforma
         const dtInsc = parseDateUniversal(s.data_insc || s.data_inscricao || s.data_matricula);
         if (dtInsc && dtInsc <= now) {
             const plat = s.plataforma || 'Academy';
             candidates.push({ date: dtInsc, origem: `Cadastro ${plat}`, tipo: 'plataforma' });
         }
 
+        // 2. Telemetria de Sincronização RD Station
+        const tSync = telemetriaMap.get(em);
+        if (tSync && tSync.date && tSync.date <= now) {
+            candidates.push({ date: tSync.date, origem: `Sincronização RD (${tSync.origem || 'CRM'})`, tipo: 'rd_sync' });
+        }
+
+        // 3. Pagamentos de Faturas Vindi / Asaas
+        const studentPays = paymentsMap.get(em) || paymentsMap.get(nm.toLowerCase()) || [];
+        studentPays.forEach(p => {
+            if (p.date && p.date <= now) {
+                candidates.push({ date: p.date, origem: `Pagamento (${p.gateway})`, tipo: 'gateway' });
+            }
+        });
+
+        // 4. Faturas no objeto individual do aluno
+        if (s.vindi && s.vindi.faturas && Array.isArray(s.vindi.faturas)) {
+            s.vindi.faturas.forEach(vf => {
+                const d = parseDateUniversal(vf.data_pagamento || vf.vencimento);
+                if (d && d <= now) candidates.push({ date: d, origem: 'Fatura Vindi', tipo: 'gateway' });
+            });
+        }
+        if (s.asaas && s.asaas.faturas && Array.isArray(s.asaas.faturas)) {
+            s.asaas.faturas.forEach(af => {
+                const d = parseDateUniversal(af.data_pagamento || af.vencimento);
+                if (d && d <= now) candidates.push({ date: d, origem: 'Fatura Asaas', tipo: 'gateway' });
+            });
+        }
+
+        // 5. Primeiro Acesso / Log
+        if (s.first) {
+            const d = parseDateUniversal(s.first);
+            if (d && d <= now) candidates.push({ date: d, origem: 'Primeiro Acesso / Log', tipo: 'log' });
+        }
+
         if (candidates.length > 0) {
-            // Filtrar apenas datas não nulas e menores ou iguais a agora
             const valid = candidates.filter(c => c.date && c.date <= now);
             if (valid.length > 0) {
-                // Ordenar pela menor data (marco temporal inicial)
-                valid.sort((a, b) => a.date - b.date);
-                const chosen = valid[0];
+                const has24hEvent = valid.some(c => c.date >= t24h);
+                const has30dEvent = valid.some(c => c.date >= t30d);
+                
+                let chosen;
+                if (has24hEvent) {
+                    const evts24h = valid.filter(c => c.date >= t24h).sort((a, b) => b.date - a.date);
+                    chosen = evts24h[0];
+                } else if (has30dEvent) {
+                    const evts30d = valid.filter(c => c.date >= t30d).sort((a, b) => b.date - a.date);
+                    chosen = evts30d[0];
+                } else {
+                    valid.sort((a, b) => a.date - b.date);
+                    chosen = valid[0];
+                }
+
                 const effDate = chosen.date;
-                const dtFmt = `${String(effDate.getDate()).padStart(2,'0')}/${String(effDate.getMonth()+1).padStart(2,'0')}/${effDate.getFullYear()} ${String(effDate.getHours()).padStart(2,'0')}:${String(effDate.getMinutes()).padStart(2,'0')}`;
+                const pad = n => n < 10 ? '0' + n : n;
+                const dtFmt = `${pad(effDate.getDate())}/${pad(effDate.getMonth()+1)}/${effDate.getFullYear()} ${pad(effDate.getHours())}:${pad(effDate.getMinutes())}`;
                 
                 allMatriculas.push({
                     nome: nm || 'Aluno',
@@ -5339,8 +5368,8 @@ function getMatriculasAuditoriaData() {
                     origem_sinal: chosen.origem,
                     tipo_sinal: chosen.tipo,
                     status: s.status || 'Ativo',
-                    is_24h: effDate >= t24h,
-                    is_30d: effDate >= t30d
+                    is_24h: has24hEvent,
+                    is_30d: has30dEvent
                 });
             }
         }

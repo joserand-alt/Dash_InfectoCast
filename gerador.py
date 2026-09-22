@@ -2,6 +2,11 @@ import pandas as pd
 import json
 import datetime
 import math
+def get_brasilia_now():
+    """Retorna data e hora atual no Fuso Horário Oficial de Brasília (UTC-3)."""
+    tz_br = datetime.timezone(datetime.timedelta(hours=-3))
+    return datetime.datetime.now(tz_br).replace(tzinfo=None)
+
 import os
 import re
 
@@ -2081,7 +2086,7 @@ def main():
     print(f"[MATRÍCULAS] Base final oficial sanitizada: {len(matriculas_legitimas)} matrículas ({expurgados_count} desconsiderados por serem teste/internos/Nutrify Connect/sem vínculo).")
     students = matriculas_legitimas
 
-    now_dt = datetime.datetime.now()
+    now_dt = get_brasilia_now()
     
     # =========================================================================
     # ENRIQUECIMENTO 100% REAL DE DATAS DE MATRÍCULA E TELEMETRIA DE SINCRONIZAÇÃO
@@ -2379,7 +2384,7 @@ def main():
             "hora_atualizacao": now_dt.strftime("%H:%M"),
             "report_start": df_log['Data log'].min().strftime("%d/%m/%Y"),
             "date_max": df_log['Data log'].max().strftime("%d/%m/%Y"),
-            "ref_date": hoje.strftime("%d/%m/%Y"),
+            "ref_date": now_dt.strftime("%d/%m/%Y"),
             "api_status": {
                 "vindi": {
                     "status": "ONLINE",

@@ -19,6 +19,8 @@ concurrency:
 
 jobs:
   sync_and_deploy:
+    env:
+      TZ: America/Sao_Paulo
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
