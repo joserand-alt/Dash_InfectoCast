@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -1285,9 +1285,9 @@ option {
     <!-- DIREITA: AGENDAMENTO HORÁRIO, RELÓGIO & BOTÃO -->
     <div style="display:flex; align-items:center; gap:8px;">
       <!-- CHIP DE TAGUEAMENTO 24H RD STATION COM MODAL -->
-      <div class="hud-api-chip" onclick="openModalSync24h()" title="Clique para detalhar alunos sincronizados nas últimas 24h" style="display:flex; align-items:center; gap:5px; padding:4px 9px; border-radius:6px; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.5); font-size:10.5px; font-family:var(--font-mono); cursor:pointer; transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
+      <div class="hud-api-chip" onclick="openModalSync24h()" title="Clique para detalhar alunos sincronizados nas últimas 48h" style="display:flex; align-items:center; gap:5px; padding:4px 9px; border-radius:6px; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.5); font-size:10.5px; font-family:var(--font-mono); cursor:pointer; transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
         <span class="hud-live-dot" style="background:#10b981;"></span>
-        <b style="color:#34d399;">RD 24H:</b>
+        <b style="color:#34d399;">RD 48H:</b>
         <span style="color:#10b981; font-weight:800;" id="api-cnt-sync24h">LIVE ↗</span>
       </div>
 
@@ -1476,7 +1476,7 @@ option {
           <div id="home-live-feed-list" style="display:flex; flex-direction:column; gap:8px; max-height:330px; overflow-y:auto; padding-right:4px"></div>
         </div>
 
-        <!-- COLUNA GRÁFICO (ÚLTIMAS 24 HORAS) -->
+        <!-- COLUNA GRÁFICO (ÚLTIMAS 48 HORAS) -->
         <div style="display:flex; flex-direction:column; background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:16px">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px">
             <div>
@@ -5330,7 +5330,7 @@ function getMatriculasAuditoriaData() {
                     tipo: 'confirmada',
                     origem_label: 'Matrícula Confirmada',
                     valor: firstPaid.valor,
-                    is_24h: effDate >= t24h,
+                    is_24h: ((now.getTime() - effDate.getTime() <= 48 * 3600 * 1000) || (effDate.getHours() === 0 && now.getTime() - effDate.getTime() <= 72 * 3600 * 1000 && now.getTime() - effDate.getTime() >= 0)),
                     is_30d: effDate >= t30d
                 });
             }
@@ -5358,7 +5358,12 @@ function getMatriculasAuditoriaData() {
             }
 
             if (isPendente) {
-                const dtInsc = parseDateUniversal(s.data_insc || s.data_inscricao || s.data_matricula || s.first);
+                const rawInscStr = s.data_insc || s.data_inscricao || s.data_matricula || s.first;
+                const dtInsc = parseDateUniversal(rawInscStr);
+                // Se a data original não continha hora, assumir fim do dia (23:59:59)
+                if (dtInsc && rawInscStr && !/\d{2}:\d{2}/.test(String(rawInscStr))) {
+                    dtInsc.setHours(23, 59, 59, 999);
+                }
                 if (dtInsc && dtInsc <= now) {
                     const pad = n => n < 10 ? '0' + n : n;
                     const dtFmt = pad(dtInsc.getDate()) + '/' + pad(dtInsc.getMonth()+1) + '/' + dtInsc.getFullYear() + ' ' + pad(dtInsc.getHours()) + ':' + pad(dtInsc.getMinutes());
@@ -5375,7 +5380,7 @@ function getMatriculasAuditoriaData() {
                         origem_label: 'Matrícula Pendente (Aguardando Pagamento)',
                         valor: 0,
                         aulas_feitas: Number(s.aulas_feitas || 0),
-                        is_24h: dtInsc >= t24h,
+                        is_24h: ((now.getTime() - dtInsc.getTime() <= 48 * 3600 * 1000) || (dtInsc.getHours() === 0 && now.getTime() - dtInsc.getTime() <= 72 * 3600 * 1000 && now.getTime() - dtInsc.getTime() >= 0)),
                         is_30d: dtInsc >= t30d
                     });
                 }
@@ -5900,10 +5905,10 @@ function drawExecView(force) {
 
     // Calcular métricas financeiras reais de 24 horas e 30 dias para G0
     const nowRef = new Date();
-    const t24hRef = new Date(nowRef.getTime() - 24 * 3600 * 1000);
+    const t48hRef = new Date(nowRef.getTime() - 48 * 3600 * 1000);
     const t30dRef = new Date(nowRef.getTime() - 30 * 24 * 3600 * 1000);
 
-    let rec24h = 0;
+    let rec48h = 0;
     let rec30d = 0;
     [...vFaturas, ...aFaturas].forEach(f => {
         const st = (f.status || '').toLowerCase();
@@ -5912,13 +5917,13 @@ function drawExecView(force) {
             const d = parseDateUniversal(dtStr);
             if (d) {
                 const val = Number(f.valor) || 0;
-                if (d >= t24hRef) rec24h += val;
+                if ((nowRef.getTime() - d.getTime() <= 24 * 3600 * 1000) || (d.getHours() === 0 && nowRef.getTime() - d.getTime() <= 48 * 3600 * 1000 && nowRef.getTime() - d.getTime() >= 0)) rec48h += val;
                 if (d >= t30dRef) rec30d += val;
             }
         }
     });
 
-    let alunosAtivos24hSet = new Set();
+    let alunosAtivos48hSet = new Set();
     let alunosAtivos30dSet = new Set();
 
     baseStudents.forEach(s => {
@@ -5926,19 +5931,19 @@ function drawExecView(force) {
             s.events.forEach(e => {
                 const ed = parseDateUniversal(e.d);
                 if (ed) {
-                    if (ed >= t24hRef) alunosAtivos24hSet.add(s.email);
+                    if (ed >= t48hRef) alunosAtivos48hSet.add(s.email);
                     if (ed >= t30dRef) alunosAtivos30dSet.add(s.email);
                 }
             });
         }
     });
 
-    const alunosAtivos24h = alunosAtivos24hSet.size || (ev['LOGIN WEB'] ? Math.min(ev['LOGIN WEB'], 45) : 18);
+    const alunosAtivos48h = alunosAtivos48hSet.size || (ev['LOGIN WEB'] ? Math.min(ev['LOGIN WEB'], 45) : 18);
     const alunosAtivos30d = alunosAtivos30dSet.size || countEngajados;
 
     // Atualizar chip no topo com contagem live
     const chipSyncTop = document.getElementById('api-cnt-sync24h');
-    if (chipSyncTop) chipSyncTop.innerText = `${matriculas24h} matrículas (24h) ⚡`;
+    if (chipSyncTop) chipSyncTop.innerText = `${matriculas24h} matrículas (48h) ⚡`;
 
     mount.innerHTML = `
       <!-- G0 – MONITORAMENTO AO VIVO -->
@@ -5952,16 +5957,16 @@ function drawExecView(force) {
             </div>
           </div>
           <button class="btn-exec-link" onclick="openModalMatriculas('24h_conf')" style="background: #10b981; color: #022c22; font-weight: 800; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; display:flex; align-items:center; gap:6px; box-shadow:0 0 12px rgba(16,185,129,0.3); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-            <span>📋 Detalhar Matrículas (24h / 30d)</span> →
+            <span>📋 Detalhar Matrículas (48h / 30d)</span> →
           </button>
         </div>
 
-        <!-- LINHA 1: ÚLTIMAS 24 HORAS -->
+        <!-- LINHA 1: ÚLTIMAS 48 HORAS -->
         <div style="font-size:11px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-          <span style="color:#10b981;">⚡</span> ÚLTIMAS 24 HORAS
+          <span style="color:#10b981;">⚡</span> ÚLTIMAS 48 HORAS
         </div>
         <div style="display:grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px;">
-          <!-- Card 1: Confirmadas 24h -->
+          <!-- Card 1: Confirmadas 48h -->
           <div class="exec-card" style="border-top:3px solid #10b981; cursor:pointer;" onclick="openModalMatriculas('24h_conf')" title="Clique para ver detalhes das matrículas confirmadas nas últimas 24h">
             <div class="exec-card-top">
               <span class="exec-card-label">Matrículas Confirmadas</span>
@@ -5971,7 +5976,7 @@ function drawExecView(force) {
             <div class="exec-card-sub">Vindi • Asaas • Cativa ↗</div>
           </div>
 
-          <!-- Card 2: Pendentes 24h -->
+          <!-- Card 2: Pendentes 48h -->
           <div class="exec-card" style="border-top:3px solid #f59e0b; cursor:pointer;" onclick="openModalMatriculas('24h_pend')" title="Clique para ver detalhes das matrículas pendentes nas últimas 24h">
             <div class="exec-card-top">
               <span class="exec-card-label">Matrículas Pendentes</span>
@@ -5984,27 +5989,27 @@ function drawExecView(force) {
           <!-- Card 3: Receita 24h -->
           <div class="exec-card" style="border-top:3px solid var(--emerald);">
             <div class="exec-card-top">
-              <span class="exec-card-label">Receita Realizada 24h</span>
-              <span class="exec-pill pill-green">Caixa 24h</span>
+              <span class="exec-card-label">Receita Realizada 48h</span>
+              <span class="exec-pill pill-green">Caixa 48h</span>
             </div>
-            <div class="exec-card-val" style="color:var(--emerald);">${fM(rec24h)}</div>
+            <div class="exec-card-val" style="color:var(--emerald);">${fM(rec48h)}</div>
             <div class="exec-card-sub">Liquidação Vindi & Asaas</div>
           </div>
 
-          <!-- Card 4: Alunos Ativos 24h -->
+          <!-- Card 4: Alunos Ativos 48h -->
           <div class="exec-card" style="border-top:3px solid var(--sky);">
             <div class="exec-card-top">
-              <span class="exec-card-label">Alunos Ativos 24h</span>
+              <span class="exec-card-label">Alunos Ativos 48h</span>
               <span class="exec-pill pill-blue">Uso / Logins</span>
             </div>
-            <div class="exec-card-val" style="color:var(--sky);">${fN(alunosAtivos24h)}</div>
+            <div class="exec-card-val" style="color:var(--sky);">${fN(alunosAtivos48h)}</div>
             <div class="exec-card-sub">Alunos com aulas e acessos recentes</div>
           </div>
 
           <!-- Card 5: Contatos 24h -->
           <div class="exec-card" style="border-top:3px solid var(--purple); cursor:pointer;" onclick="openRdConversasModal('hoje')" title="Clique para ver contatos e leads das últimas 24h no WhatsApp">
             <div class="exec-card-top">
-              <span class="exec-card-label">Contatos Recebidos 24h</span>
+              <span class="exec-card-label">Contatos Recebidos 48h</span>
               <span class="exec-pill pill-purple">Entrada CRM</span>
             </div>
             <div class="exec-card-val" style="color:var(--purple);">${rdConversasData.hoje_contatos > 0 ? fN(rdConversasData.hoje_contatos) : '—'}</div>
@@ -6889,8 +6894,8 @@ function drawHome(force) {
           <!-- CARD 1: MATRÍCULAS ATIVAS -->
 
           <!-- CARD NOVO: MATRÍCULAS / SINCRONIZADOS 24H -->
-          <div class="kpi" style="border-top:3px solid #10b981; cursor:pointer; background:rgba(16, 185, 129, 0.03); transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'" onclick="openModalSync24h()" title="Clique para ver o detalhamento dos alunos sincronizados nas últimas 24h">
-            <div class="k-lab"><i class="k-dot" style="background:#10b981; box-shadow:0 0 8px #10b981;"></i>Sincronizados (24h)</div>
+          <div class="kpi" style="border-top:3px solid #10b981; cursor:pointer; background:rgba(16, 185, 129, 0.03); transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'" onclick="openModalSync24h()" title="Clique para ver o detalhamento dos alunos sincronizados nas últimas 48h">
+            <div class="k-lab"><i class="k-dot" style="background:#10b981; box-shadow:0 0 8px #10b981;"></i>Sincronizados (48h)</div>
             <div class="k-val" style="color:#10b981" id="val-sync-24h">0</div>
             <div class="k-sub">⚡ LIVE · Clique p/ detalhar ↗</div>
           </div>
@@ -9565,7 +9570,7 @@ function updateSync24hKpi() {
     const execValEl = document.getElementById('exec-val-sync-24h');
     if (execValEl) execValEl.textContent = fmt(matInfo.count24h);
     const topChip = document.getElementById('api-cnt-sync24h');
-    if (topChip) topChip.textContent = `${matInfo.count24h} matrículas (24h) ⚡`;
+    if (topChip) topChip.textContent = `${matInfo.count24h} matrículas (48h) ⚡`;
 }
 
 function openModalMatriculas(period) {
@@ -9638,8 +9643,8 @@ function updateMatriculasModalTabs() {
     const p = _matriculasModalData.period;
 
     const tabs = [
-        { id: '24h_conf', label: `⚡ Confirmadas 24h (${d.count24h})`, color: '#10b981', textColor: '#022c22' },
-        { id: '24h_pend', label: `⏳ Pendentes 24h (${d.countPendentes24h})`, color: '#f59e0b', textColor: '#451a03' },
+        { id: '24h_conf', label: `⚡ Confirmadas 48h (${d.count24h})`, color: '#10b981', textColor: '#022c22' },
+        { id: '24h_pend', label: `⏳ Pendentes 48h (${d.countPendentes24h})`, color: '#f59e0b', textColor: '#451a03' },
         { id: '30d_conf', label: `📅 Confirmadas 30d (${d.count30d})`, color: '#3b82f6', textColor: '#ffffff' },
         { id: '30d_pend', label: `⏳ Pendentes 30d (${d.countPendentes30d})`, color: '#f59e0b', textColor: '#451a03' },
         { id: 'all_conf', label: `📂 Todas Confirmadas (${d.totalConfirmadas})`, color: '#8b5cf6', textColor: '#ffffff' },
@@ -10435,3 +10440,5 @@ document.addEventListener('click', function(e) {
 
 
   
+
+
