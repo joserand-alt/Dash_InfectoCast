@@ -4287,7 +4287,7 @@ function startHourlyAutoRefresh() {
     if (window._minuteTickInterval) clearInterval(window._minuteTickInterval);
     
     function updateClockAndSchedule() {
-        // Atualizar timestamp da última sincronização no topo do HUD
+        // Atualizar timestamp da ultima sincronizacao no topo do HUD
         try {
             const elSyncTime = document.getElementById('hud-last-sync-time');
             if (elSyncTime && typeof DATA !== 'undefined' && DATA && DATA.meta && DATA.meta.updated_at) {
@@ -4301,12 +4301,13 @@ function startHourlyAutoRefresh() {
                 }
             }
         } catch(e) {}
-                const now = new Date();
+        
+        const now = new Date();
         const currentMins = now.getMinutes();
         const currentSecs = now.getSeconds();
         const currentMs = now.getMilliseconds();
         
-        // Proximo ciclo de 15 minutos (0, 15, 30, 45)
+        // Proximo ciclo de 15 minutos (00, 15, 30, 45)
         const minsMod15 = currentMins % 15;
         const msInto15 = (minsMod15 * 60 + currentSecs) * 1000 + currentMs;
         const msUntilNext15 = Math.max(1000, (15 * 60 * 1000) - msInto15);
@@ -4319,11 +4320,10 @@ function startHourlyAutoRefresh() {
         const tickEl = document.getElementById('live-tick-status');
         if (tickEl) {
             tickEl.innerHTML = `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--emerald); margin-right:4px"></span>Auto-refresh a cada 15 min (${next15Fmt} · em ${minsRemaining} min)`;
-        } · em ${minsRemaining} min)`;
         }
 
         window._hourlyTimer = setTimeout(async () => {
-            console.log("[AO VIVO] Hora cheia atingida. Sincronizando dados...");
+            console.log("[AO VIVO] Ciclo de 15 min atingido. Sincronizando dados...");
             try {
                 const res = await fetch('/api/atualizar', { method: 'POST' });
                 if (res.ok) {
@@ -4332,27 +4332,17 @@ function startHourlyAutoRefresh() {
                 }
             } catch(e) {}
             window.location.reload();
-        }, msUntilNextHour + 1000);
+        }, msUntilNext15 + 1000);
     }
 
     updateClockAndSchedule();
     
     window._minuteTickInterval = setInterval(() => {
-        const now = new Date();
-        const msIntoHour = (now.getMinutes() * 60 + now.getSeconds()) * 1000 + now.getMilliseconds();
-        const msUntilNextHour = Math.max(1000, 3600000 - msIntoHour);
-        const nextHour = new Date(now.getTime() + msUntilNextHour);
-        const pad = n => n < 10 ? '0' + n : n;
-        const nextHourFmt = `${pad(nextHour.getHours())}:00`;
-        const minsRemaining = Math.max(1, Math.round(msUntilNextHour / 60000));
-        const tickEl = document.getElementById('live-tick-status');
-        if (tickEl) {
-            tickEl.innerHTML = `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--emerald); margin-right:4px"></span>Auto-refresh na hora cheia (${nextHourFmt} · em ${minsRemaining} min)`;
-        }
+        updateClockAndSchedule();
         if (window._lastLiveBaseStudents) {
             drawLiveMonitor(window._lastLiveBaseStudents, true);
         }
-    }, 60000);
+    }, 30000);
 }
 
 function getDashboardUpdateTime(allEvts) {
