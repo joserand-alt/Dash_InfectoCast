@@ -1293,7 +1293,7 @@ option {
 
       <div class="hud-status-badge" style="padding:4px 8px; font-size:9.5px;" title="Atualização automática programada a cada hora cheia (:00)">
         <span class="hud-live-dot" style="background:#10b981;"></span>
-        <span id="hud-hourly-sync-label">SYNC: A CADA HORA (:00)</span>
+        <span id="hud-hourly-sync-label">SYNC: A CADA 15 MIN</span>
       </div>
       
       <div class="hud-clock-box" style="padding:4px 8px; font-size:10px;" title="Última sincronização completa das APIs">
@@ -4301,18 +4301,25 @@ function startHourlyAutoRefresh() {
                 }
             }
         } catch(e) {}
-        const now = new Date();
-        const msIntoHour = (now.getMinutes() * 60 + now.getSeconds()) * 1000 + now.getMilliseconds();
-        const msUntilNextHour = Math.max(1000, 3600000 - msIntoHour);
+                const now = new Date();
+        const currentMins = now.getMinutes();
+        const currentSecs = now.getSeconds();
+        const currentMs = now.getMilliseconds();
         
-        const nextHour = new Date(now.getTime() + msUntilNextHour);
+        // Proximo ciclo de 15 minutos (0, 15, 30, 45)
+        const minsMod15 = currentMins % 15;
+        const msInto15 = (minsMod15 * 60 + currentSecs) * 1000 + currentMs;
+        const msUntilNext15 = Math.max(1000, (15 * 60 * 1000) - msInto15);
+        
+        const next15Date = new Date(now.getTime() + msUntilNext15);
         const pad = n => n < 10 ? '0' + n : n;
-        const nextHourFmt = `${pad(nextHour.getHours())}:00`;
-        const minsRemaining = Math.max(1, Math.round(msUntilNextHour / 60000));
+        const next15Fmt = `${pad(next15Date.getHours())}:${pad(next15Date.getMinutes())}`;
+        const minsRemaining = Math.max(1, Math.round(msUntilNext15 / 60000));
         
         const tickEl = document.getElementById('live-tick-status');
         if (tickEl) {
-            tickEl.innerHTML = `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--emerald); margin-right:4px"></span>Auto-refresh na hora cheia (${nextHourFmt} · em ${minsRemaining} min)`;
+            tickEl.innerHTML = `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--emerald); margin-right:4px"></span>Auto-refresh a cada 15 min (${next15Fmt} · em ${minsRemaining} min)`;
+        } · em ${minsRemaining} min)`;
         }
 
         window._hourlyTimer = setTimeout(async () => {
@@ -5211,8 +5218,11 @@ function isPosPos(v) {
 function parseDateUniversal(dStr) {
     if (!dStr) return null;
     if (dStr instanceof Date) return isNaN(dStr.getTime()) ? null : dStr;
-    const s = String(dStr).trim();
+    let s = String(dStr).trim();
     if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+        if (s.includes('T') && !s.endsWith('Z') && !/[+-]\d{2}:?\d{2}$/.test(s)) {
+            s = s + 'Z';
+        }
         const dt = new Date(s.replace(' ', 'T'));
         if (!isNaN(dt.getTime())) return dt;
     }
@@ -7485,7 +7495,7 @@ function showSyncOnlineModal() {
                 <div style="background:#141b27; border-radius:8px; padding:12px 14px; margin-bottom:16px; border:1px solid #1e293b;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
                         <span style="color:#94a3b8; font-size:12px;">⏰ Frequência de Atualização:</span>
-                        <strong style="color:#f1f5f9;">De hora em hora (hora cheia)</strong>
+                        <strong style="color:#f1f5f9;">A cada 15 minutos (:00, :15, :30, :45)</strong>
                     </div>
                     <div style="display:flex; justify-content:space-between;">
                         <span style="color:#94a3b8; font-size:12px;">📅 Última sincronização:</span>
@@ -7522,7 +7532,36 @@ function syncLiveApiManual() {
     showSyncOnlineModal();
 }
 
-function triggerLiveSync() {
+async function triggerLiveSync() {
+    const btn = document.getElementById('btn-sync-live');
+    const originalHtml = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.innerHTML = `<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#00f0ff; animation:pulse 1s infinite;"></span> <span>Consultando APIs...</span>`;
+        btn.style.opacity = '0.7';
+    }
+
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
+        const resp = await fetch('http://localhost:8085/api/atualizar', {
+            method: 'POST',
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        if (resp.ok) {
+            if (btn) btn.innerHTML = `<span>🟢</span> <span>Atualizado! Recarregando...</span>`;
+            setTimeout(() => window.location.reload(true), 800);
+            return;
+        }
+    } catch (e) {
+        // Sem backend local ou remoto -> abre o modal informativo com trigger do GitHub
+    } finally {
+        if (btn) {
+            btn.innerHTML = originalHtml;
+            btn.style.opacity = '1';
+        }
+    }
+
     showSyncOnlineModal();
 }
 

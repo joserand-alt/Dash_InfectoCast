@@ -1,9 +1,9 @@
-name: Sincronizacao Automatica das APIs & Deploy no GitHub Pages
+﻿name: Sincronizacao Automatica das APIs & Deploy no GitHub Pages
 
 on:
   schedule:
     # Executa automaticamente de hora em hora em ponto (24h/7d na nuvem)
-    - cron: '0 * * * *'
+    - cron: '*/15 * * * *'
   push:
     branches: [ main ]
   workflow_dispatch:
@@ -76,3 +76,4 @@ jobs:
       - name: Publicar no GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+

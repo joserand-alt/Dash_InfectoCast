@@ -1,4 +1,4 @@
-import urllib.request
+﻿import urllib.request
 import ssl
 import json
 import os
@@ -28,6 +28,19 @@ def normalize_text(s):
     if not s: return ""
     s = str(s).strip().upper()
     return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
+
+def parse_utc_to_brt(dt_str):
+    if not dt_str:
+        return pd.NaT
+    try:
+        dt = pd.to_datetime(dt_str, errors='coerce')
+        if pd.isna(dt):
+            return pd.NaT
+        if dt.tzinfo is None:
+            dt = dt.tz_localize('UTC')
+        return dt.tz_convert('America/Sao_Paulo').tz_localize(None)
+    except Exception:
+        return pd.to_datetime(dt_str, errors='coerce')
 
 def canonicalize_cativa_curso(cname):
     norm = normalize_text(cname)
@@ -189,7 +202,7 @@ def get_cativa_telemetry_logs():
         last_login = meta.get('last_login_at')
         if last_login:
             logs.append({
-                'Data log': pd.to_datetime(last_login, errors='coerce'),
+                'Data log': parse_utc_to_brt(last_login),
                 'Nome aluno': nome,
                 'E-mail': em,
                 'Ação / Local': 'Login Plataforma Cativa',
@@ -210,7 +223,7 @@ def get_cativa_telemetry_logs():
                     les_name = str(l.get('lessonName') or 'Aula Cativa').strip()
                     les_id = str(l.get('lessonId') or '')
                     logs.append({
-                        'Data log': pd.to_datetime(w_at, errors='coerce'),
+                        'Data log': parse_utc_to_brt(w_at),
                         'Nome aluno': nome,
                         'E-mail': em,
                         'Ação / Local': 'Assistiu Aula (Cativa)',
@@ -287,3 +300,4 @@ if __name__ == '__main__':
     print(f"Total Cursos Curriculo Cativa: {len(curric)}")
     for c, mods in curric.items():
         print(f"  - {c}: {len(mods)} módulos")
+

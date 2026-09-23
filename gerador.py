@@ -2366,7 +2366,7 @@ def main():
     # Carregar Analytics e Leads do RD Station Conversas (WhatsApp Oficial)
     try:
         from rd_conversas_service import get_rd_conversas_data
-        rd_conversas_data = get_rd_conversas_data(force_refresh=False, cativa_students=students)
+        rd_conversas_data = get_rd_conversas_data(force_refresh=True, cativa_students=students)
         print(f"[RD CONVERSAS] Dados carregados com sucesso: {rd_conversas_data.get('total_contatos', 0)} contatos ({rd_conversas_data.get('total_convertidos', 0)} vendas convertidas, {rd_conversas_data.get('total_suporte', 0)} suporte).")
     except Exception as e:
         print(f"[RD CONVERSAS] Aviso ao carregar dados do RD Conversas: {e}")
