@@ -293,5 +293,96 @@ def register_matricula_event(email, nome=None, curso=None, valor=None, gateway='
             "event_error": str(e)
         }
 
+def register_matricula_pendente_event(email, nome=None, curso=None, data_inscricao=None, plataforma='Academy', tags_adicionais=None):
+    """
+    Registra um evento oficial de Matrícula Pendente no RD Station e aplica as tags do curso e de matrícula pendente:
+    - #matricula-pendente
+    - #pos-graduacao OU #curso-livre (Tipo de curso)
+    - Tag do Curso Específico (ex: #pos-ccih, #sos-antibiotico)
+    - Dispara evento CDP conversion_identifier: "matricula_pendente_infectocast"
+    """
+    if not email or "@" not in email:
+        raise ValueError("E-mail do lead/aluno é obrigatório.")
+
+    clean_email = email.strip().lower()
+    
+    # 1. Montagem das Tags Padronizadas
+    tags = ["matricula-pendente"]
+    
+    # Adicionar tags de Tipo de Curso e Curso Específico
+    course_tags = classify_course_tags(curso)
+    tags.extend(course_tags)
+
+    if plataforma:
+        tags.append(slugify_tag(plataforma, prefix="origem"))
+    if tags_adicionais:
+        if isinstance(tags_adicionais, str):
+            tags_adicionais = [tags_adicionais]
+        tags.extend([t.strip() for t in tags_adicionais if t and t.strip()])
+    
+    seen = set()
+    tags = [t for t in tags if not (t in seen or seen.add(t))]
+
+    # 2. Aplicação DIRETA das tags no Lead/Contato do RD Station
+    tag_result = upsert_contact_tags(clean_email, tags, nome=nome)
+
+    # 3. Disparo do Evento de Conversão oficial para a linha do tempo do RD Station
+    token = get_access_token()
+    payload_data = {
+        "conversion_identifier": "matricula_pendente_infectocast",
+        "email": clean_email,
+        "tags": tags
+    }
+    if nome:
+        payload_data["name"] = nome.strip()
+    if curso:
+        payload_data["cf_curso_matriculado"] = curso
+        payload_data["cf_produto_adquirido"] = curso
+        payload_data["cf_tipo_curso"] = "Pós-Graduação" if "pos-graduacao" in tags else "Curso Livre"
+        payload_data["cf_status_matricula"] = "Pendente"
+    if data_inscricao:
+        payload_data["cf_data_inscricao"] = str(data_inscricao)
+    if plataforma:
+        payload_data["cf_plataforma_origem"] = plataforma
+
+    event_body = {
+        "event_type": "CONVERSION",
+        "event_family": "CDP",
+        "payload": payload_data
+    }
+
+    url = "https://api.rd.services/platform/events"
+    data = json.dumps(event_body).encode('utf-8')
+    req = urllib.request.Request(
+        url,
+        data=data,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        method="POST"
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=12) as response:
+            res_body = response.read().decode('utf-8')
+            logger.info(f"✅ Evento de Matrícula Pendente disparado com sucesso para {clean_email}! Tags: {tags}")
+            return {
+                "status": "success",
+                "code": response.status,
+                "tags_applied": tags,
+                "tag_result": tag_result,
+                "event_data": json.loads(res_body) if res_body else {}
+            }
+    except Exception as e:
+        logger.warning(f"Aviso no evento de conversão pendente para {clean_email}: {e}. Tagging direto status: {tag_result}")
+        return {
+            "status": "partial",
+            "tags_applied": tags,
+            "tag_result": tag_result,
+            "event_error": str(e)
+        }
+
 if __name__ == '__main__':
-    print("Módulo RD Service atualizado com suporte a Tipo de Curso e Curso Específico.")
+    print("Módulo RD Service atualizado com suporte a Matrículas Confirmadas e Pendentes.")
