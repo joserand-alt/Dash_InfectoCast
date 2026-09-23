@@ -5210,17 +5210,25 @@ function parseDateUniversal(dStr) {
     if (dStr instanceof Date) return isNaN(dStr.getTime()) ? null : dStr;
     let s = String(dStr).trim();
     if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
-        if (s.includes('T') && !s.endsWith('Z') && !/[+-]\d{2}:?\d{2}$/.test(s)) {
-            s = s + 'Z';
+        const [dPart, tPart] = s.split(/[ T]/);
+        const [y, m, d] = dPart.split('-').map(Number);
+        let h = 0, min = 0, sec = 0;
+        if (tPart) {
+            const cleanT = tPart.replace('Z', '').split(/[+-]/)[0];
+            const t = cleanT.split(':').map(Number);
+            h = t[0] || 0; min = t[1] || 0; sec = t[2] || 0;
         }
-        const dt = new Date(s.replace(' ', 'T'));
-        if (!isNaN(dt.getTime())) return dt;
+        return new Date(y, m - 1, d, h, min, sec);
     }
     if (/^\d{2}\/\d{2}\/\d{4}/.test(s)) {
-        const parts = s.split(' ')[0].split('/');
-        const timePart = s.split(' ')[1] || '00:00:00';
-        const dt = new Date(`${parts[2]}-${parts[1]}-${parts[0]}T${timePart}`);
-        if (!isNaN(dt.getTime())) return dt;
+        const [dPart, tPart] = s.split(' ');
+        const [d, m, y] = dPart.split('/').map(Number);
+        let h = 0, min = 0, sec = 0;
+        if (tPart) {
+            const t = tPart.split(':').map(Number);
+            h = t[0] || 0; min = t[1] || 0; sec = t[2] || 0;
+        }
+        return new Date(y, m - 1, d, h, min, sec);
     }
     const dt = new Date(s);
     return isNaN(dt.getTime()) ? null : dt;
@@ -5288,7 +5296,7 @@ function getMatriculasAuditoriaData() {
     });
 
     const now = new Date();
-    const t24h = new Date(now.getTime() - 24 * 3600 * 1000);
+    const t48h = new Date(now.getTime() - 48 * 3600 * 1000);
     const t30d = new Date(now.getTime() - 30 * 24 * 3600 * 1000);
 
     const validStudents = rawStudents.filter(s => !isInvalidOrInternal(s));
@@ -5317,8 +5325,12 @@ function getMatriculasAuditoriaData() {
 
             if (effDate && effDate <= now) {
                 const pad = n => n < 10 ? '0' + n : n;
-                const dtFmt = pad(effDate.getDate()) + '/' + pad(effDate.getMonth()+1) + '/' + effDate.getFullYear() + ' ' + pad(effDate.getHours()) + ':' + pad(effDate.getMinutes());
+                const dtFmt = pad(effDate.getDate()) + '/' + pad(effDate.getMonth()+1) + '/' + effDate.getFullYear() + (effDate.getHours() === 0 && effDate.getMinutes() === 0 ? '' : ' ' + pad(effDate.getHours()) + ':' + pad(effDate.getMinutes()));
                 
+                const diffMs = now.getTime() - effDate.getTime();
+                const is48h = (diffMs <= 48 * 3600 * 1000) || (effDate.getHours() === 0 && diffMs <= 72 * 3600 * 1000 && diffMs >= -3600000);
+                const is30d = (diffMs <= 30 * 24 * 3600 * 1000);
+
                 matriculasConfirmadas.push({
                     nome: nm || 'Aluno',
                     email: em,
@@ -5330,8 +5342,9 @@ function getMatriculasAuditoriaData() {
                     tipo: 'confirmada',
                     origem_label: 'Matrícula Confirmada',
                     valor: firstPaid.valor,
-                    is_24h: ((now.getTime() - effDate.getTime() <= 48 * 3600 * 1000) || (effDate.getHours() === 0 && now.getTime() - effDate.getTime() <= 72 * 3600 * 1000 && now.getTime() - effDate.getTime() >= 0)),
-                    is_30d: effDate >= t30d
+                    is_48h: is48h,
+                    is_24h: is48h,
+                    is_30d: is30d
                 });
             }
         } else {
@@ -5360,14 +5373,14 @@ function getMatriculasAuditoriaData() {
             if (isPendente) {
                 const rawInscStr = s.data_insc || s.data_inscricao || s.data_matricula || s.first;
                 const dtInsc = parseDateUniversal(rawInscStr);
-                // Se a data original não continha hora, assumir fim do dia (23:59:59)
-                if (dtInsc && rawInscStr && !/\d{2}:\d{2}/.test(String(rawInscStr))) {
-                    dtInsc.setHours(23, 59, 59, 999);
-                }
                 if (dtInsc && dtInsc <= now) {
                     const pad = n => n < 10 ? '0' + n : n;
-                    const dtFmt = pad(dtInsc.getDate()) + '/' + pad(dtInsc.getMonth()+1) + '/' + dtInsc.getFullYear() + ' ' + pad(dtInsc.getHours()) + ':' + pad(dtInsc.getMinutes());
+                    const dtFmt = pad(dtInsc.getDate()) + '/' + pad(dtInsc.getMonth()+1) + '/' + dtInsc.getFullYear() + (dtInsc.getHours() === 0 && dtInsc.getMinutes() === 0 ? '' : ' ' + pad(dtInsc.getHours()) + ':' + pad(dtInsc.getMinutes()));
                     
+                    const diffMs = now.getTime() - dtInsc.getTime();
+                    const is48h = (diffMs <= 48 * 3600 * 1000) || (dtInsc.getHours() === 0 && diffMs <= 72 * 3600 * 1000 && diffMs >= -3600000);
+                    const is30d = (diffMs <= 30 * 24 * 3600 * 1000);
+
                     matriculasPendentes.push({
                         nome: nm || 'Lead / Inscrição',
                         email: em,
@@ -5380,8 +5393,9 @@ function getMatriculasAuditoriaData() {
                         origem_label: 'Matrícula Pendente (Aguardando Pagamento)',
                         valor: 0,
                         aulas_feitas: Number(s.aulas_feitas || 0),
-                        is_24h: ((now.getTime() - dtInsc.getTime() <= 48 * 3600 * 1000) || (dtInsc.getHours() === 0 && now.getTime() - dtInsc.getTime() <= 72 * 3600 * 1000 && now.getTime() - dtInsc.getTime() >= 0)),
-                        is_30d: dtInsc >= t30d
+                        is_48h: is48h,
+                        is_24h: is48h,
+                        is_30d: is30d
                     });
                 }
             }
@@ -5391,23 +5405,27 @@ function getMatriculasAuditoriaData() {
     matriculasConfirmadas.sort((a, b) => b.data - a.data);
     matriculasPendentes.sort((a, b) => b.data - a.data);
 
-    const list24h = matriculasConfirmadas.filter(m => m.is_24h);
+    const list48h = matriculasConfirmadas.filter(m => m.is_48h);
     const list30d = matriculasConfirmadas.filter(m => m.is_30d);
 
-    const pendentes24h = matriculasPendentes.filter(m => m.is_24h);
+    const pendentes48h = matriculasPendentes.filter(m => m.is_48h);
     const pendentes30d = matriculasPendentes.filter(m => m.is_30d);
 
     return {
-        count24h: list24h.length,
+        count48h: list48h.length,
+        count24h: list48h.length,
         count30d: list30d.length,
         totalConfirmadas: matriculasConfirmadas.length,
-        countPendentes24h: pendentes24h.length,
+        countPendentes48h: pendentes48h.length,
+        countPendentes24h: pendentes48h.length,
         countPendentes30d: pendentes30d.length,
         totalPendentes: matriculasPendentes.length,
-        list24h,
+        list48h,
+        list24h: list48h,
         list30d,
         allRecords: matriculasConfirmadas,
-        pendentes24h,
+        pendentes48h,
+        pendentes24h: pendentes48h,
         pendentes30d,
         allPendentes: matriculasPendentes
     };
@@ -5917,7 +5935,7 @@ function drawExecView(force) {
             const d = parseDateUniversal(dtStr);
             if (d) {
                 const val = Number(f.valor) || 0;
-                if ((nowRef.getTime() - d.getTime() <= 24 * 3600 * 1000) || (d.getHours() === 0 && nowRef.getTime() - d.getTime() <= 48 * 3600 * 1000 && nowRef.getTime() - d.getTime() >= 0)) rec48h += val;
+                if ((nowRef.getTime() - d.getTime() <= 48 * 3600 * 1000) || (d.getHours() === 0 && nowRef.getTime() - d.getTime() <= 72 * 3600 * 1000 && nowRef.getTime() - d.getTime() >= -3600000)) rec48h += val;
                 if (d >= t30dRef) rec30d += val;
             }
         }
