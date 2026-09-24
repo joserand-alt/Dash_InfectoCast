@@ -1301,13 +1301,13 @@
         "email": "",
         "cnpj": ""
       },
-      "_id": "6aa2ef0e4337cad2add12a2b",
-      "full_name": "Beatriz Pascuotte",
-      "cel_phone": "5519996348485",
-      "email": "beatrizpascuotte@gmail.com",
+      "_id": "6aa2ef0e4337cad2add12a30",
+      "full_name": "Edson Spânghero Dalur",
+      "cel_phone": "5513981136953",
+      "email": "esdalur@gmail.com",
       "code": null,
       "customizable_field": [],
-      "id": "6aa2ef0e4337cad2add12a2b"
+      "id": "6aa2ef0e4337cad2add12a30"
     },
     {
       "address": {
@@ -11358,6 +11358,34 @@
       "customizable_field": [],
       "code": null,
       "id": "6ab564806d2fc73e80bccf04"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6ab56cb3ab8229666b7a954a",
+      "cel_phone": "5521974821661",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Darlan",
+      "id": "6ab56cb3ab8229666b7a954a"
     }
   ],
   "employees": [
@@ -11382,5 +11410,5 @@
       "email": "klinger@infectocast.com.br"
     }
   ],
-  "cached_at": "2026-09-24 15:11:58"
+  "cached_at": "2026-09-24 15:42:14"
 }
