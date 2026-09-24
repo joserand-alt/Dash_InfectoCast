@@ -347,7 +347,7 @@ def main():
             return normalize_curso('DO FUNGO AO ANTIFUNGICO')
         if any(k in t_norm for k in ['MULTI-R', 'MULTIR', 'MULTI R']):
             return normalize_curso('JORNADA MULTI-R')
-        if any(k in t_norm for k in ['S.O.S', 'SOS', 'ANTIBIOTICO', 'ATB', 'MDR', 'ESBL', 'KPC', 'ACINETOBACTER', 'PSEUDOMONAS', 'VANCOMICINA', 'SINUSITE', 'PNEUMONIA', 'IVAS', 'SEPSE', 'MENINGITE']):
+        if any(k in t_norm for k in ['S.O.S ANTIBIOTICO', 'S.O.S. ANTIBIOTICO', 'SOS ANTIBIOTICO', 'SOS ANTIBIOTICOS', 'SOS ATB', 'S.O.S - ANTIBIOTICO', 'SOS - ANTIBIOTICO']):
             return normalize_curso('S.O.S ANTIBIOTICO')
         if any(k in t_norm for k in ['FERRAMENTAS', 'QUALIDADE', 'ISHIKAWA', 'PDCA', 'SIPOC']):
             return normalize_curso('FERRAMENTAS DE QUALIDADE')
@@ -2321,8 +2321,60 @@ def main():
         em_clean = str(s.get('email', '')).lower().strip()
         cur_raw = str(s.get('curso', '')).strip().upper()
         
+        # PRIORIDADE 1 ABSOLUTA: Financeiro Vindi (Plano de Pós-Graduação contratado)
+        v_plano = ''
+        if s.get('vindi') and isinstance(s['vindi'], dict):
+            v_plano = s['vindi'].get('plano', '')
+        elif 'vindi_map' in locals() and em_clean in vindi_map:
+            v_plano = vindi_map[em_clean].get('plano', '')
+            
+        c_from_v = canonicalize_curso(v_plano, em_clean) if v_plano else None
+        if c_from_v and c_from_v != normalize_curso('PLATAFORMA GERAL'):
+            s['curso'] = c_from_v
+            s['curso_inferido'] = False
+            s['curso_origem'] = 'Plano Vindi'
+            continue
+
+        # PRIORIDADE 2 ABSOLUTA: Financeiro Asaas (Plano de Pós-Graduação contratado)
+        if s.get('asaas') and isinstance(s['asaas'], dict):
+            a_data = s['asaas']
+            fats = a_data.get('faturas', [])
+            fat_val = fats[0].get('valor') if fats else 0
+            desc = fats[0].get('description') if fats else ''
+            m_tot = re.search(r'R\$\s*([\d\.,]+)', str(desc))
+            tot_val = 0
+            if m_tot:
+                try:
+                    tot_val = float(m_tot.group(1).replace('.', '').replace(',', '.'))
+                except:
+                    pass
+            c_from_asaas = infer_course_from_price_and_desc(fat_val, tot_val, desc or a_data.get('curso'))
+            if c_from_asaas and c_from_asaas != normalize_curso('PLATAFORMA GERAL'):
+                s['curso'] = c_from_asaas
+                s['curso_inferido'] = False
+                s['curso_origem'] = 'Asaas'
+                continue
+
+        # PRIORIDADE 3: RD Station Tags / Histórico
+        if 'rd_tagged_courses' in locals() and em_clean in rd_tagged_courses:
+            c_from_rd = canonicalize_curso(rd_tagged_courses[em_clean], em_clean)
+            if c_from_rd and c_from_rd != normalize_curso('PLATAFORMA GERAL'):
+                s['curso'] = c_from_rd
+                s['curso_inferido'] = False
+                s['curso_origem'] = 'RD Station (Tag)'
+                continue
+                
+        if 'rd_course_hints' in locals() and em_clean in rd_course_hints:
+            c_from_hints = canonicalize_curso(rd_course_hints[em_clean], em_clean)
+            if c_from_hints and c_from_hints != normalize_curso('PLATAFORMA GERAL'):
+                s['curso'] = c_from_hints
+                s['curso_inferido'] = False
+                s['curso_origem'] = 'RD Station (Histórico)'
+                continue
+
+        # Se não tem curso ou está como PLATAFORMA GERAL ou SOS sem confirmação financeira
         if cur_raw in ['PLATAFORMA GERAL', '', 'SEM CURSO', 'NONE', 'NAN']:
-            # PRIORIDADE 1: Logs de aulas da Academy e Cativa (DataFrame + Eventos)
+            # PRIORIDADE 4: Logs de aulas da Academy e Cativa (DataFrame + Eventos)
             c_from_logs = infer_course_from_logs_df(logs_by_email.get(em_clean))
             if not c_from_logs and s.get('events'):
                 ev_str = " ".join([str(e.get('descricao', '') if isinstance(e, dict) else e) for e in s.get('events', [])])
@@ -2333,57 +2385,6 @@ def main():
                 s['curso_inferido'] = True
                 s['curso_origem'] = 'Logs de Aulas'
                 continue
-
-            # PRIORIDADE 2: Financeiro Asaas
-            if s.get('asaas') and isinstance(s['asaas'], dict):
-                a_data = s['asaas']
-                fats = a_data.get('faturas', [])
-                fat_val = fats[0].get('valor') if fats else 0
-                desc = fats[0].get('description') if fats else ''
-                m_tot = re.search(r'R\$\s*([\d\.,]+)', str(desc))
-                tot_val = 0
-                if m_tot:
-                    try:
-                        tot_val = float(m_tot.group(1).replace('.', '').replace(',', '.'))
-                    except:
-                        pass
-                c_from_asaas = infer_course_from_price_and_desc(fat_val, tot_val, desc or a_data.get('curso'))
-                if c_from_asaas and c_from_asaas != normalize_curso('PLATAFORMA GERAL'):
-                    s['curso'] = c_from_asaas
-                    s['curso_inferido'] = True
-                    s['curso_origem'] = 'Asaas'
-                    continue
-
-            # PRIORIDADE 3: Financeiro Vindi
-            v_plano = ''
-            if s.get('vindi') and isinstance(s['vindi'], dict):
-                v_plano = s['vindi'].get('plano', '')
-            elif 'vindi_map' in locals() and em_clean in vindi_map:
-                v_plano = vindi_map[em_clean].get('plano', '')
-                
-            c_from_v = canonicalize_curso(v_plano, em_clean)
-            if c_from_v and c_from_v != normalize_curso('PLATAFORMA GERAL'):
-                s['curso'] = c_from_v
-                s['curso_inferido'] = True
-                s['curso_origem'] = 'Plano Vindi'
-                continue
-
-            # PRIORIDADE 4: RD Station
-            if 'rd_tagged_courses' in locals() and em_clean in rd_tagged_courses:
-                c_from_rd = canonicalize_curso(rd_tagged_courses[em_clean], em_clean)
-                if c_from_rd and c_from_rd != normalize_curso('PLATAFORMA GERAL'):
-                    s['curso'] = c_from_rd
-                    s['curso_inferido'] = True
-                    s['curso_origem'] = 'RD Station (Tag)'
-                    continue
-                    
-            if 'rd_course_hints' in locals() and em_clean in rd_course_hints:
-                c_from_hints = canonicalize_curso(rd_course_hints[em_clean], em_clean)
-                if c_from_hints and c_from_hints != normalize_curso('PLATAFORMA GERAL'):
-                    s['curso'] = c_from_hints
-                    s['curso_inferido'] = True
-                    s['curso_origem'] = 'RD Station (Histórico)'
-                    continue
 
             # FALLBACK ABSOLUTO: Nenhum aluno pode ter PLATAFORMA GERAL
             c_fallback = canonicalize_curso(s.get('turma') or s.get('modulo') or s.get('plataforma'), em_clean)

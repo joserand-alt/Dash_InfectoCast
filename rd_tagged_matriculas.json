@@ -22456,5 +22456,23 @@
       "gateway-cativa-digital",
       "cativa-digital"
     ]
+  },
+  "luis_laganaro@hotmail.com|sos-antibiotico": {
+    "email": "luis_laganaro@hotmail.com",
+    "nome": "Luis Felipe",
+    "curso": "S.O.S ANTIBIOTICO",
+    "origem": "Asaas",
+    "data_matricula": "24/09/2026",
+    "status": "success",
+    "data_tagueamento": "2026-09-24 16:01:14",
+    "tags_aplicadas": [
+      "aluno-ativo",
+      "aluno-matriculado",
+      "academy-pago",
+      "curso-livre",
+      "sos-antibiotico",
+      "gateway-asaas",
+      "asaas-pago"
+    ]
   }
 }
