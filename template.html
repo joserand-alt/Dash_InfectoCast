@@ -8963,8 +8963,10 @@ function drawCursoView(courseName, force) {
     const now = new Date();
     const t30d = new Date(now.getTime() - 30 * 24 * 3600 * 1000);
     const t60d = new Date(now.getTime() - 60 * 24 * 3600 * 1000);
-    let matriculas30d = 0;
-    let matriculas30dAnt = 0;
+    let matriculas30dConf = 0;
+    let matriculas30dPend = 0;
+    let matriculas30dAntConf = 0;
+    let matriculas30dAntPend = 0;
     const enrollMonthlyMap = {};
 
     const parseEnrollDate = (s) => {
@@ -8989,30 +8991,41 @@ function drawCursoView(courseName, force) {
 
     cStudents.forEach(s => {
         const dt = parseEnrollDate(s);
+        const isPend = !!(s.is_matricula_pendente || s.status === 'Matrícula Pendente');
         if (dt && !isNaN(dt.getTime())) {
             const ym = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0');
-            enrollMonthlyMap[ym] = (enrollMonthlyMap[ym] || 0) + 1;
+            if (!isPend) {
+                enrollMonthlyMap[ym] = (enrollMonthlyMap[ym] || 0) + 1;
+            }
 
             // Janela D-30 a Hoje (com tolerância D+1 para fuso horário e execuções no mesmo dia)
             if (dt >= t30d && dt <= new Date(now.getTime() + 24 * 3600 * 1000)) {
-                matriculas30d++;
+                if (isPend) {
+                    matriculas30dPend++;
+                } else {
+                    matriculas30dConf++;
+                }
             } else if (dt >= t60d && dt < t30d) {
-                matriculas30dAnt++;
+                if (isPend) {
+                    matriculas30dAntPend++;
+                } else {
+                    matriculas30dAntConf++;
+                }
             }
         }
     });
 
     let growthEnrollText = '+0.0%';
     let growthEnrollClass = 'pill-gray';
-    if (matriculas30dAnt > 0) {
-        const pct = ((matriculas30d - matriculas30dAnt) / matriculas30dAnt) * 100;
+    if (matriculas30dAntConf > 0) {
+        const pct = ((matriculas30dConf - matriculas30dAntConf) / matriculas30dAntConf) * 100;
         growthEnrollText = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '% vs 30d ant.';
         growthEnrollClass = pct >= 0 ? 'pill-green' : 'pill-red';
-    } else if (matriculas30d > 0) {
+    } else if (matriculas30dConf > 0) {
         growthEnrollText = '+100% vs 30d ant.';
         growthEnrollClass = 'pill-green';
     } else {
-        growthEnrollText = '0 matrículas 30d';
+        growthEnrollText = '0 confirmadas 30d';
     }
 
     // 6. Saúde, Engajamento & Retenção da Turma (Excluindo Matrículas Pendentes da base ativa)
@@ -9081,7 +9094,7 @@ function drawCursoView(courseName, force) {
             const lbl = (mesNomes[parseInt(mes, 10) - 1] || mes) + '/' + ano.slice(2);
 
             bars += `<rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="4" fill="var(--brand)" opacity="0.88">
-                <title>${lbl}: ${val} matrículas</title>
+                <title>${lbl}: ${val} matrículas confirmadas</title>
             </rect>`;
             bars += `<text x="${x + barW/2}" y="${Math.max(pad.t + 12, y - 5)}" font-size="10" font-weight="700" fill="var(--ink)" text-anchor="middle">${val}</text>`;
             labels += `<text x="${x + barW/2}" y="${H - 10}" font-size="9.5" fill="var(--muted)" text-anchor="middle">${lbl}</text>`;
@@ -9168,18 +9181,30 @@ function drawCursoView(courseName, force) {
     let filteredStudents = [...cStudents];
     let filterLabel = '';
 
-    if (kpiFilter === 'recent_30d') {
+    if (kpiFilter === 'recent_30d' || kpiFilter === 'recent_30d_conf') {
         filteredStudents = filteredStudents.filter(s => {
+            const isPend = !!(s.is_matricula_pendente || s.status === 'Matrícula Pendente');
+            if (isPend) return false;
             const d = parseEnrollDate(s);
             return d && d >= t30d && d <= new Date(now.getTime() + 24 * 3600 * 1000);
         });
-        filterLabel = 'Matrículas Recentes (Últimos 30 Dias)';
+        filterLabel = 'Matrículas Confirmadas / Efetivas (Últimos 30 Dias)';
+    } else if (kpiFilter === 'recent_30d_pend') {
+        filteredStudents = filteredStudents.filter(s => {
+            const isPend = !!(s.is_matricula_pendente || s.status === 'Matrícula Pendente');
+            if (!isPend) return false;
+            const d = parseEnrollDate(s);
+            return d && d >= t30d && d <= new Date(now.getTime() + 24 * 3600 * 1000);
+        });
+        filterLabel = 'Matrículas Pendentes (Últimos 30 Dias)';
     } else if (kpiFilter === 'prev_30d') {
         filteredStudents = filteredStudents.filter(s => {
+            const isPend = !!(s.is_matricula_pendente || s.status === 'Matrícula Pendente');
+            if (isPend) return false;
             const d = parseEnrollDate(s);
             return d && d >= t60d && d < t30d;
         });
-        filterLabel = 'Matrículas (30 Dias Anteriores - Base D-60 a D-31)';
+        filterLabel = 'Matrículas Confirmadas (30 Dias Anteriores - Base D-60 a D-31)';
     } else if (kpiFilter === 'vigentes') {
         filteredStudents = filteredStudents.filter(s => s.status !== 'Cancelado' && s.status !== 'Concluído' && !s.turma_encerrada);
         filterLabel = 'Matrículas Vigentes (Em Curso)';
@@ -9194,7 +9219,7 @@ function drawCursoView(courseName, force) {
         filterLabel = 'Alunos Inativos / Abandonaram';
     } else if (kpiFilter === 'pendente') {
         filteredStudents = filteredStudents.filter(s => s.is_matricula_pendente || s.status === 'Matrícula Pendente');
-        filterLabel = 'Matrículas Pendentes (Aguardando Pagamento / Sem Consumo de Aulas)';
+        filterLabel = 'Matrículas Pendentes Totais (Aguardando Pagamento / Sem Consumo de Aulas)';
     } else if (kpiFilter === 'atraso') {
         filteredStudents = filteredStudents.filter(s => {
             const vSt = (s.vindi ? (s.vindi.status_financeiro || s.vindi.status_assinatura) : '').toLowerCase();
@@ -9285,42 +9310,46 @@ function drawCursoView(courseName, force) {
         </div>
 
         <div style="display:grid; grid-template-columns: 360px 1fr; gap:16px; align-items:stretch;">
-                    <!-- KPIs de Matrícula -->
+          <!-- KPIs de Matrícula -->
           <div style="display:flex; flex-direction:column; gap:8px;">
+            <!-- Card 1: Confirmadas 30d -->
+            <div class="exec-card" onclick="filterCursoTableKpi('recent_30d_conf')" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === 'recent_30d' || kpiFilter === 'recent_30d_conf' ? 'border:2px solid #10b981; box-shadow:0 4px 14px rgba(16,185,129,0.15);' : ''}" title="Clique para filtrar apenas as matrículas confirmadas e pagas dos últimos 30 dias">
+              <div class="exec-card-top">
+                <span class="exec-card-label">Matrículas Confirmadas (30d)</span>
+                <span class="exec-pill ${kpiFilter === 'recent_30d' || kpiFilter === 'recent_30d_conf' ? 'pill-green' : growthEnrollClass}">${kpiFilter === 'recent_30d' || kpiFilter === 'recent_30d_conf' ? '● Filtrando Tabela' : '📅 PAGO / CONFIRMADO'}</span>
+              </div>
+              <div class="exec-card-val" style="color:#10b981;">${fN(matriculas30dConf)}</div>
+              <div class="exec-card-sub">Efetivas (D-30 a Hoje) • ${growthEnrollText}</div>
+            </div>
+
+            <!-- Card 2: Pendentes 30d -->
+            <div class="exec-card" onclick="filterCursoTableKpi('recent_30d_pend')" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === 'recent_30d_pend' ? 'border:2px solid #f59e0b; box-shadow:0 4px 14px rgba(245,158,11,0.15);' : ''}" title="Clique para filtrar apenas as matrículas pendentes dos últimos 30 dias">
+              <div class="exec-card-top">
+                <span class="exec-card-label">Matrículas Pendentes (30d)</span>
+                <span class="exec-pill ${kpiFilter === 'recent_30d_pend' ? 'pill-yellow' : 'pill-amber'}" style="${kpiFilter === 'recent_30d_pend' ? '' : 'background:rgba(245,158,11,0.12); color:#d97706; border:1px solid rgba(245,158,11,0.3);'}">${kpiFilter === 'recent_30d_pend' ? '● Filtrando Tabela' : '⏳ SEM PAGAMENTO/USO'}</span>
+              </div>
+              <div class="exec-card-val" style="color:#f59e0b;">${fN(matriculas30dPend)}</div>
+              <div class="exec-card-sub">Inscrições recentes aguardando confirmação / consumo</div>
+            </div>
+
+            <!-- Card 3: 30d Anteriores -->
+            <div class="exec-card" onclick="filterCursoTableKpi('prev_30d')" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === 'prev_30d' ? 'border:2px solid var(--brand); box-shadow:0 4px 14px rgba(0,240,255,0.15);' : ''}" title="Clique para filtrar apenas as matrículas confirmadas dos 30 dias anteriores na tabela">
+              <div class="exec-card-top">
+                <span class="exec-card-label">Matrículas (30d Anteriores)</span>
+                <span class="exec-pill ${kpiFilter === 'prev_30d' ? 'pill-blue' : 'pill-purple'}">${kpiFilter === 'prev_30d' ? '● Filtrando Tabela' : 'Base D-60 a D-31'}</span>
+              </div>
+              <div class="exec-card-val" style="color:var(--ink)">${fN(matriculas30dAntConf)}</div>
+              <div class="exec-card-sub">Período comparativo anterior (${fN(matriculas30dAntConf)} confirmadas)</div>
+            </div>
+
+            <!-- Card 4: Totais Acumuladas -->
             <div class="exec-card" onclick="filterCursoTableKpi(null)" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === null ? 'border:2px solid var(--brand); box-shadow:0 4px 14px rgba(0,240,255,0.15);' : ''}" title="Clique para ver todos os alunos">
               <div class="exec-card-top">
                 <span class="exec-card-label">Matrículas Totais Acumuladas</span>
                 <span class="exec-pill pill-blue">${kpiFilter === null ? '● Exibindo Todos' : 'Carteira Histórica'}</span>
               </div>
               <div class="exec-card-val" style="color:var(--brand)">${fN(totalMatriculas)}</div>
-              <div class="exec-card-sub">${fN(totalConfirmados)} confirmadas • ${fN(countPendentes)} pendentes</div>
-            </div>
-
-            <div class="exec-card" onclick="filterCursoTableKpi('recent_30d')" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === 'recent_30d' ? 'border:2px solid var(--brand); box-shadow:0 4px 14px rgba(0,240,255,0.15);' : ''}" title="Clique para filtrar apenas as matrículas recentes dos últimos 30 dias">
-              <div class="exec-card-top">
-                <span class="exec-card-label">Matrículas Recentes (30 Dias)</span>
-                <span class="exec-pill ${kpiFilter === 'recent_30d' ? 'pill-green' : growthEnrollClass}">${kpiFilter === 'recent_30d' ? '● Filtrando Tabela' : growthEnrollText}</span>
-              </div>
-              <div class="exec-card-val" style="color:var(--emerald-d)">${fN(matriculas30d)}</div>
-              <div class="exec-card-sub">Período recente (D-30 a Hoje) vs 30d ant.</div>
-            </div>
-
-            <div class="exec-card" onclick="filterCursoTableKpi('prev_30d')" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === 'prev_30d' ? 'border:2px solid var(--brand); box-shadow:0 4px 14px rgba(0,240,255,0.15);' : ''}" title="Clique para filtrar apenas as matrículas dos 30 dias anteriores na tabela">
-              <div class="exec-card-top">
-                <span class="exec-card-label">Matrículas (30 Dias Anteriores)</span>
-                <span class="exec-pill ${kpiFilter === 'prev_30d' ? 'pill-blue' : 'pill-purple'}">${kpiFilter === 'prev_30d' ? '● Filtrando Tabela' : 'Base D-60 a D-31'}</span>
-              </div>
-              <div class="exec-card-val" style="color:var(--ink)">${fN(matriculas30dAnt)}</div>
-              <div class="exec-card-sub">Período comparativo anterior (${fN(matriculas30dAnt)} entradas)</div>
-            </div>
-
-            <div class="exec-card" onclick="filterCursoTableKpi('pendente')" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === 'pendente' ? 'border:2px solid #d97706; box-shadow:0 4px 14px rgba(217,119,6,0.15);' : ''}" title="Clique para filtrar apenas os alunos com matrículas pendentes">
-              <div class="exec-card-top">
-                <span class="exec-card-label">Matrículas Pendentes</span>
-                <span class="exec-pill ${kpiFilter === 'pendente' ? 'pill-yellow' : (countPendentes > 0 ? 'pill-yellow' : 'pill-green')}">${kpiFilter === 'pendente' ? '● Filtrando Tabela' : (countPendentes > 0 ? 'Aguardando' : 'Nenhuma')}</span>
-              </div>
-              <div class="exec-card-val" style="color:#d97706">${fN(countPendentes)}</div>
-              <div class="exec-card-sub">Inscrições sem financeiro ou consumo (clique p/ listar)</div>
+              <div class="exec-card-sub">${fN(totalConfirmados)} confirmadas • ${fN(countPendentes)} pendentes no total</div>
             </div>
           </div>
 
