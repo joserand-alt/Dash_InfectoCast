@@ -161,6 +161,7 @@ def get_rd_conversas_data(force_refresh=False, cativa_students=None, vindi_subs=
     # Mapear a data da primeira fatura / matrícula de cada aluno
     student_first_date = {}
     student_course_map = {}
+    student_obj_map = {}
 
     for sub in v_subs_list:
         em = str(sub.get('customer_email') or '').strip().lower()
@@ -186,12 +187,26 @@ def get_rd_conversas_data(force_refresh=False, cativa_students=None, vindi_subs=
     for s in c_students:
         em = str(s.get('email', '')).strip().lower()
         raw_ph = re.sub(r'\D', '', str(s.get('celular') or s.get('telefone') or ''))
+        
+        # Obter data de matrícula do aluno consolidado
+        d_matr = parse_iso(s.get('data_insc') or s.get('data_inscricao') or s.get('data_matricula') or s.get('created_at'))
+        
         if em:
             cativa_emails[em] = s
+            student_obj_map[em] = s
+            if d_matr and (em not in student_first_date or d_matr < student_first_date[em]):
+                student_first_date[em] = d_matr
             if em not in student_course_map:
-                student_course_map[em] = s.get('curso_nome') or s.get('curso') or 'Aluno Cativa'
+                student_course_map[em] = s.get('curso') or s.get('curso_nome') or 'Aluno InfectoCast'
+                
         if len(raw_ph) >= 8:
             cativa_phones[raw_ph[-8:]] = s
+            cativa_phones[raw_ph] = s
+            if d_matr:
+                student_first_date[raw_ph[-8:]] = d_matr
+                student_first_date[raw_ph] = d_matr
+            if raw_ph[-8:] not in student_course_map:
+                student_course_map[raw_ph[-8:]] = s.get('curso') or s.get('curso_nome') or 'Aluno InfectoCast'
         
         courses = s.get('courses', [])
         for c in courses:
@@ -222,10 +237,15 @@ def get_rd_conversas_data(force_refresh=False, cativa_students=None, vindi_subs=
             except Exception:
                 pass
 
-        # Verificar se é aluno
+        # Verificar se é aluno (por e-mail ou telefone)
         match_s = cativa_emails.get(c_email) or (cativa_phones.get(c_phone[-8:]) if len(c_phone) >= 8 else None)
-        first_matr = student_first_date.get(c_email) or (match_s and parse_iso(match_s.get('data_matricula') or match_s.get('created_at')))
-        curso = student_course_map.get(c_email) or (match_s and (match_s.get('curso_nome') or match_s.get('curso'))) or ''
+        
+        # Obter data de matrícula
+        first_matr = student_first_date.get(c_email) or (cativa_phones.get(c_phone[-8:]) and student_first_date.get(c_phone[-8:]))
+        if not first_matr and match_s:
+            first_matr = parse_iso(match_s.get('data_insc') or match_s.get('data_inscricao') or match_s.get('data_matricula') or match_s.get('created_at'))
+            
+        curso = student_course_map.get(c_email) or (len(c_phone) >= 8 and student_course_map.get(c_phone[-8:])) or (match_s and (match_s.get('curso') or match_s.get('curso_nome'))) or ''
 
         # Buscar MRR
         v_sub = next((s for s in v_subs_list if str(s.get('customer_email', '')).lower() == c_email), None)
@@ -238,22 +258,36 @@ def get_rd_conversas_data(force_refresh=False, cativa_students=None, vindi_subs=
 
         is_student = bool(match_s or first_matr or v_sub or a_sub)
 
+        # Determinar datas do primeiro e do último contato
+        dt_primeiro = c_dt
+        dt_ultimo = c_dt
+        
+        if match_s:
+            wa_p = parse_iso(match_s.get('wa_dt_primeira'))
+            wa_u = parse_iso(match_s.get('wa_dt_ultima'))
+            if wa_p:
+                dt_primeiro = min(dt_primeiro, wa_p) if dt_primeiro else wa_p
+            if wa_u:
+                dt_ultimo = max(dt_ultimo, wa_u) if dt_ultimo else wa_u
+
         lead_obj = {
             "id": c_id,
             "nome": c_name,
             "email": c_email or "-",
             "telefone": c_phone,
             "telefone_fmt": f"({c_phone[:2]}) {c_phone[2:7]}-{c_phone[7:]}" if len(c_phone) == 11 else (f"({c_phone[:2]}) {c_phone[2:6]}-{c_phone[6:]}" if len(c_phone) == 10 else (c_phone if c_phone else "-")),
-            "wa_link": f"https://wa.me/55{c_phone}" if len(c_phone) >= 10 else None,
-            "data_contato": c_dt.strftime("%d/%m/%Y") if c_dt else "-",
+            "wa_link": f"https://wa.me/55{c_phone[-11:]}" if len(c_phone) >= 10 else None,
+            "data_contato": dt_primeiro.strftime("%d/%m/%Y") if dt_primeiro else "-",
+            "primeiro_contato": dt_primeiro.strftime("%d/%m/%Y") if dt_primeiro else "-",
+            "ultimo_contato": dt_ultimo.strftime("%d/%m/%Y") if dt_ultimo else (dt_primeiro.strftime("%d/%m/%Y") if dt_primeiro else "-"),
             "data_matricula": first_matr.strftime("%d/%m/%Y") if first_matr else "-",
-            "curso_matriculado": curso or ("Aluno Cativa" if is_student else "Oportunidade Comercial"),
+            "curso_matriculado": curso or ("Aluno InfectoCast" if is_student else "Oportunidade Comercial"),
             "mrr": sub_val
         }
 
         if is_student:
             # SE MATRÍCULA OCORREU ANTES DO CONTATO -> SUPORTE / PÓS-VENDA
-            if first_matr and c_dt and first_matr < (c_dt - datetime.timedelta(days=2)):
+            if first_matr and dt_primeiro and first_matr < (dt_primeiro - datetime.timedelta(days=2)):
                 lead_obj["tipo_canal"] = "suporte"
                 lead_obj["badge_label"] = "Suporte / Aluno Existente"
                 lead_obj["badge_color"] = "blue"
