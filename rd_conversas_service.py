@@ -287,32 +287,33 @@ def get_rd_conversas_data(force_refresh=False, cativa_students=None, vindi_subs=
         }
 
         if is_student:
-            # SE MATRÍCULA OCORREU ANTES DO CONTATO -> SUPORTE / PÓS-VENDA
+            # SE MATRÍCULA OCORREU ANTES DO CONTATO -> ALUNO NA BASE / PÓS-VENDA
             if first_matr and dt_primeiro and first_matr < (dt_primeiro - datetime.timedelta(days=2)):
                 lead_obj["tipo_canal"] = "suporte"
-                lead_obj["badge_label"] = "Suporte / Aluno Existente"
+                lead_obj["badge_label"] = "Aluno na Base / Pós-Venda"
                 lead_obj["badge_color"] = "blue"
                 leads_suporte_alunos.append(lead_obj)
                 mrr_suporte_base += sub_val
             else:
-                # CONTATO OCORREU ANTES OU JUNTO DA MATRÍCULA -> COMERCIAL / VENDA CONVERTIDA
+                # CONTATO OCORREU ANTES OU JUNTO DA MATRÍCULA -> VENDA CONVERTIDA
                 lead_obj["tipo_canal"] = "venda_convertida"
-                lead_obj["badge_label"] = "Comercial / Venda Convertida"
+                lead_obj["badge_label"] = "Venda Convertida"
                 lead_obj["badge_color"] = "green"
                 leads_convertidos_comercial.append(lead_obj)
                 mrr_comercial_convertido += sub_val
         else:
-            # SEM MATRÍCULA -> OPORTUNIDADE COMERCIAL QUENTE
+            # SEM MATRÍCULA -> CAMPANHA ATIVA / DISPARO OUTBOUND
             lead_obj["tipo_canal"] = "oportunidade"
-            lead_obj["badge_label"] = "Comercial / Oportunidade Quente"
+            lead_obj["badge_label"] = "Campanha Ativa / Prospecção"
             lead_obj["badge_color"] = "amber"
+            lead_obj["curso_matriculado"] = "Base de Prospecção"
             leads_oportunidades.append(lead_obj)
 
     total_customers = len(customers)
-    total_comercial_atendidos = len(leads_oportunidades) + len(leads_convertidos_comercial)
+    total_campanhas = len(leads_oportunidades)
     total_vendas = len(leads_convertidos_comercial)
     total_suporte = len(leads_suporte_alunos)
-    total_oportunidades = len(leads_oportunidades)
+    total_comercial_atendidos = total_campanhas + total_vendas
 
     taxa_conversao_comercial = (total_vendas / total_comercial_atendidos * 100) if total_comercial_atendidos > 0 else 0.0
 
@@ -321,7 +322,8 @@ def get_rd_conversas_data(force_refresh=False, cativa_students=None, vindi_subs=
         "label": "RD Station Conversas (WhatsApp)",
         "total_contatos": total_customers,
         "total_comercial": total_comercial_atendidos,
-        "total_oportunidades": total_oportunidades,
+        "total_oportunidades": total_campanhas,
+        "total_campanhas": total_campanhas,
         "total_vendas_convertidas": total_vendas,
         "total_suporte": total_suporte,
         "taxa_conversao_comercial": round(taxa_conversao_comercial, 1),

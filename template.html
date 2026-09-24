@@ -2100,10 +2100,10 @@ option {
         <div>
           <h3 style="font-family:var(--disp); font-size:18px; font-weight:800; color:var(--ink); margin:0; display:flex; align-items:center; gap:8px;">
             RD Station Conversas (WhatsApp) · Gestão de Atendimentos
-            <span class="exec-pill pill-green" id="mrd-badge-total" style="font-size:10.5px;">316 Contatos</span>
+            <span class="exec-pill pill-green" id="mrd-badge-total" style="font-size:10.5px;">425 Contatos</span>
           </h3>
           <div style="font-size:12px; color:var(--muted); margin-top:3px;">
-            Segmentação precisa entre <b>Oportunidades Comerciais</b> (pré-matrícula), <b>Vendas Fechadas</b> e <b>Suporte/CX</b> (atendimento a alunos já matriculados).
+            Segmentação precisa entre <b>Campanhas Ativas / Prospecção</b> (disparos sem matrícula), <b>Vendas Fechadas</b> e <b>Alunos na Base</b> (pós-venda).
           </div>
         </div>
       </div>
@@ -2119,10 +2119,10 @@ option {
       <!-- CONTROLES, FILTROS E BUSCA -->
       <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:12px 16px; background:var(--bg); border:1px solid var(--line2); border-radius:10px; flex-shrink:0;">
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-          <button id="mrd-btn-all" class="chip on" onclick="filterRDConversasLeads('all')">Todos (<span id="mrd-count-all">316</span>)</button>
-          <button id="mrd-btn-hot" class="chip" onclick="filterRDConversasLeads('hot')">🔥 Comercial - Oportunidades (<span id="mrd-count-hot">228</span>)</button>
-          <button id="mrd-btn-support" class="chip" onclick="filterRDConversasLeads('support')">🎓 Suporte & CX ao Aluno (<span id="mrd-count-support">76</span>)</button>
-          <button id="mrd-btn-sales" class="chip" onclick="filterRDConversasLeads('sales')">✅ Vendas Convertidas (<span id="mrd-count-sales">12</span>)</button>
+          <button id="mrd-btn-all" class="chip on" onclick="filterRDConversasLeads('all')">Todos (<span id="mrd-count-all">425</span>)</button>
+          <button id="mrd-btn-hot" class="chip" onclick="filterRDConversasLeads('hot')">📢 Campanhas Ativas (<span id="mrd-count-hot">280</span>)</button>
+          <button id="mrd-btn-support" class="chip" onclick="filterRDConversasLeads('support')">🎓 Alunos na Base (<span id="mrd-count-support">142</span>)</button>
+          <button id="mrd-btn-sales" class="chip" onclick="filterRDConversasLeads('sales')">✅ Vendas Convertidas (<span id="mrd-count-sales">3</span>)</button>
         </div>
 
         <div style="display:flex; align-items:center; gap:10px;">
@@ -10365,20 +10365,20 @@ function openModalRDConversas() {
             kpisMount.innerHTML = `
               <div class="exec-card" style="border-top:3px solid var(--emerald); background:rgba(5,150,105,0.02)">
                 <div class="exec-card-top">
-                  <span class="exec-card-label">Total Atendimentos</span>
+                  <span class="exec-card-label">Total Contatos</span>
                   <span class="exec-pill pill-green">RD Conversas</span>
                 </div>
                 <div class="exec-card-val" style="color:var(--emerald-d)">${data.totalContatos}</div>
-                <div class="exec-card-sub">316 contatos únicos no WhatsApp</div>
+                <div class="exec-card-sub">${data.totalContatos} contatos únicos no canal</div>
               </div>
 
               <div class="exec-card" style="border-top:3px solid #d97706; background:rgba(217,119,6,0.02)">
                 <div class="exec-card-top">
-                  <span class="exec-card-label">🔥 Comercial - Oportunidades</span>
-                  <span class="exec-pill pill-amber">Pré-Matrícula</span>
+                  <span class="exec-card-label">📢 Campanhas Ativas</span>
+                  <span class="exec-pill pill-amber">Prospecção</span>
                 </div>
                 <div class="exec-card-val" style="color:#d97706">${data.totalOportunidades}</div>
-                <div class="exec-card-sub">Médicos em negociação sem matrícula</div>
+                <div class="exec-card-sub">Médicos impactados por disparos sem matrícula</div>
               </div>
 
               <div class="exec-card" style="border-top:3px solid var(--emerald)">
@@ -10392,7 +10392,7 @@ function openModalRDConversas() {
 
               <div class="exec-card" style="border-top:3px solid #0284c7; background:rgba(2,132,199,0.02)">
                 <div class="exec-card-top">
-                  <span class="exec-card-label">🎓 Suporte & CX (Alunos)</span>
+                  <span class="exec-card-label">🎓 Alunos na Base</span>
                   <span class="exec-pill pill-blue">Pós-Venda</span>
                 </div>
                 <div class="exec-card-val" style="color:#0284c7">${data.totalSuporte}</div>
@@ -10504,18 +10504,18 @@ function renderRDConversasTable() {
         let dtMatr = lead.data_matricula && lead.data_matricula !== '-' ? lead.data_matricula : (matchedSt ? (matchedSt.data_insc || matchedSt.data_inscricao || matchedSt.data_matricula || '-') : '-');
         let cursoNome = lead.curso_matriculado && lead.curso_matriculado !== 'Oportunidade Comercial' && lead.curso_matriculado !== 'Aluno Cativa' 
             ? lead.curso_matriculado 
-            : (matchedSt ? (matchedSt.curso || matchedSt.curso_nome || 'Aluno InfectoCast') : (lead.curso_matriculado || 'Oportunidade Comercial'));
+            : (matchedSt ? (matchedSt.curso || matchedSt.curso_nome || 'Aluno InfectoCast') : (dtMatr !== '-' ? 'Aluno InfectoCast' : 'Base de Prospecção'));
 
         let dtPrimeiro = lead.primeiro_contato || lead.data_contato || (matchedSt && matchedSt.wa_dt_primeira ? matchedSt.wa_dt_primeira.slice(0,10).split('-').reverse().join('/') : '-');
         let dtUltimo = lead.ultimo_contato || lead.data_contato || (matchedSt && matchedSt.wa_dt_ultima ? matchedSt.wa_dt_ultima.slice(0,10).split('-').reverse().join('/') : dtPrimeiro);
 
         let badge = '';
         if (lead.tipo_canal === 'suporte' || (dtMatr !== '-' && lead.tipo_canal !== 'venda_convertida')) {
-            badge = `<span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(2,132,199,0.12); color:#0284c7; font-weight:700; font-size:11px;">🎓 Suporte ao Aluno</span>`;
+            badge = `<span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(2,132,199,0.12); color:#0284c7; font-weight:700; font-size:11px;">🎓 Aluno na Base</span>`;
         } else if (lead.tipo_canal === 'venda_convertida' || dtMatr !== '-') {
-            badge = `<span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(16,185,129,0.14); color:var(--emerald-d); font-weight:700; font-size:11px;">✅ Venda Fechada</span>`;
+            badge = `<span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(16,185,129,0.14); color:var(--emerald-d); font-weight:700; font-size:11px;">✅ Venda Convertida</span>`;
         } else {
-            badge = `<span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(217,119,6,0.1); color:#d97706; font-weight:700; font-size:11px;">🔥 Oportunidade Quente</span>`;
+            badge = `<span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(217,119,6,0.1); color:#d97706; font-weight:700; font-size:11px;">📢 Campanha Ativa</span>`;
         }
 
         const rdLink = lead.rd_link || (lead.id ? `https://app.tallos.com.br/customers/${lead.id}` : 'https://app.tallos.com.br/chats');
