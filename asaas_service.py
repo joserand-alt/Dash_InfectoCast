@@ -603,6 +603,8 @@ def get_asaas_data(force_reload=False):
             except Exception as e_c:
                 print(f"[ASAAS] Erro ao salvar cache: {e_c}")
             return result
+        else:
+            print("[ASAAS API] Nenhum dado retornado da API (sem chave configurada ou conexao). Acionando fallback para cache local...")
     except Exception as e_api:
         print(f"[ASAAS API] Falha na chamada da API Asaas: {e_api}. Usando cache local como fallback de resiliência.")
 
@@ -611,7 +613,8 @@ def get_asaas_data(force_reload=False):
         try:
             with open(CACHE_PATH, "r", encoding="utf-8") as f:
                 cached = json.load(f)
-            print(f"[ASAAS CACHE FALLBACK] {len(cached.get('data', {}))} alunos carregados do cache local.")
+            fat_cnt = len(cached.get("financeiro", {}).get("faturas_tabela", []))
+            print(f"[ASAAS CACHE FALLBACK] {len(cached.get('data', {}))} alunos e {fat_cnt} faturas carregados do cache local.")
             return cached
         except Exception as e_fb:
             print(f"[ASAAS CACHE] Falha no fallback: {e_fb}")
