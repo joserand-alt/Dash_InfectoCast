@@ -573,50 +573,55 @@ def _process(customers, payments):
 
 
 def get_asaas_data(force_reload=False):
-
     if not force_reload and os.path.exists(CACHE_PATH):
-
         try:
-
-            with open(CACHE_PATH,"r",encoding="utf-8") as f: cached=json.load(f)
-
-            cached_at = datetime.fromisoformat(cached.get("_cached_at","2000-01-01"))
-
-            if datetime.now()-cached_at < timedelta(hours=CACHE_TTL_HOURS):
-
-                print(f"[ASAAS CACHE] {len(cached.get('data',{}))} alunos carregados."); return cached
-
-        except Exception as e: print(f"[ASAAS CACHE] Erro: {e}")
-
-
-
-    customers = fetch_all_customers()
-
-    payments  = fetch_all_payments()
-
-    students_asaas, financeiro_global = _process(customers, payments)
-    subs_list_asaas = financeiro_global.get("subscriptions", [])
-    result = {"_cached_at": datetime.now().isoformat(), "data": students_asaas, "subscriptions": subs_list_asaas, "financeiro": financeiro_global}
+            with open(CACHE_PATH, "r", encoding="utf-8") as f:
+                cached = json.load(f)
+            cached_at = datetime.fromisoformat(cached.get("_cached_at", "2000-01-01"))
+            if datetime.now() - cached_at < timedelta(hours=CACHE_TTL_HOURS):
+                print(f"[ASAAS CACHE] {len(cached.get('data', {}))} alunos carregados.")
+                return cached
+        except Exception as e:
+            print(f"[ASAAS CACHE] Erro ao ler cache: {e}")
 
     try:
+        customers = fetch_all_customers()
+        payments  = fetch_all_payments()
+        if customers or payments:
+            students_asaas, financeiro_global = _process(customers, payments)
+            subs_list_asaas = financeiro_global.get("subscriptions", [])
+            result = {
+                "_cached_at": datetime.now().isoformat(),
+                "data": students_asaas,
+                "subscriptions": subs_list_asaas,
+                "financeiro": financeiro_global
+            }
+            try:
+                with open(CACHE_PATH, "w", encoding="utf-8") as f:
+                    json.dump(result, f, ensure_ascii=False, indent=2)
+                print(f"[ASAAS] Cache salvo ({len(students_asaas)} alunos).")
+            except Exception as e_c:
+                print(f"[ASAAS] Erro ao salvar cache: {e_c}")
+            return result
+    except Exception as e_api:
+        print(f"[ASAAS API] Falha na chamada da API Asaas: {e_api}. Usando cache local como fallback de resiliência.")
 
-        with open(CACHE_PATH,"w",encoding="utf-8") as f: json.dump(result,f,ensure_ascii=False,indent=2)
+    # FALLBACK DE RESILIÊNCIA: Se a chamada de API falhar (ex: no GitHub Actions sem chave), usa o CACHE_PATH existente
+    if os.path.exists(CACHE_PATH):
+        try:
+            with open(CACHE_PATH, "r", encoding="utf-8") as f:
+                cached = json.load(f)
+            print(f"[ASAAS CACHE FALLBACK] {len(cached.get('data', {}))} alunos carregados do cache local.")
+            return cached
+        except Exception as e_fb:
+            print(f"[ASAAS CACHE] Falha no fallback: {e_fb}")
 
-        print(f"[ASAAS] Cache salvo ({len(students_asaas)} alunos).")
-
-    except Exception as e: print(f"[ASAAS] Erro cache: {e}")
-
-    return result
-
-
+    return {"data": {}, "subscriptions": [], "financeiro": {"faturas_tabela": []}}
 
 if __name__ == "__main__":
-
     res = get_asaas_data(force_reload=True)
-
-    k = res["financeiro"]["kpis"]
-
-    print(f"\nTotal Recebido : {k['total_recebido_fmt']}")
+    k = res.get("financeiro", {}).get("kpis", {})
+    print(f"\nTotal Recebido : {k.get('total_recebido_fmt')}")
 
     print(f"Recebido/mes   : {k['recebido_mes_fmt']}")
 
