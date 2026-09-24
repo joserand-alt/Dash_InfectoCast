@@ -22420,5 +22420,41 @@
       "gateway-vindi",
       "vindi-pago"
     ]
+  },
+  "stw.bea@gmail.com|jornada-multi-r": {
+    "email": "stw.bea@gmail.com",
+    "nome": "Beatriz Andrade",
+    "curso": "JORNADA MULTI-R",
+    "origem": "Cativa",
+    "data_matricula": "2026-09-24",
+    "status": "success",
+    "data_tagueamento": "2026-09-24 13:12:30",
+    "tags_aplicadas": [
+      "aluno-ativo",
+      "aluno-matriculado",
+      "academy-pago",
+      "curso-livre",
+      "jornada-multi-r",
+      "gateway-cativa-digital",
+      "cativa-digital"
+    ]
+  },
+  "dr.ayrtoninfecto@gmail.com|do-fungo-ao-antifungico": {
+    "email": "dr.ayrtoninfecto@gmail.com",
+    "nome": "Ayrton Silveira",
+    "curso": "DO FUNGO AO ANTIFUNGICO",
+    "origem": "Cativa",
+    "data_matricula": "2026-09-24",
+    "status": "success",
+    "data_tagueamento": "2026-09-24 13:12:32",
+    "tags_aplicadas": [
+      "aluno-ativo",
+      "aluno-matriculado",
+      "academy-pago",
+      "curso-livre",
+      "do-fungo-ao-antifungico",
+      "gateway-cativa-digital",
+      "cativa-digital"
+    ]
   }
 }

@@ -5336,7 +5336,8 @@ function getMatriculasAuditoriaData() {
                 const dtFmt = pad(effDate.getDate()) + '/' + pad(effDate.getMonth()+1) + '/' + effDate.getFullYear() + (effDate.getHours() === 0 && effDate.getMinutes() === 0 ? '' : ' ' + pad(effDate.getHours()) + ':' + pad(effDate.getMinutes()));
                 
                 const diffMs = now.getTime() - effDate.getTime();
-                const is48h = (diffMs <= 48 * 3600 * 1000) || (effDate.getHours() === 0 && diffMs <= 72 * 3600 * 1000 && diffMs >= -3600000);
+                const t48hCalendar = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 2, 0, 0, 0);
+                const is48h = (effDate >= t48hCalendar && effDate <= now) || (diffMs >= -3600000 && diffMs <= 48 * 3600 * 1000) || (effDate.getHours() === 0 && diffMs <= 72 * 3600 * 1000 && diffMs >= -3600000);
                 const is30d = (diffMs <= 30 * 24 * 3600 * 1000);
 
                 matriculasConfirmadas.push({
@@ -5378,16 +5379,28 @@ function getMatriculasAuditoriaData() {
                 isPendente = true;
             }
 
-            if (isPendente) {
-                const rawInscStr = s.data_insc || s.data_inscricao || s.data_matricula || s.first;
+                        if (isPendente) {
+                const rawInscStr = s.data_insc || s.data_inscricao || s.data_matricula || s.first || (s.asaas && s.asaas.faturas && s.asaas.faturas[0] && (s.asaas.faturas[0].data_criacao || s.asaas.faturas[0].dateCreated || s.asaas.faturas[0].vencimento_iso || s.asaas.faturas[0].vencimento)) || (s.vindi && s.vindi.faturas && s.vindi.faturas[0] && (s.vindi.faturas[0].vencimento_iso || s.vindi.faturas[0].vencimento)) || s.created_at;
                 const dtInsc = parseDateUniversal(rawInscStr);
                 if (dtInsc && dtInsc <= now) {
                     const pad = n => n < 10 ? '0' + n : n;
                     const dtFmt = pad(dtInsc.getDate()) + '/' + pad(dtInsc.getMonth()+1) + '/' + dtInsc.getFullYear() + (dtInsc.getHours() === 0 && dtInsc.getMinutes() === 0 ? '' : ' ' + pad(dtInsc.getHours()) + ':' + pad(dtInsc.getMinutes()));
                     
                     const diffMs = now.getTime() - dtInsc.getTime();
-                    const is48h = (diffMs <= 48 * 3600 * 1000) || (dtInsc.getHours() === 0 && diffMs <= 72 * 3600 * 1000 && diffMs >= -3600000);
-                    const is30d = (diffMs <= 30 * 24 * 3600 * 1000);
+                    const t48hCalendar = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 2, 0, 0, 0);
+                    const is48h = (dtInsc >= t48hCalendar && dtInsc <= now) || (diffMs >= -3600000 && diffMs <= 48 * 3600 * 1000) || (dtInsc.getHours() === 0 && diffMs <= 72 * 3600 * 1000 && diffMs >= -3600000);
+                    const t30dCalendar = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30, 0, 0, 0);
+                    const is30d = (dtInsc >= t30dCalendar && dtInsc <= now) || (diffMs <= 30 * 24 * 3600 * 1000);
+
+                    let fatVal = 0;
+                    let origStr = 'Cadastro Plataforma (' + (s.plataforma || 'Academy') + ')';
+                    if (s.asaas && s.asaas.faturas && s.asaas.faturas.length > 0) {
+                        fatVal = Number(s.asaas.faturas[0].valor || 0);
+                        origStr = 'Pedido Asaas (' + (s.asaas.faturas[0].forma_pagamento || 'Boleto/PIX') + ')';
+                    } else if (s.vindi && s.vindi.faturas && s.vindi.faturas.length > 0) {
+                        fatVal = Number(s.vindi.faturas[0].valor || 0);
+                        origStr = 'Assinatura Vindi';
+                    }
 
                     matriculasPendentes.push({
                         nome: nm || 'Lead / Inscrição',
@@ -5395,11 +5408,11 @@ function getMatriculasAuditoriaData() {
                         curso: s.curso || 'PLATAFORMA GERAL',
                         data: dtInsc,
                         data_fmt: dtFmt,
-                        origem: 'Cadastro Plataforma (' + (s.plataforma || 'Academy') + ')',
+                        origem: origStr,
                         gateway: s.plataforma || 'Academy',
                         tipo: 'pendente',
                         origem_label: 'Matrícula Pendente (Aguardando Pagamento)',
-                        valor: 0,
+                        valor: fatVal,
                         aulas_feitas: Number(s.aulas_feitas || 0),
                         is_48h: is48h,
                         is_24h: is48h,

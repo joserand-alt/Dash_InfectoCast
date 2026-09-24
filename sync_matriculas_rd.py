@@ -481,7 +481,11 @@ def get_pending_enrollments(days=30):
         has_consumo = float(s.get("aulas_feitas") or 0) > 0
 
         if not has_fin and not has_consumo and s.get("status") != "Concluído":
-            dt_raw = s.get("data_insc") or s.get("data_inscricao") or s.get("data_matricula") or s.get("first") or s.get("createdAt")
+            dt_raw = (
+                s.get("data_insc") or s.get("data_inscricao") or s.get("data_matricula") or s.get("first") or s.get("createdAt")
+                or (s.get("asaas") and s["asaas"].get("faturas") and (s["asaas"]["faturas"][0].get("data_criacao") or s["asaas"]["faturas"][0].get("dateCreated") or s["asaas"]["faturas"][0].get("vencimento_iso")))
+                or (s.get("vindi") and s["vindi"].get("faturas") and s["vindi"]["faturas"][0].get("vencimento_iso"))
+            )
             dt_insc = parse_date_universal(dt_raw)
             if dt_insc and dt_insc >= cutoff_date:
                 pending_list.append({
