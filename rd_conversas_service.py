@@ -277,6 +277,7 @@ def get_rd_conversas_data(force_refresh=False, cativa_students=None, vindi_subs=
             "telefone": c_phone,
             "telefone_fmt": f"({c_phone[:2]}) {c_phone[2:7]}-{c_phone[7:]}" if len(c_phone) == 11 else (f"({c_phone[:2]}) {c_phone[2:6]}-{c_phone[6:]}" if len(c_phone) == 10 else (c_phone if c_phone else "-")),
             "wa_link": f"https://wa.me/55{c_phone[-11:]}" if len(c_phone) >= 10 else None,
+            "rd_link": f"https://app.tallos.com.br/customers/{c_id}" if c_id else "https://app.tallos.com.br/chats",
             "data_contato": dt_primeiro.strftime("%d/%m/%Y") if dt_primeiro else "-",
             "primeiro_contato": dt_primeiro.strftime("%d/%m/%Y") if dt_primeiro else "-",
             "ultimo_contato": dt_ultimo.strftime("%d/%m/%Y") if dt_ultimo else (dt_primeiro.strftime("%d/%m/%Y") if dt_primeiro else "-"),

@@ -10520,15 +10520,16 @@ function renderRDConversasTable() {
 
         const cleanPhoneDigits = cleanPh.length >= 10 ? (cleanPh.startsWith('55') ? cleanPh : '55' + cleanPh) : cleanPh;
         const waLink = cleanPhoneDigits.length >= 10 ? `https://wa.me/${cleanPhoneDigits}` : null;
+        const rdLink = lead.rd_link || (lead.id ? `https://app.tallos.com.br/customers/${lead.id}` : 'https://app.tallos.com.br/chats');
 
         const actionButtons = `
           <div style="display:inline-flex; align-items:center; gap:6px; justify-content:center;">
-            <button onclick="openWAChat('${cleanPh}', '${(lead.nome || 'Médico').replace(/'/g, "\\'")}', '${(lead.email || '').replace(/'/g, "\\'")}')" style="background:#0284c7; color:#fff; border:none; padding:5px 9px; border-radius:6px; font-weight:700; font-size:11px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; box-shadow:0 1px 3px rgba(2,132,199,0.25); transition:all .15s;" onmouseover="this.style.background='#0369a1'" onmouseout="this.style.background='#0284c7'" title="Ver Histórico da Conversa">
-              💬 Histórico
-            </button>
+            <a href="${rdLink}" target="_blank" style="background:#0284c7; color:#fff; padding:5px 10px; border-radius:6px; font-weight:700; text-decoration:none; font-size:11px; display:inline-flex; align-items:center; gap:4px; box-shadow:0 1px 3px rgba(2,132,199,0.25); transition:all .15s;" onmouseover="this.style.background='#0369a1'" onmouseout="this.style.background='#0284c7'" title="Abrir atendimento no RD Station Conversas (Tallos)">
+              💬 RD Conversas ↗
+            </a>
             ${waLink ? `
-              <a href="${waLink}" target="_blank" style="background:#10b981; color:#fff; padding:5px 8px; border-radius:6px; font-weight:700; text-decoration:none; font-size:11px; display:inline-flex; align-items:center; gap:3px; box-shadow:0 1px 3px rgba(16,185,129,0.25); transition:all .15s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'" title="Conversar no WhatsApp">
-                📲 WA
+              <a href="${waLink}" target="_blank" style="background:#10b981; color:#fff; padding:5px 9px; border-radius:6px; font-weight:700; text-decoration:none; font-size:11px; display:inline-flex; align-items:center; gap:3px; box-shadow:0 1px 3px rgba(16,185,129,0.25); transition:all .15s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'" title="Conversar direto no WhatsApp">
+                📲 WhatsApp
               </a>
             ` : ''}
           </div>
