@@ -3,15 +3,13 @@ __pycache__/
 *.pyo
 .DS_Store
 Thumbs.db
-
-rd_tokens.json
-
-asaas_config.json
-asaas_cache.json
-
-# Backups e scripts temporários
+*.xlsx
+BD/
+Nova pasta/
+dashboard_gerado_copy.html
+*.bat
 gerador_backup*.py
 temp_*.js
 test_exec.js
-
-rd_tagged_matriculas.json
+scratch/
+asaas_config.json
