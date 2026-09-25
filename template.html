@@ -9832,7 +9832,7 @@ function updateSync24hKpi() {
     const execValEl = document.getElementById('exec-val-sync-24h');
     if (execValEl) execValEl.textContent = fmt(matInfo.count24h);
     const topChip = document.getElementById('api-cnt-sync24h');
-    if (topChip) topChip.textContent = `${matInfo.count24h} matrículas (48h) ⚡`;
+    if (topChip) topChip.textContent = `${matInfo.count24h} Conf. | ${matInfo.countPendentes24h} Pend. (48h) ⚡`;
 }
 
 function openModalMatriculas(period) {
