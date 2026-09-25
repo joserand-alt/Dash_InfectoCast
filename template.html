@@ -263,15 +263,15 @@ header::before {
   gap: 6px;
 }
 .kpi .k-val {
-  font-family: var(--font-mono) !important;
+  font-family: var(--font-mono, monospace) !important;
   font-variant-numeric: tabular-nums !important;
   font-size: 28px !important;
   font-weight: 700 !important;
   line-height: 1.15 !important;
   margin-top: 8px !important;
-  color: #ffffff !important;
+  color: var(--ink, #0f172a);
   letter-spacing: -0.02em !important;
-  text-shadow: 0 0 16px rgba(0, 240, 255, 0.25);
+  text-shadow: none !important;
 }
 .kpi .k-sub {
   font-size: 11px !important;
@@ -1173,7 +1173,7 @@ h1, h2, h3, h4, h5, h6, .exec-sec-title, .brand h1 {
 .k-val, .exec-kpi-val, .numeral, .val, .metric-value, .stat-value {
   font-family: 'JetBrains Mono', monospace !important;
   font-variant-numeric: tabular-nums !important;
-  color: #0f172a !important;
+  color: var(--ink, #0f172a);
   text-shadow: none !important;
 }
 
@@ -7346,62 +7346,62 @@ function drawHome(force) {
           <!-- CARD NOVO: MATRÍCULAS / SINCRONIZADOS 24H -->
           <div class="kpi" style="border-top:3px solid #10b981; cursor:pointer; background:rgba(16, 185, 129, 0.03); transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'" onclick="openModalSync24h()" title="Clique para ver o detalhamento dos alunos sincronizados nas últimas 48h">
             <div class="k-lab"><i class="k-dot" style="background:#10b981; box-shadow:0 0 8px #10b981;"></i>Sincronizados (48h)</div>
-            <div class="k-val" style="color:#10b981" id="val-sync-24h">0</div>
+            <div class="k-val" style="color:#10b981 !important" id="val-sync-24h">0</div>
             <div class="k-sub">⚡ LIVE · Clique p/ detalhar ↗</div>
           </div>
 
           <div class="kpi" style="border-top:3px solid var(--emerald)">
             <div class="k-lab"><i class="k-dot" style="background:var(--emerald)"></i>Matrículas Ativas</div>
-            <div class="k-val" style="color:var(--emerald-d)">${fmt(totalMatriculasAtivas)}</div>
+            <div class="k-val" style="color:var(--emerald-d) !important">${fmt(totalMatriculasAtivas)}</div>
             <div class="k-sub">${fmt(totalUnicosAtivos)} alunos únicos vigentes</div>
           </div>
 
           <!-- CARD 2: MATRÍCULAS CANCELADAS -->
           <div class="kpi" style="border-top:3px solid #e11d48; cursor:pointer" onclick="switchTab('prog'); setTimeout(()=>{ const b=$('#search'); if(b){ b.value='cancelad'; if(typeof renderRows==='function') renderRows(); } }, 150)" title="Clique para filtrar matrículas canceladas na tabela">
             <div class="k-lab"><i class="k-dot" style="background:#e11d48"></i>Canceladas</div>
-            <div class="k-val" style="color:#e11d48">${fmt(totalMatriculasCanceladas)}</div>
+            <div class="k-val" style="color:#e11d48 !important">${fmt(totalMatriculasCanceladas)}</div>
             <div class="k-sub">${totalMatriculas > 0 ? ((totalMatriculasCanceladas / totalMatriculas) * 100).toFixed(1) : 0}% do total acumulado (${fmt(totalMatriculas)})</div>
           </div>
 
           <!-- CARD 3: MATRÍCULAS ENCERRADAS (CONCLUSÃO DE CURSO) -->
           <div class="kpi" style="border-top:3px solid #7c3aed" title="Regra: Data oficial de término/formatura da turma cadastrada no sistema">
             <div class="k-lab"><i class="k-dot" style="background:#7c3aed"></i>Encerradas</div>
-            <div class="k-val" style="color:#7c3aed">${fmt(totalMatriculasEncerradas)}</div>
+            <div class="k-val" style="color:#7c3aed !important">${fmt(totalMatriculasEncerradas)}</div>
             <div class="k-sub">Nenhuma turma encerrada</div>
           </div>
 
           <!-- CARD 4: REPRODUÇÕES -->
           <div class="kpi" style="border-top:3px solid var(--sky)">
             <div class="k-lab"><i class="k-dot" style="background:var(--sky)"></i>Reproduções</div>
-            <div class="k-val" style="color:var(--sky)">${fmt(totalReproducoes)}</div>
+            <div class="k-val" style="color:var(--sky) !important">${fmt(totalReproducoes)}</div>
             <div class="k-sub">Visualizações em aulas</div>
           </div>
 
           <!-- CARD 5: SAÚDE DA BASE -->
           <div class="kpi" style="border-top:3px solid #0d9488">
             <div class="k-lab"><i class="k-dot" style="background:#0d9488"></i>Saúde da Base</div>
-            <div class="k-val" style="color:#0d9488">${taxaEngajados}%</div>
+            <div class="k-val" style="color:#0d9488 !important">${taxaEngajados}%</div>
             <div class="k-sub">${fmt(engajados)} ativos / engajados</div>
           </div>
 
           <!-- CARD 6: ATENÇÃO & RISCO -->
           <div class="kpi" style="border-top:3px solid var(--amber)">
             <div class="k-lab"><i class="k-dot" style="background:var(--amber)"></i>Atenção &amp; Risco</div>
-            <div class="k-val" style="color:var(--amber)">${fmt(atencaoRisco)}</div>
+            <div class="k-val" style="color:var(--amber) !important">${fmt(atencaoRisco)}</div>
             <div class="k-sub">${taxaRisco}% precisam de contato</div>
           </div>
 
           <!-- CARD 7: RASTREADOS CRM -->
           <div class="kpi" style="border-top:3px solid #0077b6">
             <div class="k-lab"><i class="k-dot" style="background:#0077b6"></i>Rastreados RD</div>
-            <div class="k-val" style="color:#0077b6">${fmt(countComRD)}</div>
+            <div class="k-val" style="color:#0077b6 !important">${fmt(countComRD)}</div>
             <div class="k-sub">${pctRastreadosRD}% da base ativa no CRM</div>
           </div>
 
           <!-- CARD 8: CONTATOS WHATSAPP -->
           <div class="kpi" style="border-top:3px solid #25D366">
             <div class="k-lab"><i class="k-dot" style="background:#25D366"></i>Contatos WhatsApp</div>
-            <div class="k-val" style="color:#25D366">${fmt(countWA)}</div>
+            <div class="k-val" style="color:#25D366 !important">${fmt(countWA)}</div>
             <div class="k-sub">Com histórico no chat</div>
           </div>
         `;
