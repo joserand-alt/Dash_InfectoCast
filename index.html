@@ -1225,6 +1225,308 @@ option {
   background: linear-gradient(90deg, #0284c7 0%, #10b981 100%) !important;
   box-shadow: 0 0 8px rgba(2, 132, 199, 0.25) !important;
 }
+
+
+/* =============================================================================
+   HUD APP LAYOUT & COLLAPSIBLE SIDEBAR (LATERAL ESQUERDA)
+   ============================================================================= */
+.hud-app-layout {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  min-height: calc(100vh - 58px) !important;
+  width: 100% !important;
+  position: relative !important;
+  background-color: var(--bg) !important;
+  box-sizing: border-box !important;
+}
+
+/* SIDEBAR CONTAINER (COLUNA LATERAL FIXA/STICKY NA ESQUERDA) */
+.hud-sidebar {
+  width: 250px !important;
+  min-width: 250px !important;
+  max-width: 250px !important;
+  background: linear-gradient(180deg, rgba(14, 20, 32, 0.98) 0%, rgba(8, 12, 18, 0.99) 100%) !important;
+  border-right: 1px solid rgba(0, 240, 255, 0.18) !important;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.7), inset -1px 0 0 rgba(255, 255, 255, 0.04) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  position: sticky !important;
+  top: 0 !important;
+  height: 100vh !important;
+  z-index: 100 !important;
+  padding: 16px 12px !important;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1), padding 0.25s ease !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+  flex-shrink: 0 !important;
+}
+
+/* SIDEBAR TOP */
+.hud-sidebar-top {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 4px 14px 4px !important;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.12) !important;
+  margin-bottom: 12px !important;
+  gap: 8px !important;
+}
+
+.hud-sidebar-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+}
+
+.hud-sidebar-title {
+  font-family: var(--font-hud) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.14em !important;
+  color: var(--neon-cyan) !important;
+  text-transform: uppercase !important;
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.3) !important;
+  transition: opacity 0.2s ease !important;
+}
+
+.sidebar-toggle-btn {
+  background: rgba(0, 240, 255, 0.06) !important;
+  border: 1px solid rgba(0, 240, 255, 0.25) !important;
+  color: var(--neon-cyan) !important;
+  border-radius: 6px !important;
+  width: 26px !important;
+  height: 26px !important;
+  min-width: 26px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  font-size: 10px !important;
+  transition: all 0.2s ease !important;
+}
+
+.sidebar-toggle-btn:hover {
+  background: rgba(0, 240, 255, 0.2) !important;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.4) !important;
+  transform: scale(1.05) !important;
+}
+
+/* SIDEBAR TABS (VERTICAL NAVIGATION) */
+.hud-sidebar .tabs {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-bottom: none !important;
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  list-style: none !important;
+}
+
+.hud-sidebar .tab {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 10px 12px !important;
+  border-radius: 8px !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: #94a3b8 !important;
+  font-family: var(--font-hud) !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+}
+
+.hud-sidebar .tab:hover {
+  background: rgba(0, 240, 255, 0.08) !important;
+  color: #ffffff !important;
+  border-color: rgba(0, 240, 255, 0.2) !important;
+  transform: translateX(3px) !important;
+}
+
+.hud-sidebar .tab.on {
+  background: linear-gradient(90deg, rgba(0, 240, 255, 0.16) 0%, rgba(0, 240, 255, 0.03) 100%) !important;
+  color: var(--neon-cyan) !important;
+  border-color: rgba(0, 240, 255, 0.35) !important;
+  box-shadow: inset 3px 0 0 var(--neon-cyan), 0 0 15px rgba(0, 240, 255, 0.15) !important;
+}
+
+.hud-sidebar .tab.on::after {
+  display: none !important;
+}
+
+.hud-sidebar .tab .num {
+  width: 22px !important;
+  height: 22px !important;
+  min-width: 22px !important;
+  border-radius: 5px !important;
+  display: grid !important;
+  place-items: center !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  font-family: var(--font-mono) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #94a3b8 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  transition: all 0.18s ease !important;
+}
+
+.hud-sidebar .tab:hover .num {
+  border-color: rgba(0, 240, 255, 0.3) !important;
+  color: #ffffff !important;
+}
+
+.hud-sidebar .tab.on .num {
+  background: rgba(0, 240, 255, 0.2) !important;
+  color: var(--neon-cyan) !important;
+  border-color: var(--neon-cyan) !important;
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.3) !important;
+}
+
+.hud-sidebar .tab .tab-label {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* SIDEBAR FOOTER */
+.hud-sidebar-footer {
+  margin-top: auto !important;
+  padding-top: 14px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.sidebar-collapse-bar-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  padding: 8px 10px !important;
+  border-radius: 6px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: var(--muted) !important;
+  font-family: var(--font-hud) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  white-space: nowrap !important;
+}
+
+.sidebar-collapse-bar-btn:hover {
+  background: rgba(0, 240, 255, 0.1) !important;
+  color: var(--neon-cyan) !important;
+  border-color: rgba(0, 240, 255, 0.3) !important;
+}
+
+.sidebar-status-pill {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 6px 10px !important;
+  border-radius: 6px !important;
+  background: rgba(0, 255, 157, 0.06) !important;
+  border: 1px solid rgba(0, 255, 157, 0.2) !important;
+  font-size: 9.5px !important;
+  font-family: var(--font-hud) !important;
+  font-weight: 800 !important;
+  color: #34d399 !important;
+  letter-spacing: 0.08em !important;
+  white-space: nowrap !important;
+}
+
+/* SIDEBAR COLLAPSED STATE (QUANDO RECOLHIDO) */
+.hud-sidebar.collapsed {
+  width: 68px !important;
+  min-width: 68px !important;
+  max-width: 68px !important;
+  padding: 16px 8px !important;
+}
+
+.hud-sidebar.collapsed .hud-sidebar-title,
+.hud-sidebar.collapsed .tab-label,
+.hud-sidebar.collapsed .sidebar-footer-label {
+  display: none !important;
+}
+
+.hud-sidebar.collapsed .hud-sidebar-top {
+  justify-content: center !important;
+}
+
+.hud-sidebar.collapsed .hud-sidebar-brand {
+  display: none !important;
+}
+
+.hud-sidebar.collapsed .tab {
+  justify-content: center !important;
+  padding: 10px 0 !important;
+}
+
+.hud-sidebar.collapsed .tab:hover {
+  transform: none !important;
+}
+
+.hud-sidebar.collapsed .sidebar-collapse-bar-btn {
+  justify-content: center !important;
+  padding: 8px 0 !important;
+}
+
+/* MAIN DASHBOARD CONTENT AREA (AO LADO DO MENU) */
+.hud-main-content {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  padding: 18px 24px 60px 24px !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* RESPONSIVE FOR MOBILE / SMALL SCREENS */
+@media (max-width: 900px) {
+  .hud-app-layout {
+    flex-direction: column !important;
+  }
+  .hud-sidebar {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    position: relative !important;
+    border-right: none !important;
+    border-bottom: 1px solid rgba(0, 240, 255, 0.18) !important;
+    padding: 12px 16px !important;
+  }
+  .hud-sidebar .tabs {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+  }
+  .hud-sidebar .tab {
+    width: auto !important;
+  }
+  .hud-main-content {
+    padding: 14px 14px 40px 14px !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1249,7 +1551,7 @@ option {
       <div class="hud-api-chip" title="Ultima atualizacao" style="display:flex; align-items:center; gap:5px; padding:3px 8px; border-radius:6px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); font-size:10.5px; font-family:var(--font-mono);">
         <span style="width:6px; height:6px; border-radius:50%; background:#94a3b8; box-shadow:0 0 6px #94a3b8;"></span>
         <b style="color:#cbd5e1;">UPDATE:</b>
-        <span style="color:#f8fafc;">25/09 15:07</span>
+        <span style="color:#f8fafc;">25/09 15:34</span>
       </div>
       
       <!-- 1. VINDI -->
