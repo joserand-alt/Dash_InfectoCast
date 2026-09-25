@@ -178,5 +178,20 @@
       "sos-antibiotico",
       "origem-academy"
     ]
+  },
+  "draclareana.geraldes@gmail.com|pos-graduacao-em-infectopediatria": {
+    "email": "draclareana.geraldes@gmail.com",
+    "nome": "Clareana",
+    "curso": "POS-GRADUACAO EM INFECTOPEDIATRIA",
+    "plataforma": "Academy",
+    "data_inscricao": "2026-09-25 00:00:00",
+    "status": "success",
+    "data_tagueamento": "2026-09-25 12:13:08",
+    "tags_aplicadas": [
+      "matricula-pendente",
+      "pos-graduacao",
+      "pos-infectopediatria",
+      "origem-academy"
+    ]
   }
 }
