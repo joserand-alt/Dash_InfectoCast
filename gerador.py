@@ -2410,6 +2410,30 @@ def main():
             "origens": {},
             "evolucao_diaria": []
         }
+        
+    try:
+        import json as json_mod, os as os_mod
+        idx_p = os_mod.path.join(os_mod.path.dirname(os_mod.path.abspath(__file__)), 'index.html')
+        with open(idx_p, 'r', encoding='utf-8') as f_idx:
+            html_t = f_idx.read()
+        m1 = html_t.find('const DATA = {')
+        m2 = html_t.find('};\n', m1)
+        old_data = json_mod.loads(html_t[m1+13:m2+1])
+        old_st = old_data.get('meta',{}).get('api_status',{})
+    except:
+        old_st = {}
+
+    curr_vindi_fats = len(financeiro_data.get('faturas_tabela', [])) or 3992
+    curr_cativa_logs = len(cativa_logs) if 'cativa_logs' in locals() else 12246
+    curr_academy_logs = len(academy_api_logs) or 1360
+    curr_asaas_fats = len(asaas_financeiro.get('faturas_tabela', [])) or 366
+    curr_rd_sync = len(telemetria_sync_list)
+
+    old_vindi = old_st.get('vindi',{}).get('faturas_count', curr_vindi_fats)
+    old_cativa = old_st.get('cativa',{}).get('logs_count', curr_cativa_logs)
+    old_academy = old_st.get('academy',{}).get('logs_count', curr_academy_logs)
+    old_asaas = old_st.get('asaas',{}).get('faturas_count', curr_asaas_fats)
+    old_rd = old_st.get('rd_station',{}).get('sync_count', curr_rd_sync)
 
     data = {
         "meta": {
@@ -2424,7 +2448,8 @@ def main():
                 "vindi": {
                     "status": "ONLINE",
                     "label": "Vindi",
-                    "faturas_count": len(financeiro_data.get('faturas_tabela', [])) or 3992,
+                    "faturas_count": curr_vindi_fats,
+                    "new_count": curr_vindi_fats - old_vindi,
                     "subs_count": len(financeiro_data.get('subscriptions', [])) or 569,
                     "records_label": "3.992 faturas / 569 assinaturas",
                     "sync_time": now_dt.strftime("%H:%M:%S")
@@ -2433,27 +2458,30 @@ def main():
                     "status": "ONLINE",
                     "label": "Cativa Digital",
                     "students_count": len(cativa_students) if 'cativa_students' in locals() else 437,
-                    "logs_count": len(cativa_logs) if 'cativa_logs' in locals() else 12246,
-                    "records_label": f"{len(cativa_students) if 'cativa_students' in locals() else 437} alunos / {len(cativa_logs) if 'cativa_logs' in locals() else 12246} logs",
+                    "logs_count": curr_cativa_logs,
+                    "new_count": curr_cativa_logs - old_cativa,
+                    "records_label": f"{len(cativa_students) if 'cativa_students' in locals() else 437} alunos / {curr_cativa_logs} logs",
                     "sync_time": now_dt.strftime("%H:%M:%S")
                 },
                 "academy": {
                     "status": "ONLINE",
                     "label": "InfectoCast Academy",
                     "students_count": len(set(l.get('E-mail') for l in academy_api_logs if l.get('E-mail'))) or 44,
-                    "logs_count": len(academy_api_logs) or 1360,
-                    "records_label": f"{len(set(l.get('E-mail') for l in academy_api_logs if l.get('E-mail'))) or 44} alunos / {len(academy_api_logs) or 1360} logs",
+                    "logs_count": curr_academy_logs,
+                    "new_count": curr_academy_logs - old_academy,
+                    "records_label": f"{len(set(l.get('E-mail') for l in academy_api_logs if l.get('E-mail'))) or 44} alunos / {curr_academy_logs} logs",
                     "sync_time": now_dt.strftime("%H:%M:%S")
                 },
                 "asaas": {
                     "status": "ONLINE",
                     "label": "Asaas",
-                    "faturas_count": len(asaas_financeiro.get('faturas_tabela', [])) or 366,
+                    "faturas_count": curr_asaas_fats,
+                    "new_count": curr_asaas_fats - old_asaas,
                     "customers_count": len(asaas_map) if 'asaas_map' in locals() else 88,
-                    "records_label": f"{len(asaas_financeiro.get('faturas_tabela', [])) or 366} cobranças / {len(asaas_map) if 'asaas_map' in locals() else 88} clientes",
+                    "records_label": f"{curr_asaas_fats} cobranças / {len(asaas_map) if 'asaas_map' in locals() else 88} clientes",
                     "sync_time": now_dt.strftime("%H:%M:%S")
                 },
-                                "rd_conversas": {
+                "rd_conversas": {
                     "status": "ONLINE",
                     "label": "RD Station Conversas",
                     "contatos_count": rd_conversas_data.get('total_contatos', 316),
@@ -2461,13 +2489,14 @@ def main():
                     "records_label": f"{rd_conversas_data.get('total_contatos', 316)} contatos ({rd_conversas_data.get('total_convertidos', 77)} convertidos)",
                     "sync_time": now_dt.strftime("%H:%M:%S")
                 },
-"rd_station": {
+                "rd_station": {
                     "status": "ONLINE",
                     "label": "RD Station CRM",
-                    "sync_count": len(telemetria_sync_list),
+                    "sync_count": curr_rd_sync,
+                    "new_count": curr_rd_sync - old_rd,
                     "leads_count": len(df_rd) if 'df_rd' in locals() else 26566,
-                    "records_label": f"{len(telemetria_sync_list)} matrículas auditadas ({len(df_rd) if 'df_rd' in locals() else 26566} leads)",
-                    "sync_time": now_dt.strftime("%H:%M:%S")
+                    "records_label": f"{curr_rd_sync} matrículas auditadas ({len(df_rd) if 'df_rd' in locals() else 26566} leads)",
+                    'sync_time': now_dt.strftime('%H:%M:%S')
                 }
             }
         },
@@ -2493,7 +2522,11 @@ def main():
         
     json_str = json.dumps(data, separators=(',', ':'), ensure_ascii=False)
     
+    import datetime as dt_mod
+    agora = dt_mod.datetime.now().strftime("%d/%m %H:%M")
+    
     final_html = pre + "const DATA = " + json_str + post
+    final_html = final_html.replace('{{LAST_UPDATED}}', agora)
     
     base_dir = os.path.dirname(os.path.abspath(__file__))
     out_path = os.path.join(base_dir, 'dashboard_gerado.html')

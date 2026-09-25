@@ -1242,8 +1242,15 @@ option {
       </div>
     </div>
 
-    <!-- CENTRO: 5 BADGES DE STATUS DAS APIS COM CONTAGEM EM TEMPO REAL -->
+    <!-- CENTRO: 5 BADGES DE STATUS DAS APIS COM CONTAGEM EM TEMPO REAL E ATUALIZACAO -->
     <div id="hud-apis-bar" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+
+      <!-- ATUALIZADO EM -->
+      <div class="hud-api-chip" title="Ultima atualizacao" style="display:flex; align-items:center; gap:5px; padding:3px 8px; border-radius:6px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); font-size:10.5px; font-family:var(--font-mono);">
+        <span style="width:6px; height:6px; border-radius:50%; background:#94a3b8; box-shadow:0 0 6px #94a3b8;"></span>
+        <b style="color:#cbd5e1;">UPDATE:</b>
+        <span style="color:#f8fafc;">{{LAST_UPDATED}}</span>
+      </div>
       
       <!-- 1. VINDI -->
       <div class="hud-api-chip" title="API Vindi: Assinaturas recorrentes e faturamento" style="display:flex; align-items:center; gap:5px; padding:3px 8px; border-radius:6px; background:rgba(2,132,199,0.12); border:1px solid rgba(2,132,199,0.3); font-size:10.5px; font-family:var(--font-mono);">
@@ -9696,19 +9703,34 @@ function initHourlySyncScheduler() {
         const s = DATA.meta.api_status || {};
         
         const elV = document.getElementById('api-cnt-vindi');
-        if (elV && s.vindi) elV.textContent = `${s.vindi.faturas_count || 3992} fats`;
+        if (elV && s.vindi) {
+            let n = s.vindi.new_count || 0;
+            elV.textContent = n >= 0 ? `+${n} novas fats` : `${n} novas fats`;
+        }
 
         const elC = document.getElementById('api-cnt-cativa');
-        if (elC && s.cativa) elC.textContent = `${s.cativa.logs_count || 12246} logs`;
+        if (elC && s.cativa) {
+            let n = s.cativa.new_count || 0;
+            elC.textContent = n >= 0 ? `+${n} novos logs` : `${n} novos logs`;
+        }
 
         const elAc = document.getElementById('api-cnt-academy');
-        if (elAc && s.academy) elAc.textContent = `${s.academy.logs_count || 7157} logs`;
+        if (elAc && s.academy) {
+            let n = s.academy.new_count || 0;
+            elAc.textContent = n >= 0 ? `+${n} novos logs` : `${n} novos logs`;
+        }
 
         const elAs = document.getElementById('api-cnt-asaas');
-        if (elAs && s.asaas) elAs.textContent = `${s.asaas.faturas_count || 366} cobr`;
+        if (elAs && s.asaas) {
+            let n = s.asaas.new_count || 0;
+            elAs.textContent = n >= 0 ? `+${n} novas cobr` : `${n} novas cobr`;
+        }
 
         const elR = document.getElementById('api-cnt-rd');
-        if (elR && s.rd_station) elR.textContent = `${s.rd_station.sync_count || 544} audit`;
+        if (elR && s.rd_station) {
+            let n = s.rd_station.new_count || 0;
+            elR.textContent = n >= 0 ? `+${n} novos audit` : `${n} novos audit`;
+        }
     }
 
     function scheduleNext() {
