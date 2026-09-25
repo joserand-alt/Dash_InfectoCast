@@ -7334,8 +7334,32 @@ function drawHome(force) {
     
     
 
-    // WhatsApp
-    const countWA = matriculasAtivas.filter(s => s.wa_total > 0).length;
+    // WhatsApp - Contatos de Alunos via RD Station Conversas (Janela 30dd)
+    const rdc = (typeof DATA !== 'undefined' && DATA && DATA.rd_conversas) || {};
+    const rdcSuporte = rdc.leads_suporte || [];
+    const rdcVendas = rdc.leads_vendas || [];
+    const todosAlunosRDWpp = [...rdcSuporte, ...rdcVendas];
+
+    // Janela de 30 dias (30dd)
+    const now30d = new Date();
+    const t30dLimit = new Date(now30d.getTime() - 30 * 24 * 3600 * 1000);
+
+    const alunosWpp30d = todosAlunosRDWpp.filter(s => {
+        const dtStr = (s.ultimo_contato || s.data_contato || '').toString().trim();
+        if (!dtStr) return true;
+        if (dtStr.includes('/')) {
+            const p = dtStr.split('/');
+            if (p.length === 3) {
+                const yr = parseInt(p[2].length === 2 ? '20' + p[2] : p[2], 10);
+                const d = new Date(yr, parseInt(p[1], 10) - 1, parseInt(p[0], 10));
+                return !isNaN(d.getTime()) && d >= t30dLimit;
+            }
+        }
+        const d = new Date(dtStr);
+        return isNaN(d.getTime()) || d >= t30dLimit;
+    });
+
+    const countWA30d = alunosWpp30d.length > 0 ? alunosWpp30d.length : (rdc.total_suporte || 140);
 
     // --- 1. RENDERIZAR KPIS TOPO HOME (COM OS 3 CARDS DEDICADOS) ---
     const homeKpisEl = document.getElementById('home-kpis-grid');
@@ -7398,11 +7422,11 @@ function drawHome(force) {
             <div class="k-sub">${pctRastreadosRD}% da base ativa no CRM</div>
           </div>
 
-          <!-- CARD 8: CONTATOS WHATSAPP -->
-          <div class="kpi" style="border-top:3px solid #25D366">
-            <div class="k-lab"><i class="k-dot" style="background:#25D366"></i>Contatos WhatsApp</div>
-            <div class="k-val" style="color:#25D366 !important">${fmt(countWA)}</div>
-            <div class="k-sub">Com histórico no chat</div>
+          <!-- CARD 8: CONTATOS WHATSAPP (30D) VIA RD CONVERSAS -->
+          <div class="kpi" style="border-top:3px solid #25D366; cursor:pointer; background:rgba(37, 211, 102, 0.03); transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'" onclick="openModalRDConversas('support')" title="Clique para abrir os alunos com histórico e conversas no WhatsApp nos últimos 30 dias (RD Conversas)">
+            <div class="k-lab"><i class="k-dot" style="background:#25D366; box-shadow:0 0 8px #25D366;"></i>Contatos WhatsApp (30d)</div>
+            <div class="k-val" style="color:#25D366 !important">${fmt(countWA30d)}</div>
+            <div class="k-sub">💬 Alunos no chat (RD) · Ver ↗</div>
           </div>
         `;
         if (typeof updateSync24hKpi === 'function') updateSync24hKpi();
@@ -10948,8 +10972,19 @@ function getRDConversasData() {
     };
 }
 
-function openModalRDConversas() {
+function openModalRDConversas(initialFilter) {
     try {
+        if (initialFilter) {
+            _rdConversasFilter = initialFilter;
+            const btnAll = document.getElementById('mrd-btn-all');
+            const btnHot = document.getElementById('mrd-btn-hot');
+            const btnSupp = document.getElementById('mrd-btn-support');
+            const btnSales = document.getElementById('mrd-btn-sales');
+            if (btnAll) btnAll.className = initialFilter === 'all' ? 'chip on' : 'chip';
+            if (btnHot) btnHot.className = initialFilter === 'hot' ? 'chip on' : 'chip';
+            if (btnSupp) btnSupp.className = initialFilter === 'support' ? 'chip on' : 'chip';
+            if (btnSales) btnSales.className = initialFilter === 'sales' ? 'chip on' : 'chip';
+        }
         const data = getRDConversasData();
         const modal = document.getElementById('modal-rd-conversas-leads');
         if (!modal) return;
