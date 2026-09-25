@@ -1527,6 +1527,21 @@ option {
   }
 }
 
+
+.hud-chart-bar:hover rect {
+  filter: brightness(1.25);
+  opacity: 1 !important;
+}
+.range-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all .15s ease;
+  font-family: var(--font-hud, sans-serif);
+}
 </style>
 </head>
 <body>
@@ -9015,6 +9030,21 @@ window.exportCursoAlunosTable = function() {
     URL.revokeObjectURL(url);
 };
 
+
+window.setCursoEnrollRange = function(r) {
+    window.CURSO_ENROLL_RANGE = r;
+    if (typeof drawCursoView === 'function' && window.CURRENT_CURSO_ACTIVE_NAME) {
+        drawCursoView(window.CURRENT_CURSO_ACTIVE_NAME, true);
+    }
+};
+
+window.setCursoFinRange = function(r) {
+    window.CURSO_FIN_RANGE = r;
+    if (typeof drawCursoView === 'function' && window.CURRENT_CURSO_ACTIVE_NAME) {
+        drawCursoView(window.CURRENT_CURSO_ACTIVE_NAME, true);
+    }
+};
+
 function drawCursoView(courseName, force) {
     const mount = document.getElementById('curso-content-mount');
     if (!mount) return;
@@ -9415,53 +9445,124 @@ function drawCursoView(courseName, force) {
         progressoMedioCurso = (alunosAtivosCurso.reduce((acc, s) => acc + (s.progresso_pct || 0), 0) / alunosAtivosCurso.length).toFixed(1);
     }
 
-    // Helpers SVG para Gráficos
+    // Helpers SVG para Gráficos (100% Otimizados, Espaçosos e com Leitura Limpa)
     // A. Gráfico de Matrículas por Mês
+    const curEnrollRange = window.CURSO_ENROLL_RANGE || 'all'; // '6m', '12m', 'all'
     const enrollMonths = Object.keys(enrollMonthlyMap).sort();
+    let displayedEnrollMonths = [...enrollMonths];
+    if (curEnrollRange === '6m') {
+        displayedEnrollMonths = displayedEnrollMonths.slice(-6);
+    } else if (curEnrollRange === '12m') {
+        displayedEnrollMonths = displayedEnrollMonths.slice(-12);
+    }
+
+    const totalEnrollFilt = displayedEnrollMonths.reduce((acc, ym) => acc + (enrollMonthlyMap[ym] || 0), 0);
+    const maxValEnroll = Math.max(1, ...displayedEnrollMonths.map(ym => enrollMonthlyMap[ym] || 0));
+    const mediaEnrollFilt = displayedEnrollMonths.length > 0 ? (totalEnrollFilt / displayedEnrollMonths.length).toFixed(1) : '0.0';
+    let picoMonthFilt = '';
+    displayedEnrollMonths.forEach(ym => {
+        if ((enrollMonthlyMap[ym] || 0) === maxValEnroll && !picoMonthFilt) picoMonthFilt = ym;
+    });
+    const mesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    let picoLabelFilt = '-';
+    if (picoMonthFilt) {
+        const [pA, pM] = picoMonthFilt.split('-');
+        picoLabelFilt = (mesNomes[parseInt(pM, 10) - 1] || pM) + '/' + pA.slice(2);
+    }
+
     let enrollSvg = '';
-    if (enrollMonths.length > 0) {
-        const maxVal = Math.max(1, ...Object.values(enrollMonthlyMap));
-        const W = 620, H = 180, pad = { l: 36, r: 16, t: 24, b: 32 };
+    if (displayedEnrollMonths.length > 0) {
+        const W = 1000, H = 250, pad = { l: 45, r: 24, t: 42, b: 46 };
         const chartW = W - pad.l - pad.r;
         const chartH = H - pad.t - pad.b;
-        const barW = Math.max(14, Math.min(38, Math.floor(chartW / enrollMonths.length) - 6));
-        const step = chartW / enrollMonths.length;
+        const step = chartW / displayedEnrollMonths.length;
+        const barW = Math.max(14, Math.min(38, Math.floor(step * 0.62)));
 
         let bars = '';
         let labels = '';
         let grid = '';
 
-        [0, 0.5, 1].forEach(pct => {
+        // 4 Linhas de Grade e Eixo Y
+        [0, 0.33, 0.66, 1].forEach(pct => {
             const y = pad.t + chartH - (pct * chartH);
-            const val = Math.round(pct * maxVal);
-            grid += `<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="var(--line2)" stroke-dasharray="3,3" />`;
-            grid += `<text x="${pad.l - 6}" y="${y + 3}" font-size="9" fill="var(--muted)" text-anchor="end">${val}</text>`;
+            const val = Math.round(pct * maxValEnroll);
+            grid += `<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3,3" />`;
+            grid += `<text x="${pad.l - 8}" y="${y + 3.5}" font-size="9.5" font-family="var(--font-mono, monospace)" font-weight="600" fill="var(--muted)" text-anchor="end">${val}</text>`;
         });
 
-        enrollMonths.forEach((ym, idx) => {
-            const val = enrollMonthlyMap[ym];
-            const h = (val / maxVal) * chartH;
+        displayedEnrollMonths.forEach((ym, idx) => {
+            const val = enrollMonthlyMap[ym] || 0;
+            const h = (val / maxValEnroll) * chartH;
             const x = pad.l + (idx * step) + (step - barW) / 2;
             const y = pad.t + chartH - h;
             const [ano, mes] = ym.split('-');
-            const mesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-            const lbl = (mesNomes[parseInt(mes, 10) - 1] || mes) + '/' + ano.slice(2);
+            const mesIdx = parseInt(mes, 10) - 1;
+            const mesNome = mesNomes[mesIdx] || mes;
+            const anoCurto = "'" + ano.slice(2);
 
-            bars += `<rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="4" fill="var(--brand)" opacity="0.88">
-                <title>${lbl}: ${val} matrículas confirmadas</title>
-            </rect>`;
-            bars += `<text x="${x + barW/2}" y="${Math.max(pad.t + 12, y - 5)}" font-size="10" font-weight="700" fill="var(--ink)" text-anchor="middle">${val}</text>`;
-            labels += `<text x="${x + barW/2}" y="${H - 10}" font-size="9.5" fill="var(--muted)" text-anchor="middle">${lbl}</text>`;
+            const isPeak = val === maxValEnroll && val > 0;
+            const isLatest = idx === displayedEnrollMonths.length - 1;
+
+            // Cores e Gradientes elegantes
+            let fillGrad = 'url(#gradEnrollCyan)';
+            if (isLatest) {
+                fillGrad = 'url(#gradEnrollEmerald)';
+            } else if (isPeak) {
+                fillGrad = 'url(#gradEnrollPeak)';
+            }
+
+            bars += `<g class="hud-chart-bar" style="cursor:pointer;" transform-origin="${x + barW/2} ${pad.t + chartH}">
+                <title>${mesNome}/${ano}: ${val} novas matrículas confirmadas (${totalEnrollFilt > 0 ? ((val/totalEnrollFilt)*100).toFixed(1) : 0}% da safra)</title>
+                <rect x="${x}" y="${y}" width="${barW}" height="${Math.max(3, h)}" rx="4" fill="${fillGrad}" opacity="0.92">
+                </rect>`;
+
+            // Badge / Valor acima da barra
+            if (val > 0) {
+                const textY = Math.max(pad.t + 14, y - 6);
+                const textColor = isLatest ? '#10b981' : (isPeak ? '#00f0ff' : 'var(--ink)');
+                bars += `<text x="${x + barW/2}" y="${textY}" font-size="10.5" font-family="var(--font-mono, monospace)" font-weight="800" fill="${textColor}" text-anchor="middle">${val}</text>`;
+            }
+
+            // Indicador de Pico ou Mês Atual acima
+            if (isPeak && !isLatest && val > 0) {
+                bars += `<text x="${x + barW/2}" y="${Math.max(pad.t + 2, y - 18)}" font-size="8.5" font-weight="800" fill="#00f0ff" text-anchor="middle">★ PICO</text>`;
+            } else if (isLatest && val > 0) {
+                bars += `<text x="${x + barW/2}" y="${Math.max(pad.t + 2, y - 18)}" font-size="8.5" font-weight="800" fill="#10b981" text-anchor="middle">ATUAL</text>`;
+            }
+
+            bars += `</g>`;
+
+            // Rótulo do Eixo X em 2 linhas (Nunca sobrepõe!)
+            labels += `<text x="${x + barW/2}" y="${H - 24}" font-size="10" font-weight="700" fill="${isLatest ? '#10b981' : 'var(--ink)'}" text-anchor="middle">${mesNome}</text>`;
+            labels += `<text x="${x + barW/2}" y="${H - 12}" font-size="8.5" font-weight="600" fill="var(--muted)" text-anchor="middle">${anoCurto}</text>`;
         });
 
-        enrollSvg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="overflow:visible">${grid}${bars}${labels}</svg>`;
+        enrollSvg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="overflow:visible; display:block;">
+            <defs>
+                <linearGradient id="gradEnrollCyan" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.95"/>
+                    <stop offset="100%" stop-color="#0284c7" stop-opacity="0.70"/>
+                </linearGradient>
+                <linearGradient id="gradEnrollPeak" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#38bdf8" stop-opacity="1"/>
+                    <stop offset="100%" stop-color="#0369a1" stop-opacity="0.85"/>
+                </linearGradient>
+                <linearGradient id="gradEnrollEmerald" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#10b981" stop-opacity="1"/>
+                    <stop offset="100%" stop-color="#059669" stop-opacity="0.80"/>
+                </linearGradient>
+            </defs>
+            ${grid}${bars}${labels}
+        </svg>`;
     } else {
         enrollSvg = '<div style="padding:40px; text-align:center; color:var(--muted)">Sem histórico de datas de matrícula registrado.</div>';
     }
 
-    // B. Gráfico Financeiro (Histórico + Projeção)
-    const histData = (cFin.historico_mensal || []).slice(-8);
-    const projData = (cFin.projecao_mensal || []).slice(0, 8);
+    // B. Gráfico Financeiro (Histórico Realizado + Projeção Futura)
+    const curFinRange = window.CURSO_FIN_RANGE || 'all'; // '6m', 'all'
+    const finCount = curFinRange === '6m' ? 6 : 8;
+    const histData = (cFin.historico_mensal || []).slice(-finCount);
+    const projData = (cFin.projecao_mensal || []).slice(0, finCount);
     const allFinItems = [
         ...histData.map(h => ({ mes: h.mes, label: h.label, val: h.pago || 0, tipo: 'realizado' })),
         ...projData.map(p => ({ mes: p.mes, label: p.label, val: p.previsto || 0, tipo: 'previsto' }))
@@ -9469,47 +9570,97 @@ function drawCursoView(courseName, force) {
 
     let finSvg = '';
     if (allFinItems.length > 0) {
-        const maxVal = Math.max(1, ...allFinItems.map(x => x.val));
-        const W = 620, H = 180, pad = { l: 56, r: 16, t: 24, b: 32 };
+        const maxValFin = Math.max(1, ...allFinItems.map(x => x.val));
+        const W = 1000, H = 250, pad = { l: 65, r: 24, t: 42, b: 46 };
         const chartW = W - pad.l - pad.r;
         const chartH = H - pad.t - pad.b;
-        const barW = Math.max(12, Math.min(26, Math.floor(chartW / allFinItems.length) - 4));
         const step = chartW / allFinItems.length;
+        const barW = Math.max(14, Math.min(36, Math.floor(step * 0.58)));
 
         let bars = '';
         let labels = '';
         let grid = '';
+        let divider = '';
 
-        [0, 0.5, 1].forEach(pct => {
+        // 4 Linhas de Grade e Eixo Y
+        [0, 0.33, 0.66, 1].forEach(pct => {
             const y = pad.t + chartH - (pct * chartH);
-            const val = pct * maxVal;
-            grid += `<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="var(--line2)" stroke-dasharray="3,3" />`;
-            grid += `<text x="${pad.l - 6}" y="${y + 3}" font-size="9" fill="var(--muted)" text-anchor="end">${fM(val).replace('R$', '').trim().slice(0, 7)}</text>`;
+            const val = pct * maxValFin;
+            grid += `<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3,3" />`;
+            const valLabel = val >= 1000 ? (val/1000).toFixed(0) + 'k' : val.toFixed(0);
+            grid += `<text x="${pad.l - 8}" y="${y + 3.5}" font-size="9.5" font-family="var(--font-mono, monospace)" font-weight="600" fill="var(--muted)" text-anchor="end">R$ ${valLabel}</text>`;
         });
 
+        // Divisor entre Realizado e Previsto
+        const splitIdx = histData.length;
+        if (splitIdx > 0 && splitIdx < allFinItems.length) {
+            const splitX = pad.l + (splitIdx * step);
+            divider = `
+                <line x1="${splitX}" y1="${pad.t - 14}" x2="${splitX}" y2="${H - pad.b}" stroke="#a78bfa" stroke-dasharray="3,3" stroke-width="1.5" opacity="0.6"/>
+                <text x="${splitX}" y="${pad.t - 18}" font-size="8.5" font-weight="800" font-family="var(--font-hud, sans-serif)" fill="#a78bfa" text-anchor="middle">◄ REALIZADO | PREVISTO ►</text>
+            `;
+        }
+
         allFinItems.forEach((item, idx) => {
-            const h = (item.val / maxVal) * chartH;
+            const h = (item.val / maxValFin) * chartH;
             const x = pad.l + (idx * step) + (step - barW) / 2;
             const y = pad.t + chartH - h;
             const isReal = item.tipo === 'realizado';
-            const barFill = isReal ? 'var(--brand)' : 'var(--purple, #7c3aed)';
-            const opacity = isReal ? '0.88' : '0.65';
-            const dash = isReal ? '' : 'stroke="#7c3aed" stroke-dasharray="2,2" stroke-width="1"';
+            const barFill = isReal ? 'url(#gradFinRealizado)' : 'url(#gradFinPrevisto)';
+            const strokeAttr = isReal ? '' : 'stroke="#8b5cf6" stroke-dasharray="2,2" stroke-width="1"';
 
-            bars += `<rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="3" fill="${barFill}" opacity="${opacity}" ${dash}>
-                <title>${item.label} (${item.tipo.toUpperCase()}): ${fM(item.val)}</title>
-            </rect>`;
+            bars += `<g class="hud-chart-bar" style="cursor:pointer;">
+                <title>${item.label || item.mes} (${item.tipo.toUpperCase()}): ${fM(item.val)}</title>
+                <rect x="${x}" y="${y}" width="${barW}" height="${Math.max(3, h)}" rx="4" fill="${barFill}" opacity="0.9" ${strokeAttr}>
+                </rect>`;
+
+            // Valor acima da barra
             if (item.val > 0) {
-                bars += `<text x="${x + barW/2}" y="${Math.max(pad.t + 10, y - 4)}" font-size="8.5" font-weight="700" fill="var(--ink)" text-anchor="middle">${Math.round(item.val/1000) > 0 ? (item.val/1000).toFixed(1)+'k' : item.val.toFixed(0)}</text>`;
+                const textY = Math.max(pad.t + 14, y - 6);
+                const kVal = (item.val/1000).toFixed(1) + 'k';
+                const col = isReal ? '#10b981' : '#a78bfa';
+                bars += `<text x="${x + barW/2}" y="${textY}" font-size="10" font-family="var(--font-mono, monospace)" font-weight="800" fill="${col}" text-anchor="middle">${kVal}</text>`;
             }
-            labels += `<text x="${x + barW/2}" y="${H - 10}" font-size="9" fill="var(--muted)" text-anchor="middle">${item.label || item.mes}</text>`;
+
+            bars += `</g>`;
+
+            // Rótulo de mês / ano
+            const rawLabel = item.label || item.mes || '';
+            let lblMes = rawLabel;
+            let lblAno = '';
+            if (rawLabel.includes('/')) {
+                const parts = rawLabel.split('/');
+                lblMes = parts[0];
+                lblAno = "'" + (parts[1] || '').slice(-2);
+            } else if (rawLabel.includes('-')) {
+                const parts = rawLabel.split('-');
+                const mIdx = parseInt(parts[1], 10) - 1;
+                lblMes = mesNomes[mIdx] || parts[1];
+                lblAno = "'" + parts[0].slice(-2);
+            }
+
+            labels += `<text x="${x + barW/2}" y="${H - 24}" font-size="10" font-weight="700" fill="${isReal ? 'var(--ink)' : '#c4b5fd'}" text-anchor="middle">${lblMes}</text>`;
+            if (lblAno) {
+                labels += `<text x="${x + barW/2}" y="${H - 12}" font-size="8.5" font-weight="600" fill="var(--muted)" text-anchor="middle">${lblAno}</text>`;
+            }
         });
 
-        finSvg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="overflow:visible">${grid}${bars}${labels}</svg>`;
+        finSvg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="overflow:visible; display:block;">
+            <defs>
+                <linearGradient id="gradFinRealizado" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#10b981" stop-opacity="0.95"/>
+                    <stop offset="100%" stop-color="#059669" stop-opacity="0.75"/>
+                </linearGradient>
+                <linearGradient id="gradFinPrevisto" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.90"/>
+                    <stop offset="100%" stop-color="#4f46e5" stop-opacity="0.70"/>
+                </linearGradient>
+            </defs>
+            ${grid}${divider}${bars}${labels}
+        </svg>`;
     } else {
         finSvg = '<div style="padding:40px; text-align:center; color:var(--muted)">Sem movimentações financeiras registradas para este curso.</div>';
     }
-
     // Helper para status badge do aluno
     const getStatusChip = (st) => {
         const map = {
@@ -9683,62 +9834,78 @@ function drawCursoView(courseName, force) {
           </div>
         </div>
 
-        <div style="display:grid; grid-template-columns: 360px 1fr; gap:16px; align-items:stretch;">
-          <!-- KPIs de Matrícula -->
-          <div style="display:flex; flex-direction:column; gap:8px;">
-            <!-- Card 1: Confirmadas 30d -->
-            <div class="exec-card" onclick="filterCursoTableKpi('recent_30d_conf')" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === 'recent_30d' || kpiFilter === 'recent_30d_conf' ? 'border:2px solid #10b981; box-shadow:0 4px 14px rgba(16,185,129,0.15);' : ''}" title="Clique para filtrar apenas as matrículas confirmadas e pagas dos últimos 30 dias">
-              <div class="exec-card-top">
-                <span class="exec-card-label">Matrículas Confirmadas (30d)</span>
-                <span class="exec-pill ${kpiFilter === 'recent_30d' || kpiFilter === 'recent_30d_conf' ? 'pill-green' : growthEnrollClass}">${kpiFilter === 'recent_30d' || kpiFilter === 'recent_30d_conf' ? '● Filtrando Tabela' : '📅 PAGO / CONFIRMADO'}</span>
+        <!-- Linha 1: 4 KPIs de Matrícula em Grid Equilibrado -->
+        <div class="exec-grid-4" style="margin-bottom:16px;">
+          <!-- Card 1: Confirmadas 30d -->
+          <div class="exec-card" onclick="filterCursoTableKpi('recent_30d_conf')" style="cursor:pointer; transition:all .2s ease; ${kpiFilter === 'recent_30d' || kpiFilter === 'recent_30d_conf' ? 'border:2px solid #10b981; box-shadow:0 4px 14px rgba(16,185,129,0.15);' : ''}" title="Clique para filtrar apenas as matrículas confirmadas e pagas dos últimos 30 dias">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Matrículas Confirmadas (30d)</span>
+              <span class="exec-pill ${kpiFilter === 'recent_30d' || kpiFilter === 'recent_30d_conf' ? 'pill-green' : growthEnrollClass}">${kpiFilter === 'recent_30d' || kpiFilter === 'recent_30d_conf' ? '● Filtrando Tabela' : '📅 PAGO / CONFIRMADO'}</span>
+            </div>
+            <div class="exec-card-val" style="color:#10b981;">${fN(matriculas30dConf)}</div>
+            <div class="exec-card-sub">Efetivas (D-30 a Hoje) • ${growthEnrollText}</div>
+          </div>
+
+          <!-- Card 2: Pendentes 30d -->
+          <div class="exec-card" onclick="filterCursoTableKpi('recent_30d_pend')" style="cursor:pointer; transition:all .2s ease; ${kpiFilter === 'recent_30d_pend' ? 'border:2px solid #f59e0b; box-shadow:0 4px 14px rgba(245,158,11,0.15);' : ''}" title="Clique para filtrar apenas as matrículas pendentes dos últimos 30 dias">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Matrículas Pendentes (30d)</span>
+              <span class="exec-pill ${kpiFilter === 'recent_30d_pend' ? 'pill-yellow' : 'pill-amber'}" style="${kpiFilter === 'recent_30d_pend' ? '' : 'background:rgba(245,158,11,0.12); color:#d97706; border:1px solid rgba(245,158,11,0.3);'}">${kpiFilter === 'recent_30d_pend' ? '● Filtrando Tabela' : '⏳ SEM PAGAMENTO/USO'}</span>
+            </div>
+            <div class="exec-card-val" style="color:#f59e0b;">${fN(matriculas30dPend)}</div>
+            <div class="exec-card-sub">Inscrições recentes aguardando confirmação / consumo</div>
+          </div>
+
+          <!-- Card 3: 30d Anteriores -->
+          <div class="exec-card" onclick="filterCursoTableKpi('prev_30d')" style="cursor:pointer; transition:all .2s ease; ${kpiFilter === 'prev_30d' ? 'border:2px solid var(--brand); box-shadow:0 4px 14px rgba(0,240,255,0.15);' : ''}" title="Clique para filtrar apenas as matrículas confirmadas dos 30 dias anteriores na tabela">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Matrículas (30d Anteriores)</span>
+              <span class="exec-pill ${kpiFilter === 'prev_30d' ? 'pill-blue' : 'pill-purple'}">${kpiFilter === 'prev_30d' ? '● Filtrando Tabela' : 'Base D-60 a D-31'}</span>
+            </div>
+            <div class="exec-card-val" style="color:var(--ink)">${fN(matriculas30dAntConf)}</div>
+            <div class="exec-card-sub">Período comparativo anterior (${fN(matriculas30dAntConf)} confirmadas)</div>
+          </div>
+
+          <!-- Card 4: Totais Acumuladas -->
+          <div class="exec-card" onclick="filterCursoTableKpi(null)" style="cursor:pointer; transition:all .2s ease; ${kpiFilter === null ? 'border:2px solid var(--brand); box-shadow:0 4px 14px rgba(0,240,255,0.15);' : ''}" title="Clique para ver todos os alunos">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Matrículas Totais Acumuladas</span>
+              <span class="exec-pill pill-blue">${kpiFilter === null ? '● Exibindo Todos' : 'Carteira Histórica'}</span>
+            </div>
+            <div class="exec-card-val" style="color:var(--brand)">${fN(totalMatriculas)}</div>
+            <div class="exec-card-sub">${fN(totalConfirmados)} confirmadas • ${fN(countPendentes)} pendentes no total</div>
+          </div>
+        </div>
+
+        <!-- Linha 2: Gráfico de Evolução Mensal em LARGURA TOTAL (100% de Aproveitamento de Espaço) -->
+        <div class="exec-card" style="display:flex; flex-direction:column; gap:14px; padding:20px;">
+          <div class="exec-card-top" style="margin-bottom:0; flex-wrap:wrap; gap:12px; align-items:center;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="exec-card-label" style="font-size:14px; font-weight:800; color:var(--ink); letter-spacing:-0.01em;">EVOLUÇÃO MENSAL DE NOVAS MATRÍCULAS</span>
+                <span class="badge" style="background:rgba(0,240,255,0.08); border:1px solid rgba(0,240,255,0.25); color:var(--neon-cyan); font-size:10.5px; font-weight:700;">${enrollMonths.length} meses registrados</span>
               </div>
-              <div class="exec-card-val" style="color:#10b981;">${fN(matriculas30dConf)}</div>
-              <div class="exec-card-sub">Efetivas (D-30 a Hoje) • ${growthEnrollText}</div>
+              <div style="font-size:12px; color:var(--muted); margin-top:2px;">Distribuição cronológica de entradas de novos alunos e ritmo de aquisição por safra mensal</div>
             </div>
 
-            <!-- Card 2: Pendentes 30d -->
-            <div class="exec-card" onclick="filterCursoTableKpi('recent_30d_pend')" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === 'recent_30d_pend' ? 'border:2px solid #f59e0b; box-shadow:0 4px 14px rgba(245,158,11,0.15);' : ''}" title="Clique para filtrar apenas as matrículas pendentes dos últimos 30 dias">
-              <div class="exec-card-top">
-                <span class="exec-card-label">Matrículas Pendentes (30d)</span>
-                <span class="exec-pill ${kpiFilter === 'recent_30d_pend' ? 'pill-yellow' : 'pill-amber'}" style="${kpiFilter === 'recent_30d_pend' ? '' : 'background:rgba(245,158,11,0.12); color:#d97706; border:1px solid rgba(245,158,11,0.3);'}">${kpiFilter === 'recent_30d_pend' ? '● Filtrando Tabela' : '⏳ SEM PAGAMENTO/USO'}</span>
+            <!-- Controles de Período e Resumo Executivo -->
+            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+              <div style="display:flex; gap:10px; font-size:11px; font-family:var(--font-hud);">
+                <span style="color:var(--muted);">Total Período: <strong style="color:var(--neon-cyan);">${fN(totalEnrollFilt)}</strong></span>
+                <span style="color:var(--muted);">Média: <strong style="color:var(--ink);">${mediaEnrollFilt}/mês</strong></span>
+                <span style="color:var(--muted);">Pico: <strong style="color:#00f0ff;">${maxValEnroll} (${picoLabelFilt})</strong></span>
               </div>
-              <div class="exec-card-val" style="color:#f59e0b;">${fN(matriculas30dPend)}</div>
-              <div class="exec-card-sub">Inscrições recentes aguardando confirmação / consumo</div>
-            </div>
 
-            <!-- Card 3: 30d Anteriores -->
-            <div class="exec-card" onclick="filterCursoTableKpi('prev_30d')" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === 'prev_30d' ? 'border:2px solid var(--brand); box-shadow:0 4px 14px rgba(0,240,255,0.15);' : ''}" title="Clique para filtrar apenas as matrículas confirmadas dos 30 dias anteriores na tabela">
-              <div class="exec-card-top">
-                <span class="exec-card-label">Matrículas (30d Anteriores)</span>
-                <span class="exec-pill ${kpiFilter === 'prev_30d' ? 'pill-blue' : 'pill-purple'}">${kpiFilter === 'prev_30d' ? '● Filtrando Tabela' : 'Base D-60 a D-31'}</span>
+              <div style="display:inline-flex; background:rgba(255,255,255,0.04); border:1px solid var(--line); border-radius:8px; padding:3px; gap:4px;">
+                <button type="button" onclick="setCursoEnrollRange('6m')" class="range-btn" style="background:${curEnrollRange==='6m'?'var(--brand)':'transparent'}; color:${curEnrollRange==='6m'?'#000':'var(--muted)'};">6 Meses</button>
+                <button type="button" onclick="setCursoEnrollRange('12m')" class="range-btn" style="background:${curEnrollRange==='12m'?'var(--brand)':'transparent'}; color:${curEnrollRange==='12m'?'#000':'var(--muted)'};">12 Meses</button>
+                <button type="button" onclick="setCursoEnrollRange('all')" class="range-btn" style="background:${curEnrollRange==='all'?'var(--brand)':'transparent'}; color:${curEnrollRange==='all'?'#000':'var(--muted)'};">Histórico Completo (${enrollMonths.length}m)</button>
               </div>
-              <div class="exec-card-val" style="color:var(--ink)">${fN(matriculas30dAntConf)}</div>
-              <div class="exec-card-sub">Período comparativo anterior (${fN(matriculas30dAntConf)} confirmadas)</div>
-            </div>
-
-            <!-- Card 4: Totais Acumuladas -->
-            <div class="exec-card" onclick="filterCursoTableKpi(null)" style="flex:1; cursor:pointer; transition:all .2s ease; ${kpiFilter === null ? 'border:2px solid var(--brand); box-shadow:0 4px 14px rgba(0,240,255,0.15);' : ''}" title="Clique para ver todos os alunos">
-              <div class="exec-card-top">
-                <span class="exec-card-label">Matrículas Totais Acumuladas</span>
-                <span class="exec-pill pill-blue">${kpiFilter === null ? '● Exibindo Todos' : 'Carteira Histórica'}</span>
-              </div>
-              <div class="exec-card-val" style="color:var(--brand)">${fN(totalMatriculas)}</div>
-              <div class="exec-card-sub">${fN(totalConfirmados)} confirmadas • ${fN(countPendentes)} pendentes no total</div>
             </div>
           </div>
 
-          <!-- Gráfico de Matrículas Mensal -->
-          <div class="exec-card" style="display:flex; flex-direction:column; justify-content:space-between;">
-            <div class="exec-card-top" style="margin-bottom:12px;">
-              <div>
-                <span class="exec-card-label" style="font-size:13px; font-weight:700; color:var(--ink)">Evolução Mensal de Novas Matrículas</span>
-                <div style="font-size:11px; color:var(--muted)">Distribuição cronológica de entradas de novos alunos no curso</div>
-              </div>
-              <span class="badge" style="background:var(--paper); color:var(--muted); font-size:10.5px">${enrollMonths.length} meses registrados</span>
-            </div>
-            <div style="width:100%; min-height:180px;">
-              ${enrollSvg}
-            </div>
+          <div style="width:100%; min-height:240px; overflow-x:auto;">
+            ${enrollSvg}
           </div>
         </div>
       </div>
@@ -9873,51 +10040,61 @@ function drawCursoView(courseName, force) {
           </div>
         </div>
 
-        <!-- Projeções e Gráfico SVG -->
-        <div style="display:grid; grid-template-columns: 360px 1fr; gap:16px; align-items:stretch;">
-          <div style="display:flex; flex-direction:column; gap:12px;">
-            <div class="exec-card" style="flex:1;">
-              <div class="exec-card-top">
-                <span class="exec-card-label">Projeção 3 Meses (Contratada)</span>
-                <span class="exec-pill pill-purple">3M Futuro</span>
+        <!-- Projeções em Linha Uniforme (exec-grid-3) -->
+        <div class="exec-grid-3" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-bottom:16px;">
+          <div class="exec-card">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Projeção 3 Meses (Contratada)</span>
+              <span class="exec-pill pill-purple">3M Futuro</span>
+            </div>
+            <div class="exec-card-val" style="color:#7c3aed">${fM(cFin.proj_3m)}</div>
+            <div class="exec-card-sub">Recebíveis parcelados e mensalidades dos próximos 90 dias</div>
+          </div>
+
+          <div class="exec-card">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Projeção 6 Meses</span>
+              <span class="exec-pill pill-purple">6M Futuro</span>
+            </div>
+            <div class="exec-card-val" style="color:#7c3aed">${fM(cFin.proj_6m)}</div>
+            <div class="exec-card-sub">Previsibilidade de faturamento para os próximos 180 dias</div>
+          </div>
+
+          <div class="exec-card">
+            <div class="exec-card-top">
+              <span class="exec-card-label">Projeção 12 Meses (LTV Futuro)</span>
+              <span class="exec-pill pill-purple">12M Futuro</span>
+            </div>
+            <div class="exec-card-val" style="color:#7c3aed">${fM(cFin.proj_12m)}</div>
+            <div class="exec-card-sub">Previsibilidade contratual anualizada para este curso</div>
+          </div>
+        </div>
+
+        <!-- Gráfico Financeiro em LARGURA TOTAL -->
+        <div class="exec-card" style="display:flex; flex-direction:column; gap:14px; padding:20px;">
+          <div class="exec-card-top" style="margin-bottom:0; flex-wrap:wrap; gap:12px; align-items:center;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="exec-card-label" style="font-size:14px; font-weight:800; color:var(--ink); letter-spacing:-0.01em;">EVOLUÇÃO FINANCEIRA: REALIZADO VS PREVISTO</span>
+                <span class="badge" style="background:rgba(124,58,237,0.1); border:1px solid rgba(124,58,237,0.3); color:#a78bfa; font-size:10.5px; font-weight:700;">Fluxo de Caixa &amp; Projeção</span>
               </div>
-              <div class="exec-card-val" style="color:#7c3aed">${fM(cFin.proj_3m)}</div>
-              <div class="exec-card-sub">Recebíveis parcelados e mensalidades dos próximos 90 dias</div>
+              <div style="font-size:12px; color:var(--muted); margin-top:2px;">Histórico recente de repasses realizados e projeção contratual dos próximos meses</div>
             </div>
 
-            <div class="exec-card" style="flex:1;">
-              <div class="exec-card-top">
-                <span class="exec-card-label">Projeção 6 Meses</span>
-                <span class="exec-pill pill-purple">6M Futuro</span>
+            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+              <div style="display:flex; gap:12px; font-size:11px; align-items:center;">
+                <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:12px; height:12px; border-radius:3px; background:linear-gradient(180deg, #10b981, #059669); display:inline-block"></span> <strong>Faturamento Realizado</strong></span>
+                <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:12px; height:12px; border-radius:3px; background:linear-gradient(180deg, #8b5cf6, #6366f1); display:inline-block"></span> <strong>Projeção Prevista</strong></span>
               </div>
-              <div class="exec-card-val" style="color:#7c3aed">${fM(cFin.proj_6m)}</div>
-              <div class="exec-card-sub">Previsibilidade de faturamento para os próximos 180 dias</div>
-            </div>
-
-            <div class="exec-card" style="flex:1;">
-              <div class="exec-card-top">
-                <span class="exec-card-label">Projeção 12 Meses (LTV Futuro)</span>
-                <span class="exec-pill pill-purple">12M Futuro</span>
+              <div style="display:inline-flex; background:rgba(255,255,255,0.04); border:1px solid var(--line); border-radius:8px; padding:3px; gap:4px;">
+                <button type="button" onclick="setCursoFinRange('6m')" class="range-btn" style="background:${curFinRange==='6m'?'var(--brand)':'transparent'}; color:${curFinRange==='6m'?'#000':'var(--muted)'};">6M Hist. + 6M Proj.</button>
+                <button type="button" onclick="setCursoFinRange('all')" class="range-btn" style="background:${curFinRange==='all'?'var(--brand)':'transparent'}; color:${curFinRange==='all'?'#000':'var(--muted)'};">Completo (8M + 8M)</button>
               </div>
-              <div class="exec-card-val" style="color:#7c3aed">${fM(cFin.proj_12m)}</div>
-              <div class="exec-card-sub">Previsibilidade contratual anualizada para este curso</div>
             </div>
           </div>
 
-          <div class="exec-card" style="display:flex; flex-direction:column; justify-content:space-between;">
-            <div class="exec-card-top" style="margin-bottom:12px;">
-              <div>
-                <span class="exec-card-label" style="font-size:13px; font-weight:700; color:var(--ink)">Evolução Financeira: Realizado vs Previsto</span>
-                <div style="font-size:11px; color:var(--muted)">Histórico recente de repasses realizados e projeção dos próximos meses</div>
-              </div>
-              <div style="display:flex; gap:12px; font-size:11px; align-items:center;">
-                <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; border-radius:2px; background:var(--brand); display:inline-block"></span> Realizado</span>
-                <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; border-radius:2px; background:#7c3aed; display:inline-block"></span> Previsto</span>
-              </div>
-            </div>
-            <div style="width:100%; min-height:180px;">
-              ${finSvg}
-            </div>
+          <div style="width:100%; min-height:240px; overflow-x:auto;">
+            ${finSvg}
           </div>
         </div>
       </div>
