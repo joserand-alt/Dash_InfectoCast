@@ -1,4 +1,4 @@
-﻿import urllib.request
+import urllib.request
 import ssl
 import json
 import os
@@ -10,8 +10,8 @@ from concurrent.futures import ThreadPoolExecutor
 TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb3NlcmFuZGNvc3RhIiwianRpIjoiYTdiMzg2Y2MtYTYwYi00NGRmLWQ0NWYtMDhkZTEwYmRmODVkIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQWRtaW4iLCJodHRwOi8vcGxhaC5zb2NpYWwvY2xhaW1zL2N1c3RvbWVyL2lkIjoiZjA5NGYxZTctZWY5MC00Mzc3LTlkYjYtMDhkY2E3NjQ4Y2IzIiwiaHR0cDovL3BsYWguc29jaWFsL2NsYWltcy9jdXN0b21lci9uYW1lIjoiaW5mZWN0b3hwZXJ0IiwiaHR0cDovL3BsYWguc29jaWFsL2NsYWltcy91c2VyL2VtYWlsQ29uZmlybWVkIjoidHJ1ZSIsImh0dHA6Ly9wbGFoLnNvY2lhbC9jbGFpbXMvYXBpL2tleSI6ImYzOWExMTU5LTM3NDMtNGEwMi1hNmI1LTBmMzU1OWU4NGE5MSIsImh0dHBzOi8vY2F0aXZhLmRpZ2l0YWwvY2xhaW1zL3VzZXIvYmFkZ2UiOiI1ZTM4YTI5YS01M2I3LTQyNTEtOWM1ZS0wOGRlMjc1ODg0OGMiLCJleHAiOjIxMDQ0MTc3NjIsImlzcyI6InBsYWgtYXBpIiwiYXVkIjoicGxhaC1hcGkifQ.FuDmRu_dzMZfw6bmeJlhm53FqJuZkipJP_z77Dwy0qI"
 CUSTOMER = "infectoxpert"
 BASE_URL = "https://backoffice.cativalab.digital/api"
-CACHE_FILE = r"C:\Users\DELL\Desktop\Dash_InfectoCast\cativa_cache.json"
-CURRICULUM_CACHE_FILE = r"C:\Users\DELL\Desktop\Dash_InfectoCast\cativa_curriculum_cache.json"
+CACHE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cativa_cache.json")
+CURRICULUM_CACHE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cativa_curriculum_cache.json")
 
 ctx = ssl.create_default_context()
 ctx.check_hostname = False

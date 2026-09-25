@@ -397,7 +397,7 @@ def get_pending_enrollments(days=30):
     # 1. Tentar ler do dataset consolidado em dashboard_gerado.html
     html_sources = [
         DASHBOARD_HTML_FILE,
-        os.path.join(r"C:\Users\DELL\Desktop\Dash_InfectoCast", "dashboard_gerado.html")
+        os.path.join(r"os.path.dirname(os.path.abspath(__file__))", "dashboard_gerado.html")
     ]
     loaded_from_html = False
     for html_path in html_sources:
