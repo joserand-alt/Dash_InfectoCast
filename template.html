@@ -5456,8 +5456,8 @@ function getMatriculasAuditoriaData() {
             const aSt = (s.asaas ? (s.asaas.status_financeiro || s.asaas.status_assinatura) : '').toLowerCase();
             const vindiCanceled = vSt === 'cancelado' || vSt === 'canceled';
             const asaasCanceled = aSt === 'cancelado' || aSt === 'canceled';
-            const vindiActive = vSt === 'active' || vSt === 'ativo' || vSt === 'adimplente' || vSt === 'em_dia';
-            const asaasActive = aSt === 'active' || aSt === 'ativo' || aSt === 'received' || aSt === 'confirmed' || aSt === 'adimplente' || aSt === 'em_dia';
+            const vindiActive = vSt === 'active' || vSt === 'ativo';
+            const asaasActive = aSt === 'active' || aSt === 'ativo' || aSt === 'received' || aSt === 'confirmed';
             const vFats = s.vindi ? (s.vindi.faturas || []) : [];
             const aFats = s.asaas ? (s.asaas.faturas || []) : [];
             const vPaid = vFats.some(f => (f.status === 'pago' || f.status === 'paid' || f.pago));
@@ -8853,8 +8853,8 @@ function drawCursoView(courseName, force) {
         const aSt = (scopy.asaas ? (scopy.asaas.status_financeiro || scopy.asaas.status_assinatura) : '').toLowerCase();
         const vindiCanceled = vSt === 'cancelado' || vSt === 'canceled';
         const asaasCanceled = aSt === 'cancelado' || aSt === 'canceled';
-        const vindiActive = vSt === 'active' || vSt === 'ativo' || vSt === 'adimplente' || vSt === 'em_dia';
-        const asaasActive = aSt === 'active' || aSt === 'ativo' || aSt === 'received' || aSt === 'confirmed' || aSt === 'adimplente' || aSt === 'em_dia';
+        const vindiActive = vSt === 'active' || vSt === 'ativo';
+        const asaasActive = aSt === 'active' || aSt === 'ativo' || aSt === 'received' || aSt === 'confirmed';
         const vFaturas = scopy.vindi ? (scopy.vindi.faturas || []) : [];
         const aFaturas = scopy.asaas ? (scopy.asaas.faturas || []) : [];
         const vPaid = vFaturas.some(f => (f.status === 'pago' || f.status === 'paid' || f.pago));
