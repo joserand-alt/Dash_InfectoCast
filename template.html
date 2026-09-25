@@ -8759,13 +8759,48 @@ function drawCursoView(courseName, force) {
     return 'PLATAFORMA GERAL';
 };
 
-    // 1. Enriquecimento Robusto da Base Completa de Alunos (538 alunos não-internos)
+    // 1. Obter auditoria unificada de matrículas (G0)
+    const matInfo = (typeof getMatriculasAuditoriaData === 'function') ? getMatriculasAuditoriaData() : { count30d: 0, countPendentes30d: 0, list30d: [], pendentes30d: [], allRecords: [], allPendentes: [] };
+
+    // Mapa de auditoria para sincronização perfeita de datas e status
+    const confAuditMap = new Map();
+    (matInfo.allRecords || []).forEach(m => {
+        const em = (m.email || '').toLowerCase().trim();
+        const cCan = resolveCanonicalCourse(m.curso);
+        confAuditMap.set(em + '___' + cCan, m);
+        if (!confAuditMap.has(em + '___ANY')) confAuditMap.set(em + '___ANY', m);
+    });
+
+    const pendAuditMap = new Map();
+    (matInfo.allPendentes || []).forEach(m => {
+        const em = (m.email || '').toLowerCase().trim();
+        const cCan = resolveCanonicalCourse(m.curso);
+        pendAuditMap.set(em + '___' + cCan, m);
+        if (!pendAuditMap.has(em + '___ANY')) pendAuditMap.set(em + '___ANY', m);
+    });
+
+    // Enriquecimento Robusto da Base Completa de Alunos
     const rawStudents = (DATA && DATA.students) ? DATA.students.filter(s => !isInvalidOrInternal(s)) : [];
     const curric = (DATA && DATA.curriculum) ? DATA.curriculum : {};
 
-    const allEnrichedStudents = [...matriculasConfirmadas, ...matriculasPendentes].map(s => {
+    const allEnrichedStudents = rawStudents.map(s => {
         const scopy = { ...s };
         scopy.canonical_curso = resolveCanonicalCourse(s.curso);
+        const em = (s.email || '').toLowerCase().trim();
+        const auditConf = confAuditMap.get(em + '___' + scopy.canonical_curso) || confAuditMap.get(em + '___ANY');
+        const auditPend = pendAuditMap.get(em + '___' + scopy.canonical_curso) || pendAuditMap.get(em + '___ANY');
+
+        if (auditConf) {
+            scopy.matricula_data = auditConf.data;
+            scopy.matricula_fmt = auditConf.data_fmt;
+            scopy.gateway_info = auditConf.origem;
+            scopy.is_30d_conf = auditConf.is_30d;
+        } else if (auditPend) {
+            scopy.matricula_data = auditPend.data;
+            scopy.matricula_fmt = auditPend.data_fmt;
+            scopy.gateway_info = auditPend.origem;
+            scopy.is_30d_pend = auditPend.is_30d;
+        }
 
         // Aulas concluídas e assistidas
         let s_lessons_done = new Set();
@@ -8860,13 +8895,13 @@ function drawCursoView(courseName, force) {
         const vPaid = vFaturas.some(f => (f.status === 'pago' || f.status === 'paid' || f.pago));
         const aPaid = aFaturas.some(f => (f.status === 'pago' || f.status === 'paid' || f.status === 'RECEIVED' || f.status === 'CONFIRMED' || f.pago));
 
-        const hasFinanceiro = vindiActive || asaasActive || vPaid || aPaid;
+        const hasFinanceiro = vindiActive || asaasActive || vPaid || aPaid || !!auditConf;
         const hasConsumo = (scopy.aulas_feitas > 0);
 
         if ((vindiCanceled || asaasCanceled) && !vindiActive && !asaasActive && !hasConsumo) {
             scopy.status = 'Cancelado';
             scopy.is_matricula_pendente = false;
-        } else if (!hasFinanceiro && !hasConsumo && scopy.status !== 'Concluído') {
+        } else if (auditPend || (!hasFinanceiro && !hasConsumo && scopy.status !== 'Concluído')) {
             scopy.status = 'Matrícula Pendente';
             scopy.is_matricula_pendente = true;
         } else {
@@ -8966,7 +9001,7 @@ function drawCursoView(courseName, force) {
         faturas_tabela: []
     });
 
-    // 5. Indicadores de Matrícula (Totais, 30d recentes, 30d anteriores, evolução mensal) - 100% DINÂMICO
+    // 5. Indicadores de Matrícula (Totais, 30d recentes, 30d anteriores, evolução mensal) - 100% DINÂMICO E SINCRONIZADO COM G0
     const now = new Date();
     const t30d = new Date(now.getTime() - 30 * 24 * 3600 * 1000);
     const t60d = new Date(now.getTime() - 60 * 24 * 3600 * 1000);
@@ -8976,8 +9011,33 @@ function drawCursoView(courseName, force) {
     let matriculas30dAntPend = 0;
     const enrollMonthlyMap = {};
 
+    if (isAll) {
+        matriculas30dConf = matInfo.count30d || 0;
+        matriculas30dPend = matInfo.countPendentes30d || 0;
+        (matInfo.allRecords || []).forEach(m => {
+            if (m.data >= t60d && m.data < t30d) matriculas30dAntConf++;
+        });
+        (matInfo.allPendentes || []).forEach(m => {
+            if (m.data >= t60d && m.data < t30d) matriculas30dAntPend++;
+        });
+    } else {
+        (matInfo.list30d || []).forEach(m => {
+            if (resolveCanonicalCourse(m.curso) === activeCourse) matriculas30dConf++;
+        });
+        (matInfo.pendentes30d || []).forEach(m => {
+            if (resolveCanonicalCourse(m.curso) === activeCourse) matriculas30dPend++;
+        });
+        (matInfo.allRecords || []).forEach(m => {
+            if (resolveCanonicalCourse(m.curso) === activeCourse && m.data >= t60d && m.data < t30d) matriculas30dAntConf++;
+        });
+        (matInfo.allPendentes || []).forEach(m => {
+            if (resolveCanonicalCourse(m.curso) === activeCourse && m.data >= t60d && m.data < t30d) matriculas30dAntPend++;
+        });
+    }
+
     const parseEnrollDate = (s) => {
         if (!s) return null;
+        if (s.matricula_data instanceof Date && !isNaN(s.matricula_data.getTime())) return s.matricula_data;
         const dtStr = (s.data_insc || s.data_inscricao || s.inscricao || s.data_matricula || '').toString().trim();
         if (!dtStr) return null;
         if (dtStr.includes('/')) {
@@ -8997,27 +9057,12 @@ function drawCursoView(courseName, force) {
     };
 
     cStudents.forEach(s => {
-        const dt = parseEnrollDate(s);
+        const dt = s.matricula_data || parseEnrollDate(s);
         const isPend = !!(s.is_matricula_pendente || s.status === 'Matrícula Pendente');
         if (dt && !isNaN(dt.getTime())) {
             const ym = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0');
             if (!isPend) {
                 enrollMonthlyMap[ym] = (enrollMonthlyMap[ym] || 0) + 1;
-            }
-
-            // Janela D-30 a Hoje (com tolerância D+1 para fuso horário e execuções no mesmo dia)
-            if (dt >= t30d && dt <= new Date(now.getTime() + 24 * 3600 * 1000)) {
-                if (isPend) {
-                    matriculas30dPend++;
-                } else {
-                    matriculas30dConf++;
-                }
-            } else if (dt >= t60d && dt < t30d) {
-                if (isPend) {
-                    matriculas30dAntPend++;
-                } else {
-                    matriculas30dAntConf++;
-                }
             }
         }
     });
@@ -9189,27 +9234,47 @@ function drawCursoView(courseName, force) {
     let filterLabel = '';
 
     if (kpiFilter === 'recent_30d' || kpiFilter === 'recent_30d_conf') {
+        const confEmails = new Set(
+            (isAll ? (matInfo.list30d || []) : (matInfo.list30d || []).filter(m => resolveCanonicalCourse(m.curso) === activeCourse))
+            .map(m => (m.email || '').toLowerCase().trim())
+        );
+        const seen = new Set();
         filteredStudents = filteredStudents.filter(s => {
-            const isPend = !!(s.is_matricula_pendente || s.status === 'Matrícula Pendente');
-            if (isPend) return false;
-            const d = parseEnrollDate(s);
-            return d && d >= t30d && d <= new Date(now.getTime() + 24 * 3600 * 1000);
+            const em = (s.email || '').toLowerCase().trim();
+            if (!confEmails.has(em)) return false;
+            if (seen.has(em)) return false;
+            seen.add(em);
+            return true;
         });
         filterLabel = 'Matrículas Confirmadas / Efetivas (Últimos 30 Dias)';
     } else if (kpiFilter === 'recent_30d_pend') {
+        const pendEmails = new Set(
+            (isAll ? (matInfo.pendentes30d || []) : (matInfo.pendentes30d || []).filter(m => resolveCanonicalCourse(m.curso) === activeCourse))
+            .map(m => (m.email || '').toLowerCase().trim())
+        );
+        const seen = new Set();
         filteredStudents = filteredStudents.filter(s => {
-            const isPend = !!(s.is_matricula_pendente || s.status === 'Matrícula Pendente');
-            if (!isPend) return false;
-            const d = parseEnrollDate(s);
-            return d && d >= t30d && d <= new Date(now.getTime() + 24 * 3600 * 1000);
+            const em = (s.email || '').toLowerCase().trim();
+            if (!pendEmails.has(em)) return false;
+            if (seen.has(em)) return false;
+            seen.add(em);
+            return true;
         });
         filterLabel = 'Matrículas Pendentes (Últimos 30 Dias)';
     } else if (kpiFilter === 'prev_30d') {
+        const prevEmails = new Set(
+            (matInfo.allRecords || [])
+            .filter(m => (isAll || resolveCanonicalCourse(m.curso) === activeCourse) && m.data >= t60d && m.data < t30d)
+            .map(m => (m.email || '').toLowerCase().trim())
+        );
+        const seen = new Set();
         filteredStudents = filteredStudents.filter(s => {
-            const isPend = !!(s.is_matricula_pendente || s.status === 'Matrícula Pendente');
-            if (isPend) return false;
-            const d = parseEnrollDate(s);
-            return d && d >= t60d && d < t30d;
+            const em = (s.email || '').toLowerCase().trim();
+            const match = prevEmails.has(em) || (!s.is_matricula_pendente && parseEnrollDate(s) >= t60d && parseEnrollDate(s) < t30d);
+            if (!match) return false;
+            if (seen.has(em)) return false;
+            seen.add(em);
+            return true;
         });
         filterLabel = 'Matrículas Confirmadas (30 Dias Anteriores - Base D-60 a D-31)';
     } else if (kpiFilter === 'vigentes') {
