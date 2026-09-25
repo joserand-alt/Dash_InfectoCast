@@ -12396,6 +12396,34 @@
       "customizable_field": [],
       "full_name": "Samille Silva",
       "id": "6ab6a3beab8229666b7e2290"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6ab6bdc7ab8229666b7eca91",
+      "cel_phone": "559691115514",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Silvia Knowles",
+      "id": "6ab6bdc7ab8229666b7eca91"
     }
   ],
   "employees": [
@@ -12420,5 +12448,5 @@
       "email": "klinger@infectocast.com.br"
     }
   ],
-  "cached_at": "2026-09-25 14:24:00"
+  "cached_at": "2026-09-25 15:37:56"
 }
