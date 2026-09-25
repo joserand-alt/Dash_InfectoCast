@@ -8763,7 +8763,7 @@ function drawCursoView(courseName, force) {
     const rawStudents = (DATA && DATA.students) ? DATA.students.filter(s => !isInvalidOrInternal(s)) : [];
     const curric = (DATA && DATA.curriculum) ? DATA.curriculum : {};
 
-    const allEnrichedStudents = rawStudents.map(s => {
+    const allEnrichedStudents = [...matriculasConfirmadas, ...matriculasPendentes].map(s => {
         const scopy = { ...s };
         scopy.canonical_curso = resolveCanonicalCourse(s.curso);
 
