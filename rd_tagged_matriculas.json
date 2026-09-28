@@ -22474,5 +22474,23 @@
       "gateway-asaas",
       "asaas-pago"
     ]
+  },
+  "jandres.gonzalezgr@gmail.com|do-fungo-ao-antifungico": {
+    "email": "jandres.gonzalezgr@gmail.com",
+    "nome": "Jorge Andrés Gonzalez",
+    "curso": "DO FUNGO AO ANTIFUNGICO",
+    "origem": "Cativa",
+    "data_matricula": "2026-09-28",
+    "status": "success",
+    "data_tagueamento": "2026-09-28 18:16:29",
+    "tags_aplicadas": [
+      "aluno-ativo",
+      "aluno-matriculado",
+      "academy-pago",
+      "curso-livre",
+      "do-fungo-ao-antifungico",
+      "gateway-cativa-digital",
+      "cativa-digital"
+    ]
   }
 }
