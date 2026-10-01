@@ -22528,5 +22528,23 @@
       "gateway-asaas",
       "asaas-pago"
     ]
+  },
+  "analuizaccavalari@gmail.com|pos-graduacao-em-infectopediatria": {
+    "email": "analuizaccavalari@gmail.com",
+    "nome": "Ana Luiza",
+    "curso": "POS-GRADUACAO EM INFECTOPEDIATRIA",
+    "origem": "Vindi",
+    "data_matricula": "01/10/2026",
+    "status": "success",
+    "data_tagueamento": "2026-10-01 16:36:57",
+    "tags_aplicadas": [
+      "aluno-ativo",
+      "aluno-matriculado",
+      "academy-pago",
+      "pos-graduacao",
+      "pos-infectopediatria",
+      "gateway-vindi",
+      "vindi-pago"
+    ]
   }
 }
