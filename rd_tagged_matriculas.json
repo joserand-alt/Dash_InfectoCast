@@ -22492,5 +22492,23 @@
       "gateway-cativa-digital",
       "cativa-digital"
     ]
+  },
+  "angelica.uzcategui.diaz@gmail.com|do-fungo-ao-antifungico": {
+    "email": "angelica.uzcategui.diaz@gmail.com",
+    "nome": "Angelica Maria Uzcategui Diaz",
+    "curso": "DO FUNGO AO ANTIFUNGICO",
+    "origem": "Cativa",
+    "data_matricula": "2026-10-01",
+    "status": "success",
+    "data_tagueamento": "2026-10-01 08:45:45",
+    "tags_aplicadas": [
+      "aluno-ativo",
+      "aluno-matriculado",
+      "academy-pago",
+      "curso-livre",
+      "do-fungo-ao-antifungico",
+      "gateway-cativa-digital",
+      "cativa-digital"
+    ]
   }
 }
