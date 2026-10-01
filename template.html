@@ -9456,7 +9456,7 @@ function drawCursoView(courseName, force) {
     const isAll = (courseName === 'all') || (!courseName && (!FILTER || FILTER.curso === 'all')) || (FILTER && FILTER.curso === 'all');
     let activeCourse = '';
     if (isAll) {
-        activeCourse = 'Todos os Cursos (Consolidado)';
+        activeCourse = 'Todas as Pós-Graduações (Consolidado)';
         CURRENT_SELECTED_COURSE = 'all';
     } else {
         activeCourse = courseName || CURRENT_SELECTED_COURSE || (FILTER && FILTER.curso !== 'all' ? resolveCanonicalCourse(FILTER.curso) : '');
@@ -10002,11 +10002,11 @@ function drawCursoView(courseName, force) {
           <div>
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
               <span class="hud-live-dot"></span>
-              <span class="micro-label" style="color:var(--neon-cyan);">COCKPIT 360° POR ESPECIALIDADE</span>
+              <span class="micro-label" style="color:var(--neon-cyan);">${isAll ? 'COCKPIT 360° • TODAS AS PÓS-GRADUAÇÕES' : 'COCKPIT 360° POR ESPECIALIDADE'}</span>
             </div>
-            <h2 style="font-size:20px; font-weight:800; color:#fff; margin:0;">${activeCourse}</h2>
+            <h2 style="font-size:20px; font-weight:800; color:#fff; margin:0;">${isAll ? 'Todas as Pós-Graduações (Consolidado)' : activeCourse}</h2>
             <div style="font-size:12px; color:var(--muted); margin-top:4px; font-family:var(--font-hud);">
-              ${isAll ? 'Visão integrada e consolidada de matrículas, retenção e faturamento de todas as especialidades.' : 'Para alternar de curso, utilize o seletor <b>CURSO / ESPECIALIDADE</b> na barra de filtros gerais acima.'}
+              ${isAll ? 'Visão integrada e consolidada de matrículas, retenção e faturamento de todos os cursos de pós-graduação.' : 'Para alternar de curso, utilize o seletor <b>CURSO / ESPECIALIDADE</b> na barra de filtros gerais acima.'}
             </div>
           </div>
           <div style="display:flex; align-items:center; gap:12px;">
@@ -10024,8 +10024,8 @@ function drawCursoView(courseName, force) {
           <div class="exec-sec-title-wrap">
             <div class="exec-sec-num" style="background:var(--brand); color:#fff">M1</div>
             <div>
-              <h3 class="exec-sec-title">AQUISIÇÃO &amp; RITMO DE MATRÍCULAS</h3>
-              <div class="exec-sec-sub">Carteira histórica acumulada, entradas recentes (30d vs 30d anteriores) e evolução mensal de novos alunos.</div>
+              <h3 class="exec-sec-title">AQUISIÇÃO &amp; RITMO DE MATRÍCULAS ${isAll ? '(PÓS-GRADUAÇÃO)' : ''}</h3>
+              <div class="exec-sec-sub">Carteira histórica acumulada, entradas recentes (30d vs 30d anteriores) e evolução mensal de novos alunos${isAll ? ' dos cursos de pós-graduação' : ''}.</div>
             </div>
           </div>
         </div>
@@ -10078,10 +10078,10 @@ function drawCursoView(courseName, force) {
           <div class="exec-card-top" style="margin-bottom:0; flex-wrap:wrap; gap:12px; align-items:center;">
             <div>
               <div style="display:flex; align-items:center; gap:8px;">
-                <span class="exec-card-label" style="font-size:14px; font-weight:800; color:var(--ink); letter-spacing:-0.01em;">EVOLUÇÃO MENSAL DE NOVAS MATRÍCULAS</span>
+                <span class="exec-card-label" style="font-size:14px; font-weight:800; color:var(--ink); letter-spacing:-0.01em;">EVOLUÇÃO MENSAL DE NOVAS MATRÍCULAS ${isAll ? '(PÓS-GRADUAÇÃO)' : ''}</span>
                 <span class="badge" style="background:rgba(0,240,255,0.08); border:1px solid rgba(0,240,255,0.25); color:var(--neon-cyan); font-size:10.5px; font-weight:700;">${enrollMonths.length} meses registrados</span>
               </div>
-              <div style="font-size:12px; color:var(--muted); margin-top:2px;">Distribuição cronológica de entradas de novos alunos e ritmo de aquisição por safra mensal</div>
+              <div style="font-size:12px; color:var(--muted); margin-top:2px;">Distribuição cronológica de entradas de novos alunos e ritmo de aquisição por safra mensal${isAll ? ' dos cursos de pós-graduação' : ''}</div>
             </div>
 
             <!-- Controles de Período e Resumo Executivo -->
@@ -10191,8 +10191,8 @@ function drawCursoView(courseName, force) {
           <div class="exec-sec-title-wrap">
             <div class="exec-sec-num" style="background:#7c3aed; color:#fff">$</div>
             <div>
-              <h3 class="exec-sec-title">DESEMPENHO FINANCEIRO &amp; PROJEÇÃO DO CURSO</h3>
-              <div class="exec-sec-sub">Receitas realizadas, previsibilidade contratual, MRR e projeções futuras consolidadas (Vindi + Asaas).</div>
+              <h3 class="exec-sec-title">DESEMPENHO FINANCEIRO &amp; PROJEÇÃO ${isAll ? '(PÓS-GRADUAÇÃO)' : 'DO CURSO'}</h3>
+              <div class="exec-sec-sub">Receitas realizadas, previsibilidade contratual, MRR e projeções futuras consolidadas (Vindi + Asaas)${isAll ? ' dos cursos de pós-graduação' : ''}.</div>
             </div>
           </div>
           <button class="btn-exec-link" onclick="selectTab('fin')">Abrir Financeiro Geral →</button>
