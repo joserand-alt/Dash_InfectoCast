@@ -5283,15 +5283,28 @@ function computeUnifiedFinancialDataset(gatewayFilter) {
         const pYm = (f.data_pagamento_iso || dtPag).slice(0, 7);
         const vYm = (f.vencimento_iso || dtVenc).slice(0, 7);
 
+        const pad2 = n => String(n).padStart(2, '0');
+        const nowRef = new Date();
+        const curYm = `${nowRef.getFullYear()}-${pad2(nowRef.getMonth() + 1)}`;
+        const prevRef = new Date(nowRef.getFullYear(), nowRef.getMonth() - 1, 1);
+        const prevYm = `${prevRef.getFullYear()}-${pad2(prevRef.getMonth() + 1)}`;
+        const curMStr = `/${pad2(nowRef.getMonth() + 1)}/${nowRef.getFullYear()}`;
+        const curMShort = `/${pad2(nowRef.getMonth() + 1)}/${String(nowRef.getFullYear()).slice(2)}`;
+        const prevMStr = `/${pad2(prevRef.getMonth() + 1)}/${prevRef.getFullYear()}`;
+        const prevMShort = `/${pad2(prevRef.getMonth() + 1)}/${String(prevRef.getFullYear()).slice(2)}`;
+
+        const isCurMonth = (pYm === curYm) || dtPag.includes(curMStr) || dtPag.includes(curMShort) || dtPag.includes(curYm);
+        const isPrevMonth = (pYm === prevYm) || dtPag.includes(prevMStr) || dtPag.includes(prevMShort) || dtPag.includes(prevYm);
+
         if (st === 'pago' || st === 'paid' || st === 'received' || st === 'confirmed') {
             cm.pago_total += val;
             cm.total_faturas_pagas++;
             if (pYm) {
                 cm.historico_map[pYm] = (cm.historico_map[pYm] || 0) + val;
             }
-            if (dtPag.includes('09/2026') || dtPag.includes('2026-09') || dtPag.includes('/09/26')) {
+            if (isCurMonth) {
                 cm.pago_mes_atual += val;
-            } else if (dtPag.includes('08/2026') || dtPag.includes('2026-08') || dtPag.includes('/08/26')) {
+            } else if (isPrevMonth) {
                 cm.pago_mes_ant += val;
             }
         } else if (st === 'em_atraso' || st === 'overdue') {
@@ -5305,6 +5318,12 @@ function computeUnifiedFinancialDataset(gatewayFilter) {
 
     // 3. Assinaturas Vindi (MRR e Simulação Contratual de 18 Meses)
     if (!gatewayFilter || gatewayFilter === 'all' || gatewayFilter === 'vindi') {
+        const pad2 = n => String(n).padStart(2, '0');
+        const nowRef = new Date();
+        const curYm = `${nowRef.getFullYear()}-${pad2(nowRef.getMonth() + 1)}`;
+        const curMStr = `/${pad2(nowRef.getMonth() + 1)}/${nowRef.getFullYear()}`;
+        const curMShort = `/${pad2(nowRef.getMonth() + 1)}/${String(nowRef.getFullYear()).slice(2)}`;
+
         vSubs.forEach(sub => {
             if (sub.status_financeiro === 'adimplente' || sub.status_assinatura === 'active') {
                 const em = (sub.customer_email || '').toString().toLowerCase().trim();
@@ -5320,12 +5339,13 @@ function computeUnifiedFinancialDataset(gatewayFilter) {
                 const prox = (sub.proximo_vencimento || '').toString();
                 const paidThisMonth = (sub.paid_this_month !== undefined) ? sub.paid_this_month : faturasArr.some(f => {
                     const dt = (f.data_pagamento || f.data_pagamento_iso || '').toString();
-                    return (f.status === 'paid' || f.status === 'pago') && (dt.includes('09/2026') || dt.includes('2026-09') || dt.includes('/09/26'));
+                    const pIso = (f.data_pagamento_iso || '').slice(0, 7);
+                    return (f.status === 'paid' || f.status === 'pago') && (pIso === curYm || dt.includes(curMStr) || dt.includes(curMShort));
                 });
 
                 let startM = (sub.start_m !== undefined) ? sub.start_m : 0;
                 if (sub.start_m === undefined) {
-                    if (paidThisMonth || prox.includes('/10/2026') || prox.includes('2026-10') || prox.includes('/10/26') || prox.includes('/11/2026') || prox.includes('/12/2026')) {
+                    if (paidThisMonth) {
                         startM = 1;
                     } else {
                         cm.proj_mes_atual += price;
@@ -5662,8 +5682,8 @@ function getMatriculasAuditoriaData() {
 
     const isInvalidOrInternal = s => {
         const em = (s.email || '').toString().toLowerCase().trim();
-        const nm = (s.nome || '').toString().toLowerCase().trim();
-        const cr = (s.curso || '').toString().toUpperCase().trim();
+        const nm = (s.nome || s.aluno || '').toString().toLowerCase().trim();
+        const cr = (s.curso || s.plano || s.description || '').toString().toUpperCase().trim();
         if (cr.includes('NUTRIFY')) return true;
         if (em.includes('@infectocast') || em.includes('@integralmedica') || em.includes('@nutrify') || em.includes('@cativa') || em.includes('@estrategia1') || em.includes('@adtivo')) return true;
         if (em.includes('teste') || nm.includes('teste')) return true;
@@ -5672,7 +5692,7 @@ function getMatriculasAuditoriaData() {
     };
 
     function normalizeCourse(cName) {
-        if (!cName) return 'GERAL';
+        if (!cName) return 'PLATAFORMA GERAL';
         let s = String(cName).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         if (s.includes('INFECTOPEDIATRIA') || s.includes('PEDIATRIA')) return 'POS-GRADUACAO EM INFECTOPEDIATRIA';
         if (s.includes('IMUNODEPRIMIDO')) return 'POS-GRADUACAO EM INFECTOLOGIA DO PACIENTE IMUNODEPRIMIDO';
@@ -5688,148 +5708,205 @@ function getMatriculasAuditoriaData() {
         return s;
     }
 
-    // 1. Mapear TODOS os pagamentos aprovados no gateway por aluno e por curso
-    const studentCoursePaidBills = new Map();
+    // 1. Mapear data de matrícula/inscrição da plataforma Academy e Cativa
+    const studentInscMap = new Map();
+    rawStudents.forEach(s => {
+        const em = (s.email || '').toLowerCase().trim();
+        const nm = (s.nome || '').trim();
+        const cNorm = normalizeCourse(s.curso || '');
+        const dtStr = s.data_insc || s.data_inscricao || s.data_matricula || s.first;
+        const dt = parseDateUniversal(dtStr);
+        if (dt) {
+            if (em) studentInscMap.set(em + '___' + cNorm, dt);
+            if (nm) studentInscMap.set(nm.toLowerCase() + '___' + cNorm, dt);
+            if (em) studentInscMap.set(em + '___GLOBAL', dt);
+            if (nm) studentInscMap.set(nm.toLowerCase() + '___GLOBAL', dt);
+        }
+    });
+
+    // 2. Mapear pagamentos aprovados no gateway por aluno e curso
     const allFats = [...vFaturas, ...aFaturas];
+    const studentMap = new Map();
 
     allFats.forEach(f => {
         const st = (f.status || '').toLowerCase();
         if (st === 'pago' || st === 'paid' || st === 'received' || st === 'confirmed') {
-            const em = (f.email || '').toString().toLowerCase().trim();
-            const nm = (f.aluno || '').toString().toLowerCase().trim();
+            if (isInvalidOrInternal(f)) return;
             const dt = parseDateUniversal(f.data_pagamento || f.data_pagamento_iso || f.vencimento || f.vencimento_iso);
-            const gw = f.gateway || (vFaturas.includes(f) ? 'Vindi' : 'Asaas');
-            const cNorm = normalizeCourse(f.plano || f.description || f.curso || '');
-            
             if (dt) {
-                const keys = [];
-                if (em) keys.push(em + '___' + cNorm, em + '___GLOBAL');
-                if (nm) keys.push(nm + '___' + cNorm, nm + '___GLOBAL');
-                
-                keys.forEach(k => {
-                    if (!studentCoursePaidBills.has(k)) studentCoursePaidBills.set(k, []);
-                    studentCoursePaidBills.get(k).push({ date: dt, gateway: gw, valor: f.valor, plano: f.plano || f.description });
+                const em = (f.email || '').toLowerCase().trim();
+                const nm = (f.aluno || '').trim();
+                const cNorm = normalizeCourse(f.plano || f.description || f.curso || '');
+                const key = (em || nm.toLowerCase()) + '___' + cNorm;
+                if (!studentMap.has(key)) {
+                    studentMap.set(key, { nome: nm, email: em, curso: cNorm, bills: [] });
+                }
+                studentMap.get(key).bills.push({
+                    date: dt,
+                    valor: Number(f.valor) || 0,
+                    gateway: f.gateway || (vFaturas.includes(f) ? 'Vindi' : 'Asaas'),
+                    plano: f.plano || f.description
                 });
             }
         }
     });
 
     const now = new Date();
-    const t48h = new Date(now.getTime() - 48 * 3600 * 1000);
-    const t30d = new Date(now.getTime() - 30 * 24 * 3600 * 1000);
+    const t48hCalendar = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 2, 0, 0, 0);
+    const t30dCalendar = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30, 0, 0, 0);
 
-    const validStudents = rawStudents.filter(s => !isInvalidOrInternal(s));
+    const pad = n => n < 10 ? '0' + n : n;
+    const formatDt = dt => {
+        if (!dt) return '';
+        return pad(dt.getDate()) + '/' + pad(dt.getMonth()+1) + '/' + dt.getFullYear() + (dt.getHours() === 0 && dt.getMinutes() === 0 ? '' : ' ' + pad(dt.getHours()) + ':' + pad(dt.getMinutes()));
+    };
+
     const matriculasConfirmadas = [];
+
+    studentMap.forEach(s => {
+        s.bills.sort((a,b) => a.date - b.date);
+        const firstBill = s.bills[0];
+        const latestBill = s.bills[s.bills.length - 1];
+
+        // Buscar data de inscrição original da plataforma
+        const inscDt = studentInscMap.get(s.email + '___' + s.curso) || studentInscMap.get(s.nome.toLowerCase() + '___' + s.curso) || studentInscMap.get(s.email + '___GLOBAL') || studentInscMap.get(s.nome.toLowerCase() + '___GLOBAL');
+        
+        // A verdadeira data de matrícula é a menor entre a inscrição e o primeiro pagamento
+        let matriculaDate = firstBill.date;
+        if (inscDt && inscDt < matriculaDate) {
+            matriculaDate = inscDt;
+        }
+
+        // Verificar se o plano ou faturas mencionam safra anterior (ex: Março/26, Setembro/25, etc.)
+        const planTexts = s.bills.map(b => (b.plano || '')).join(' ').toLowerCase();
+        const safraMatch = planTexts.match(/(janeiro|fevereiro|março|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro|jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)[/ -]?(\d{2,4})/i);
+        if (safraMatch) {
+            const mWord = safraMatch[1].toLowerCase();
+            let yNum = parseInt(safraMatch[2], 10);
+            if (yNum < 100) yNum += 2000;
+            const mesMap = {
+                'jan': 0, 'janeiro': 0, 'fev': 1, 'fevereiro': 1,
+                'mar': 2, 'marco': 2, 'março': 2, 'abr': 3, 'abril': 3,
+                'mai': 4, 'maio': 4, 'jun': 5, 'junho': 5,
+                'jul': 6, 'julho': 6, 'ago': 7, 'agosto': 7,
+                'set': 8, 'setembro': 8, 'out': 9, 'outubro': 9,
+                'nov': 10, 'novembro': 10, 'dez': 11, 'dezembro': 11
+            };
+            const mIdx = mesMap[mWord];
+            if (mIdx !== undefined && yNum >= 2020 && yNum <= 2030) {
+                const safraDt = new Date(yNum, mIdx, 1);
+                if (safraDt < matriculaDate) {
+                    matriculaDate = safraDt;
+                }
+            }
+        }
+
+        const diffMsMatricula = now.getTime() - matriculaDate.getTime();
+        const diffMsLatest = now.getTime() - latestBill.date.getTime();
+
+        const isNova48h = (matriculaDate >= t48hCalendar && matriculaDate <= now) || (diffMsMatricula >= -3600000 && diffMsMatricula <= 48 * 3600 * 1000) || (matriculaDate.getHours() === 0 && diffMsMatricula <= 72 * 3600 * 1000 && diffMsMatricula >= -3600000);
+        const hasPaid48h = (latestBill.date >= t48hCalendar && latestBill.date <= now) || (diffMsLatest >= -3600000 && diffMsLatest <= 48 * 3600 * 1000) || (latestBill.date.getHours() === 0 && diffMsLatest <= 72 * 3600 * 1000 && diffMsLatest >= -3600000);
+        const isRecorrencia48h = hasPaid48h && !isNova48h;
+
+        const isNova30d = (matriculaDate >= t30dCalendar && matriculaDate <= now) || (diffMsMatricula <= 30 * 24 * 3600 * 1000);
+        const hasPaid30d = (latestBill.date >= t30dCalendar && latestBill.date <= now) || (diffMsLatest <= 30 * 24 * 3600 * 1000);
+        const isRecorrencia30d = hasPaid30d && !isNova30d;
+
+        const safraStr = pad(matriculaDate.getMonth()+1) + '/' + matriculaDate.getFullYear();
+
+        matriculasConfirmadas.push({
+            nome: s.nome || 'Aluno',
+            email: s.email,
+            curso: s.curso || 'PLATAFORMA GERAL',
+            data: matriculaDate,
+            data_fmt: formatDt(matriculaDate),
+            safra: safraStr,
+            gateway: latestBill.gateway,
+            tipo: 'confirmada',
+            valor: isNova48h ? firstBill.valor : latestBill.valor,
+            primeiro_pagamento_data: firstBill.date,
+            primeiro_pagamento_fmt: formatDt(firstBill.date),
+            primeiro_pagamento_valor: firstBill.valor,
+            ultimo_pagamento_data: latestBill.date,
+            ultimo_pagamento_fmt: formatDt(latestBill.date),
+            ultimo_pagamento_valor: latestBill.valor,
+            is_nova_48h: isNova48h,
+            is_recorrencia_48h: isRecorrencia48h,
+            is_nova_30d: isNova30d,
+            is_recorrencia_30d: isRecorrencia30d,
+            origem_label: isNova48h ? 'Nova Matrícula (1º Pagamento)' : (isRecorrencia48h ? `Mensalidade Paga (Safra ${safraStr})` : `Aluno da Base (Safra ${safraStr})`)
+        });
+    });
+
+    // 3. Matrículas Pendentes (Alunos cadastrados na plataforma sem financeiro e sem uso)
+    const validStudents = rawStudents.filter(s => !isInvalidOrInternal(s));
     const matriculasPendentes = [];
-    const processedPairs = new Set();
 
     validStudents.forEach(s => {
         const em = (s.email || '').toString().toLowerCase().trim();
-        const nm = (s.nome || '').toString().trim();
+        const nm = (s.nome || '').trim();
         const cNorm = normalizeCourse(s.curso || '');
-        const pairKey = em + '___' + cNorm;
-        
-        if (processedPairs.has(pairKey)) return;
-        processedPairs.add(pairKey);
+        const key = (em || nm.toLowerCase()) + '___' + cNorm;
 
-        const paidBillsCourse = studentCoursePaidBills.get(em + '___' + cNorm) || studentCoursePaidBills.get(nm.toLowerCase() + '___' + cNorm);
-        const paidBillsGlobal = studentCoursePaidBills.get(em + '___GLOBAL') || studentCoursePaidBills.get(nm.toLowerCase() + '___GLOBAL');
-        const targetBills = paidBillsCourse || paidBillsGlobal;
+        // Se já está confirmada no financeiro, não é pendente
+        if (studentMap.has(key)) return;
 
-        // 1. Matrícula Confirmada (Tem pagamento aprovado no gateway)
-        if (targetBills && targetBills.length > 0) {
-            targetBills.sort((a, b) => a.date - b.date);
-            const firstPaid = targetBills[0];
-            const effDate = firstPaid.date;
+        const vSt = (s.vindi ? (s.vindi.status_financeiro || s.vindi.status_assinatura) : '').toLowerCase();
+        const aSt = (s.asaas ? (s.asaas.status_financeiro || s.asaas.status_assinatura) : '').toLowerCase();
+        const vindiCanceled = vSt === 'cancelado' || vSt === 'canceled';
+        const asaasCanceled = aSt === 'cancelado' || aSt === 'canceled';
+        const vindiActive = vSt === 'active' || vSt === 'ativo';
+        const asaasActive = aSt === 'active' || aSt === 'ativo' || aSt === 'received' || aSt === 'confirmed';
+        const vFats = s.vindi ? (s.vindi.faturas || []) : [];
+        const aFats = s.asaas ? (s.asaas.faturas || []) : [];
+        const vPaid = vFats.some(f => (f.status === 'pago' || f.status === 'paid' || f.pago));
+        const aPaid = aFats.some(f => (f.status === 'pago' || f.status === 'paid' || f.status === 'RECEIVED' || f.status === 'CONFIRMED' || f.pago));
 
-            if (effDate && effDate <= now) {
-                const pad = n => n < 10 ? '0' + n : n;
-                const dtFmt = pad(effDate.getDate()) + '/' + pad(effDate.getMonth()+1) + '/' + effDate.getFullYear() + (effDate.getHours() === 0 && effDate.getMinutes() === 0 ? '' : ' ' + pad(effDate.getHours()) + ':' + pad(effDate.getMinutes()));
-                
-                const diffMs = now.getTime() - effDate.getTime();
-                const t48hCalendar = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 2, 0, 0, 0);
-                const is48h = (effDate >= t48hCalendar && effDate <= now) || (diffMs >= -3600000 && diffMs <= 48 * 3600 * 1000) || (effDate.getHours() === 0 && diffMs <= 72 * 3600 * 1000 && diffMs >= -3600000);
-                const is30d = (diffMs <= 30 * 24 * 3600 * 1000);
+        const hasFinanceiro = vindiActive || asaasActive || vPaid || aPaid;
+        const hasConsumo = (Number(s.aulas_feitas || 0) > 0);
 
-                matriculasConfirmadas.push({
-                    nome: nm || 'Aluno',
+        let isPendente = false;
+        if ((vindiCanceled || asaasCanceled) && !vindiActive && !asaasActive && !hasConsumo) {
+            isPendente = false;
+        } else if (!hasFinanceiro && !hasConsumo && s.status !== 'Concluído') {
+            isPendente = true;
+        }
+
+        if (isPendente) {
+            const rawInscStr = s.data_insc || s.data_inscricao || s.data_matricula || s.first || (s.asaas && s.asaas.faturas && s.asaas.faturas[0] && (s.asaas.faturas[0].data_criacao || s.asaas.faturas[0].dateCreated || s.asaas.faturas[0].vencimento_iso || s.asaas.faturas[0].vencimento)) || (s.vindi && s.vindi.faturas && s.vindi.faturas[0] && (s.vindi.faturas[0].vencimento_iso || s.vindi.faturas[0].vencimento)) || s.created_at;
+            const dtInsc = parseDateUniversal(rawInscStr);
+            if (dtInsc && dtInsc <= now) {
+                const diffMs = now.getTime() - dtInsc.getTime();
+                const is48h = (dtInsc >= t48hCalendar && dtInsc <= now) || (diffMs >= -3600000 && diffMs <= 48 * 3600 * 1000) || (dtInsc.getHours() === 0 && diffMs <= 72 * 3600 * 1000 && diffMs >= -3600000);
+                const is30d = (dtInsc >= t30dCalendar && dtInsc <= now) || (diffMs <= 30 * 24 * 3600 * 1000);
+
+                let fatVal = 0;
+                let origStr = 'Cadastro Plataforma (' + (s.plataforma || 'Academy') + ')';
+                if (s.asaas && s.asaas.faturas && s.asaas.faturas.length > 0) {
+                    fatVal = Number(s.asaas.faturas[0].valor || 0);
+                    origStr = 'Pedido Asaas (' + (s.asaas.faturas[0].forma_pagamento || 'Boleto/PIX') + ')';
+                } else if (s.vindi && s.vindi.faturas && s.vindi.faturas.length > 0) {
+                    fatVal = Number(s.vindi.faturas[0].valor || 0);
+                    origStr = 'Assinatura Vindi';
+                }
+
+                matriculasPendentes.push({
+                    nome: nm || 'Lead / Inscrição',
                     email: em,
                     curso: s.curso || 'PLATAFORMA GERAL',
-                    data: effDate,
-                    data_fmt: dtFmt,
-                    origem: 'Primeiro Pagamento (' + firstPaid.gateway + ')',
-                    gateway: firstPaid.gateway,
-                    tipo: 'confirmada',
-                    origem_label: 'Matrícula Confirmada',
-                    valor: firstPaid.valor,
-                    is_48h: is48h,
-                    is_24h: is48h,
-                    is_30d: is30d
+                    data: dtInsc,
+                    data_fmt: formatDt(dtInsc),
+                    origem: origStr,
+                    gateway: s.plataforma || 'Academy',
+                    tipo: 'pendente',
+                    origem_label: 'Matrícula Pendente (Aguardando Pagamento)',
+                    valor: fatVal,
+                    aulas_feitas: Number(s.aulas_feitas || 0),
+                    is_nova_48h: is48h,
+                    is_nova_30d: is30d,
+                    is_recorrencia_48h: false,
+                    is_recorrencia_30d: false
                 });
-            }
-        } else {
-            // 2. Matrícula Pendente (Mesma regra da Visão por Curso: sem financeiro e sem consumo)
-            const vSt = (s.vindi ? (s.vindi.status_financeiro || s.vindi.status_assinatura) : '').toLowerCase();
-            const aSt = (s.asaas ? (s.asaas.status_financeiro || s.asaas.status_assinatura) : '').toLowerCase();
-            const vindiCanceled = vSt === 'cancelado' || vSt === 'canceled';
-            const asaasCanceled = aSt === 'cancelado' || aSt === 'canceled';
-            const vindiActive = vSt === 'active' || vSt === 'ativo';
-            const asaasActive = aSt === 'active' || aSt === 'ativo' || aSt === 'received' || aSt === 'confirmed';
-            const vFats = s.vindi ? (s.vindi.faturas || []) : [];
-            const aFats = s.asaas ? (s.asaas.faturas || []) : [];
-            const vPaid = vFats.some(f => (f.status === 'pago' || f.status === 'paid' || f.pago));
-            const aPaid = aFats.some(f => (f.status === 'pago' || f.status === 'paid' || f.status === 'RECEIVED' || f.status === 'CONFIRMED' || f.pago));
-
-            const hasFinanceiro = vindiActive || asaasActive || vPaid || aPaid;
-            const hasConsumo = (Number(s.aulas_feitas || 0) > 0);
-
-            let isPendente = false;
-            if ((vindiCanceled || asaasCanceled) && !vindiActive && !asaasActive && !hasConsumo) {
-                isPendente = false;
-            } else if (!hasFinanceiro && !hasConsumo && s.status !== 'Concluído') {
-                isPendente = true;
-            }
-
-                        if (isPendente) {
-                const rawInscStr = s.data_insc || s.data_inscricao || s.data_matricula || s.first || (s.asaas && s.asaas.faturas && s.asaas.faturas[0] && (s.asaas.faturas[0].data_criacao || s.asaas.faturas[0].dateCreated || s.asaas.faturas[0].vencimento_iso || s.asaas.faturas[0].vencimento)) || (s.vindi && s.vindi.faturas && s.vindi.faturas[0] && (s.vindi.faturas[0].vencimento_iso || s.vindi.faturas[0].vencimento)) || s.created_at;
-                const dtInsc = parseDateUniversal(rawInscStr);
-                if (dtInsc && dtInsc <= now) {
-                    const pad = n => n < 10 ? '0' + n : n;
-                    const dtFmt = pad(dtInsc.getDate()) + '/' + pad(dtInsc.getMonth()+1) + '/' + dtInsc.getFullYear() + (dtInsc.getHours() === 0 && dtInsc.getMinutes() === 0 ? '' : ' ' + pad(dtInsc.getHours()) + ':' + pad(dtInsc.getMinutes()));
-                    
-                    const diffMs = now.getTime() - dtInsc.getTime();
-                    const t48hCalendar = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 2, 0, 0, 0);
-                    const is48h = (dtInsc >= t48hCalendar && dtInsc <= now) || (diffMs >= -3600000 && diffMs <= 48 * 3600 * 1000) || (dtInsc.getHours() === 0 && diffMs <= 72 * 3600 * 1000 && diffMs >= -3600000);
-                    const t30dCalendar = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30, 0, 0, 0);
-                    const is30d = (dtInsc >= t30dCalendar && dtInsc <= now) || (diffMs <= 30 * 24 * 3600 * 1000);
-
-                    let fatVal = 0;
-                    let origStr = 'Cadastro Plataforma (' + (s.plataforma || 'Academy') + ')';
-                    if (s.asaas && s.asaas.faturas && s.asaas.faturas.length > 0) {
-                        fatVal = Number(s.asaas.faturas[0].valor || 0);
-                        origStr = 'Pedido Asaas (' + (s.asaas.faturas[0].forma_pagamento || 'Boleto/PIX') + ')';
-                    } else if (s.vindi && s.vindi.faturas && s.vindi.faturas.length > 0) {
-                        fatVal = Number(s.vindi.faturas[0].valor || 0);
-                        origStr = 'Assinatura Vindi';
-                    }
-
-                    matriculasPendentes.push({
-                        nome: nm || 'Lead / Inscrição',
-                        email: em,
-                        curso: s.curso || 'PLATAFORMA GERAL',
-                        data: dtInsc,
-                        data_fmt: dtFmt,
-                        origem: origStr,
-                        gateway: s.plataforma || 'Academy',
-                        tipo: 'pendente',
-                        origem_label: 'Matrícula Pendente (Aguardando Pagamento)',
-                        valor: fatVal,
-                        aulas_feitas: Number(s.aulas_feitas || 0),
-                        is_48h: is48h,
-                        is_24h: is48h,
-                        is_30d: is30d
-                    });
-                }
             }
         }
     });
@@ -5837,24 +5914,47 @@ function getMatriculasAuditoriaData() {
     matriculasConfirmadas.sort((a, b) => b.data - a.data);
     matriculasPendentes.sort((a, b) => b.data - a.data);
 
-    const list48h = matriculasConfirmadas.filter(m => m.is_48h);
-    const list30d = matriculasConfirmadas.filter(m => m.is_30d);
+    const listNovas48h = matriculasConfirmadas.filter(m => m.is_nova_48h).sort((a,b) => b.data - a.data);
+    const listRecorrencias48h = matriculasConfirmadas.filter(m => m.is_recorrencia_48h).sort((a,b) => b.ultimo_pagamento_data - a.ultimo_pagamento_data);
+    const listTodasPagas48h = [...listNovas48h, ...listRecorrencias48h].sort((a,b) => b.ultimo_pagamento_data - a.ultimo_pagamento_data);
 
-    const pendentes48h = matriculasPendentes.filter(m => m.is_48h);
-    const pendentes30d = matriculasPendentes.filter(m => m.is_30d);
+    const listNovas30d = matriculasConfirmadas.filter(m => m.is_nova_30d).sort((a,b) => b.data - a.data);
+    const listRecorrencias30d = matriculasConfirmadas.filter(m => m.is_recorrencia_30d).sort((a,b) => b.ultimo_pagamento_data - a.ultimo_pagamento_data);
+    const listTodasPagas30d = [...listNovas30d, ...listRecorrencias30d].sort((a,b) => b.ultimo_pagamento_data - a.ultimo_pagamento_data);
+
+    const pendentes48h = matriculasPendentes.filter(m => m.is_nova_48h);
+    const pendentes30d = matriculasPendentes.filter(m => m.is_nova_30d);
 
     return {
-        count48h: list48h.length,
-        count24h: list48h.length,
-        count30d: list30d.length,
+        countNovas48h: listNovas48h.length,
+        countRecorrencias48h: listRecorrencias48h.length,
+        countPagas48h: listTodasPagas48h.length,
+        count48h: listNovas48h.length,
+        count24h: listNovas48h.length,
+
+        countNovas30d: listNovas30d.length,
+        countRecorrencias30d: listRecorrencias30d.length,
+        countPagas30d: listTodasPagas30d.length,
+        count30d: listNovas30d.length,
+
         totalConfirmadas: matriculasConfirmadas.length,
+
         countPendentes48h: pendentes48h.length,
         countPendentes24h: pendentes48h.length,
         countPendentes30d: pendentes30d.length,
         totalPendentes: matriculasPendentes.length,
-        list48h,
-        list24h: list48h,
-        list30d,
+
+        listNovas48h,
+        listRecorrencias48h,
+        listTodasPagas48h,
+        list48h: listNovas48h,
+        list24h: listNovas48h,
+
+        listNovas30d,
+        listRecorrencias30d,
+        listTodasPagas30d,
+        list30d: listNovas30d,
+
         allRecords: matriculasConfirmadas,
         pendentes48h,
         pendentes24h: pendentes48h,
@@ -6141,11 +6241,29 @@ function drawExecView(force) {
         const st = (f.status || '').toLowerCase();
         const dtPag = (f.data_pagamento || f.data_pagamento_iso || f.data || '').toString();
 
+        const pad2 = n => String(n).padStart(2, '0');
+        const nowRef = new Date();
+        const curYm = `${nowRef.getFullYear()}-${pad2(nowRef.getMonth() + 1)}`;
+        const prevRef = new Date(nowRef.getFullYear(), nowRef.getMonth() - 1, 1);
+        const prevYm = `${prevRef.getFullYear()}-${pad2(prevRef.getMonth() + 1)}`;
+        const nextRef = new Date(nowRef.getFullYear(), nowRef.getMonth() + 1, 1);
+        const nextYm = `${nextRef.getFullYear()}-${pad2(nextRef.getMonth() + 1)}`;
+        const curMStr = `/${pad2(nowRef.getMonth() + 1)}/${nowRef.getFullYear()}`;
+        const curMShort = `/${pad2(nowRef.getMonth() + 1)}/${String(nowRef.getFullYear()).slice(2)}`;
+        const prevMStr = `/${pad2(prevRef.getMonth() + 1)}/${prevRef.getFullYear()}`;
+        const prevMShort = `/${pad2(prevRef.getMonth() + 1)}/${String(prevRef.getFullYear()).slice(2)}`;
+        const nextMStr = `/${pad2(nextRef.getMonth() + 1)}/${nextRef.getFullYear()}`;
+        const nextMShort = `/${pad2(nextRef.getMonth() + 1)}/${String(nextRef.getFullYear()).slice(2)}`;
+
+        const pYm = (f.data_pagamento_iso || dtPag).slice(0, 7);
+        const isCurMonth = (pYm === curYm) || dtPag.includes(curMStr) || dtPag.includes(curMShort) || dtPag.includes(curYm);
+        const isPrevMonth = (pYm === prevYm) || dtPag.includes(prevMStr) || dtPag.includes(prevMShort) || dtPag.includes(prevYm);
+
         if (st === 'pago' || st === 'paid' || st === 'received' || st === 'confirmed') {
             cm.pago_total += val;
-            if (dtPag.includes('09/2026') || dtPag.includes('2026-09') || dtPag.includes('/09/26')) {
+            if (isCurMonth) {
                 cm.pago_mes_atual += val;
-            } else if (dtPag.includes('08/2026') || dtPag.includes('2026-08') || dtPag.includes('/08/26')) {
+            } else if (isPrevMonth) {
                 cm.pago_mes_ant += val;
             }
         } else if (st === 'em_atraso' || st === 'overdue') {
@@ -6163,10 +6281,20 @@ function drawExecView(force) {
             const price = Number(sub.valor_parcela) || 0;
             cm.mrr += price;
 
+            const pad2 = n => String(n).padStart(2, '0');
+            const nowRef = new Date();
+            const curYm = `${nowRef.getFullYear()}-${pad2(nowRef.getMonth() + 1)}`;
+            const nextRef = new Date(nowRef.getFullYear(), nowRef.getMonth() + 1, 1);
+            const nextYm = `${nextRef.getFullYear()}-${pad2(nextRef.getMonth() + 1)}`;
+            const curMStr = `/${pad2(nowRef.getMonth() + 1)}/${nowRef.getFullYear()}`;
+            const curMShort = `/${pad2(nowRef.getMonth() + 1)}/${String(nowRef.getFullYear()).slice(2)}`;
+            const nextMStr = `/${pad2(nextRef.getMonth() + 1)}/${nextRef.getFullYear()}`;
+            const nextMShort = `/${pad2(nextRef.getMonth() + 1)}/${String(nextRef.getFullYear()).slice(2)}`;
+
             const prox = (sub.proximo_vencimento || '').toString();
-            if (prox.includes('09/2026') || prox.includes('2026-09') || prox.includes('/09/26')) {
+            if (prox.includes(curMStr) || prox.includes(curYm) || prox.includes(curMShort)) {
                 cm.proj_mes_atual += price;
-            } else if (prox.includes('10/2026') || prox.includes('2026-10') || prox.includes('/10/26')) {
+            } else if (prox.includes(nextMStr) || prox.includes(nextYm) || prox.includes(nextMShort)) {
                 cm.proj_1m += price;
             } else if (!prox) {
                 cm.proj_mes_atual += price;
@@ -6326,15 +6454,24 @@ function drawExecView(force) {
     const isCrescimentoPositivo = Number(pctCrescimentoMoM) >= 0;
 
     const mesesNomes = { '01':'Jan', '02':'Fev', '03':'Mar', '04':'Abr', '05':'Mai', '06':'Jun', '07':'Jul', '08':'Ago', '09':'Set', '10':'Out', '11':'Nov', '12':'Dez' };
+    const mesesNomesCompletos = { '01':'Janeiro', '02':'Fevereiro', '03':'Março', '04':'Abril', '05':'Maio', '06':'Junho', '07':'Julho', '08':'Agosto', '09':'Setembro', '10':'Outubro', '11':'Novembro', '12':'Dezembro' };
     const formatMesLabel = (k) => {
         if (!k || k.length < 7) return k;
         const [ano, m] = k.split('-');
         return `${mesesNomes[m] || m}/${ano.slice(2)}`;
     };
+    const getNextMonthKey = (ym) => {
+        if (!ym) return '';
+        const [ano, m] = ym.split('-').map(Number);
+        const nextD = new Date(ano, m, 1);
+        return `${nextD.getFullYear()}-${String(nextD.getMonth() + 1).padStart(2, '0')}`;
+    };
     const labelMesVigente = formatMesLabel(mesVigenteKey);
     const labelMesAnterior = formatMesLabel(mesAnteriorKey);
-    const labelProxMes = formatMesLabel('2026-10');
-    const labelProxMesCompleto = 'Outubro de 2026';
+    const mesProxKey = getNextMonthKey(mesVigenteKey);
+    const labelProxMes = formatMesLabel(mesProxKey);
+    const [pAno, pM] = (mesProxKey || '').split('-');
+    const labelProxMesCompleto = pM ? `${mesesNomesCompletos[pM] || pM} de ${pAno}` : 'Próximo Mês';
 
     // Funil Comercial
     const fKpis = funil.kpis || {};
@@ -6393,7 +6530,7 @@ function drawExecView(force) {
 
     // Atualizar chip no topo com contagem live
     const chipSyncTop = document.getElementById('api-cnt-sync24h');
-    if (chipSyncTop) chipSyncTop.innerText = `${matriculas24h} matrículas (48h) ⚡`;
+    if (chipSyncTop) chipSyncTop.innerText = `${matInfo.countNovas48h} novas • ${matInfo.countRecorrencias48h} mensalidades (48h) ⚡`;
 
     mount.innerHTML = `
       <!-- G0 – MONITORAMENTO AO VIVO -->
@@ -6406,8 +6543,8 @@ function drawExecView(force) {
               <div class="exec-sec-sub">Métricas operacionais e comerciais consolidadas em tempo real (Academy, Cativa & Gateways).</div>
             </div>
           </div>
-          <button class="btn-exec-link" onclick="openModalMatriculas('24h_conf')" style="background: #10b981; color: #022c22; font-weight: 800; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; display:flex; align-items:center; gap:6px; box-shadow:0 0 12px rgba(16,185,129,0.3); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-            <span>📋 Detalhar Matrículas (48h / 30d)</span> →
+          <button class="btn-exec-link" onclick="openModalMatriculas('24h_novas')" style="background: #10b981; color: #022c22; font-weight: 800; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; display:flex; align-items:center; gap:6px; box-shadow:0 0 12px rgba(16,185,129,0.3); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+            <span>📋 Detalhar Matrículas & Recebimentos (48h / 30d)</span> →
           </button>
         </div>
 
@@ -6416,14 +6553,14 @@ function drawExecView(force) {
           <span style="color:#10b981;">⚡</span> ÚLTIMAS 48 HORAS
         </div>
         <div style="display:grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px;">
-          <!-- Card 1: Confirmadas 48h -->
-          <div class="exec-card" style="border-top:3px solid #10b981; cursor:pointer;" onclick="openModalMatriculas('24h_conf')" title="Clique para ver detalhes das matrículas confirmadas nas últimas 24h">
+          <!-- Card 1: Novas Matrículas 48h -->
+          <div class="exec-card" style="border-top:3px solid #10b981; cursor:pointer;" onclick="openModalMatriculas('24h_novas')" title="Clique para ver detalhes das novas matrículas (1º pagamento) nas últimas 48h">
             <div class="exec-card-top">
-              <span class="exec-card-label">Matrículas Confirmadas</span>
-              <span class="exec-pill pill-green">⚡ PAGO / CONFIRMADO</span>
+              <span class="exec-card-label">Novas Matrículas</span>
+              <span class="exec-pill pill-green">⚡ 1º PGTO (48H)</span>
             </div>
-            <div class="exec-card-val" style="color:#10b981;">${fN(matriculas24h)}</div>
-            <div class="exec-card-sub">Vindi • Asaas • Cativa ↗</div>
+            <div class="exec-card-val" style="color:#10b981;">${fN(matInfo.countNovas48h)}</div>
+            <div class="exec-card-sub">${fN(matInfo.countNovas30d)} nos últimos 30 dias ↗</div>
           </div>
 
           <!-- Card 2: Pendentes 48h -->
@@ -6436,14 +6573,14 @@ function drawExecView(force) {
             <div class="exec-card-sub">Aguardando Pagamento / Consumo ↗</div>
           </div>
 
-          <!-- Card 3: Receita 24h -->
-          <div class="exec-card" style="border-top:3px solid var(--emerald);">
+          <!-- Card 3: Receita 48h -->
+          <div class="exec-card" style="border-top:3px solid var(--emerald); cursor:pointer;" onclick="openModalMatriculas('24h_todas')" title="Clique para ver todas as faturas recebidas nas últimas 48h">
             <div class="exec-card-top">
               <span class="exec-card-label">Receita Realizada 48h</span>
               <span class="exec-pill pill-green">Caixa 48h</span>
             </div>
             <div class="exec-card-val" style="color:var(--emerald);">${fM(rec48h)}</div>
-            <div class="exec-card-sub">Liquidação Vindi & Asaas</div>
+            <div class="exec-card-sub">${matInfo.countPagas48h} faturas (${matInfo.countNovas48h} novas + ${matInfo.countRecorrencias48h} mensalidades) ↗</div>
           </div>
 
           <!-- Card 4: Alunos Ativos 48h -->
@@ -6472,14 +6609,14 @@ function drawExecView(force) {
           <span style="color:#3b82f6;">📅</span> ÚLTIMOS 30 DIAS
         </div>
         <div style="display:grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px;">
-          <!-- Card 1: Confirmadas 30d -->
-          <div class="exec-card" style="border-top:3px solid #3b82f6; cursor:pointer;" onclick="openModalMatriculas('30d_conf')" title="Clique para ver detalhes das matrículas confirmadas nos últimos 30 dias">
+          <!-- Card 1: Novas Matrículas 30d -->
+          <div class="exec-card" style="border-top:3px solid #3b82f6; cursor:pointer;" onclick="openModalMatriculas('30d_novas')" title="Clique para ver detalhes das novas matrículas nos últimos 30 dias">
             <div class="exec-card-top">
-              <span class="exec-card-label">Matrículas Confirmadas</span>
-              <span class="exec-pill pill-blue">📅 PAGO / CONFIRMADO</span>
+              <span class="exec-card-label">Novas Matrículas</span>
+              <span class="exec-pill pill-blue">📅 1º PGTO (30D)</span>
             </div>
-            <div class="exec-card-val" style="color:var(--ink);">${fN(matriculas30d)}</div>
-            <div class="exec-card-sub">Vindi • Asaas • Cativa ↗</div>
+            <div class="exec-card-val" style="color:var(--ink);">${fN(matInfo.countNovas30d)}</div>
+            <div class="exec-card-sub">${matInfo.countRecorrencias30d} mensalidades da base ↗</div>
           </div>
 
           <!-- Card 2: Pendentes 30d -->
@@ -10396,33 +10533,29 @@ let _matriculasModalData = {
 function updateSync24hKpi() {
     const matInfo = getMatriculasAuditoriaData();
     const valEl = document.getElementById('val-sync-24h');
-    if (valEl) valEl.textContent = fmt(matInfo.count24h);
+    if (valEl) valEl.textContent = fmt(matInfo.countNovas48h);
     const execValEl = document.getElementById('exec-val-sync-24h');
-    if (execValEl) execValEl.textContent = fmt(matInfo.count24h);
+    if (execValEl) execValEl.textContent = fmt(matInfo.countNovas48h);
     const topChip = document.getElementById('api-cnt-sync24h');
-    if (topChip) topChip.textContent = `${matInfo.count24h} Conf. | ${matInfo.countPendentes24h} Pend. (48h) ⚡`;
+    if (topChip) topChip.textContent = `${matInfo.countNovas48h} Novas | ${matInfo.countRecorrencias48h} Mensalidades (48h) ⚡`;
 }
 
 function openModalMatriculas(period) {
     const matData = getMatriculasAuditoriaData();
     _matriculasModalData = {
-        period: period || '24h_conf',
+        period: period || '24h_novas',
         data: matData
     };
 
     const modal = document.getElementById('modal-sync-24h');
     if (!modal) return;
 
-    // Atualizar abas dinâmicas
     updateMatriculasModalTabs();
-
-    // Renderizar tabela com o período ativo
     filterMatriculasModalPeriod(_matriculasModalData.period);
 
     modal.classList.add('on');
     document.body.style.overflow = 'hidden';
 
-    // Search handler
     const searchInp = document.getElementById('msync-search');
     if (searchInp) {
         searchInp.value = '';
@@ -10435,6 +10568,8 @@ function openModalMatriculas(period) {
                 (s.email || '').toLowerCase().includes(term) ||
                 (s.curso || '').toLowerCase().includes(term) ||
                 (s.origem || '').toLowerCase().includes(term) ||
+                (s.origem_label || '').toLowerCase().includes(term) ||
+                (s.safra || '').toLowerCase().includes(term) ||
                 (s.gateway || '').toLowerCase().includes(term)
             );
             renderMatriculasTable(filtered);
@@ -10443,7 +10578,7 @@ function openModalMatriculas(period) {
 }
 
 function openModalSync24h() {
-    openModalMatriculas('24h_conf');
+    openModalMatriculas('24h_novas');
 }
 
 function closeSyncModal24h() {
@@ -10456,13 +10591,19 @@ function closeSyncModal24h() {
 
 function getActiveMatriculasList(periodKey) {
     const d = (_matriculasModalData && _matriculasModalData.data) ? _matriculasModalData.data : getMatriculasAuditoriaData();
-    if (periodKey === '24h_conf') return d.list24h || [];
+    if (periodKey === '24h_novas') return d.listNovas48h || [];
+    if (periodKey === '24h_recorr') return d.listRecorrencias48h || [];
+    if (periodKey === '24h_todas') return d.listTodasPagas48h || [];
+    if (periodKey === '24h_conf') return d.listNovas48h || [];
     if (periodKey === '24h_pend') return d.pendentes24h || [];
-    if (periodKey === '30d_conf') return d.list30d || [];
+    if (periodKey === '30d_novas') return d.listNovas30d || [];
+    if (periodKey === '30d_recorr') return d.listRecorrencias30d || [];
+    if (periodKey === '30d_todas') return d.listTodasPagas30d || [];
+    if (periodKey === '30d_conf') return d.listNovas30d || [];
     if (periodKey === '30d_pend') return d.pendentes30d || [];
     if (periodKey === 'all_conf') return d.allRecords || [];
     if (periodKey === 'all_pend') return d.allPendentes || [];
-    return d.list24h || [];
+    return d.listNovas48h || [];
 }
 
 function updateMatriculasModalTabs() {
@@ -10473,11 +10614,14 @@ function updateMatriculasModalTabs() {
     const p = _matriculasModalData.period;
 
     const tabs = [
-        { id: '24h_conf', label: `⚡ Confirmadas 48h (${d.count24h})`, color: '#10b981', textColor: '#022c22' },
+        { id: '24h_novas', label: `⚡ Novas 48h (${d.countNovas48h})`, color: '#10b981', textColor: '#022c22' },
+        { id: '24h_recorr', label: `💳 Mensalidades 48h (${d.countRecorrencias48h})`, color: '#06b6d4', textColor: '#083344' },
+        { id: '24h_todas', label: `📦 Todas Pagas 48h (${d.countPagas48h})`, color: '#059669', textColor: '#ffffff' },
         { id: '24h_pend', label: `⏳ Pendentes 48h (${d.countPendentes24h})`, color: '#f59e0b', textColor: '#451a03' },
-        { id: '30d_conf', label: `📅 Confirmadas 30d (${d.count30d})`, color: '#3b82f6', textColor: '#ffffff' },
+        { id: '30d_novas', label: `📅 Novas 30d (${d.countNovas30d})`, color: '#3b82f6', textColor: '#ffffff' },
+        { id: '30d_recorr', label: `💳 Mensalidades 30d (${d.countRecorrencias30d})`, color: '#0284c7', textColor: '#ffffff' },
         { id: '30d_pend', label: `⏳ Pendentes 30d (${d.countPendentes30d})`, color: '#f59e0b', textColor: '#451a03' },
-        { id: 'all_conf', label: `📂 Todas Confirmadas (${d.totalConfirmadas})`, color: '#8b5cf6', textColor: '#ffffff' },
+        { id: 'all_conf', label: `📂 Base Confirmada (${d.totalConfirmadas})`, color: '#8b5cf6', textColor: '#ffffff' },
         { id: 'all_pend', label: `📂 Todas Pendentes (${d.totalPendentes})`, color: '#64748b', textColor: '#ffffff' }
     ];
 
@@ -10502,18 +10646,28 @@ function filterMatriculasModalPeriod(p) {
     const typeLabelEl = document.getElementById('msync-type-label');
     if (typeLabelEl) {
         if (p.includes('pend')) {
-            typeLabelEl.textContent = 'Matrículas Pendentes (Sem Financeiro / Sem Uso)';
+            typeLabelEl.textContent = 'Matrículas Pendentes (Aguardando Pagamento / Consumo)';
             typeLabelEl.style.color = '#f59e0b';
-        } else {
-            typeLabelEl.textContent = 'Matrículas Confirmadas (1º Pagamento Aprovado)';
+        } else if (p.includes('recorr')) {
+            typeLabelEl.textContent = 'Mensalidades / Recorrências Pagas (Alunos Ativos da Base)';
+            typeLabelEl.style.color = '#06b6d4';
+        } else if (p.includes('todas')) {
+            typeLabelEl.textContent = 'Todas as Faturas Pagas / Liquidadas no Período';
+            typeLabelEl.style.color = '#059669';
+        } else if (p.includes('novas') || p.includes('conf')) {
+            typeLabelEl.textContent = 'Novas Matrículas (1º Pagamento Aprovado no Período)';
             typeLabelEl.style.color = '#10b981';
+        } else {
+            typeLabelEl.textContent = 'Base Completa de Alunos Confirmados';
+            typeLabelEl.style.color = '#8b5cf6';
         }
     }
 
     const lastTimeEl = document.getElementById('msync-last-time');
     if (lastTimeEl) {
-        if (targetList.length > 0 && targetList[0].data_fmt) {
-            lastTimeEl.textContent = targetList[0].data_fmt;
+        if (targetList.length > 0) {
+            const topItem = targetList[0];
+            lastTimeEl.textContent = topItem.ultimo_pagamento_fmt || topItem.data_fmt || '--';
         } else {
             lastTimeEl.textContent = '--';
         }
@@ -10534,23 +10688,48 @@ function renderMatriculasTable(students) {
     let rowsHtml = students.map((s, idx) => {
         const initials = (s.nome || 'A').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
         const cursoTag = s.curso || 'PLATAFORMA GERAL';
-        const dataTag = s.data_fmt || 'Recente';
         const isConfirmada = s.tipo === 'confirmada';
+        const isNova = s.is_nova_48h || s.is_nova_30d || (s.origem_label && s.origem_label.includes('Nova Matrícula'));
+        const isRecorrencia = !isNova && isConfirmada;
         
-        const badgeBg = isConfirmada ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)';
-        const badgeColor = isConfirmada ? '#059669' : '#d97706';
-        const badgeBorder = isConfirmada ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)';
-        const icon = isConfirmada ? '💳' : '⏳';
-        const labelText = isConfirmada ? `● Confirmada (${s.gateway || 'Gateway'})` : `⏳ Matrícula Pendente`;
+        let badgeBg = 'rgba(16,185,129,0.12)';
+        let badgeColor = '#059669';
+        let badgeBorder = 'rgba(16,185,129,0.3)';
+        let icon = '💳';
+        let labelText = `● Nova Matrícula (${s.gateway || 'Gateway'})`;
 
-        const valHtml = (isConfirmada && s.valor > 0) 
-            ? `<span style="font-weight:800; color:#059669; font-size:11.5px;">${fM(s.valor)}</span>`
-            : `<span style="color:var(--muted); font-size:11px;">${isConfirmada ? 'Acesso Confirmado' : '0 aulas assistidas'}</span>`;
+        if (!isConfirmada) {
+            badgeBg = 'rgba(245,158,11,0.12)';
+            badgeColor = '#d97706';
+            badgeBorder = 'rgba(245,158,11,0.3)';
+            icon = '⏳';
+            labelText = '⏳ Matrícula Pendente';
+        } else if (isRecorrencia) {
+            badgeBg = 'rgba(6,182,212,0.12)';
+            badgeColor = '#0891b2';
+            badgeBorder = 'rgba(6,182,212,0.3)';
+            icon = '🔄';
+            labelText = `● Mensalidade Paga (${s.gateway || 'Gateway'})`;
+        }
+
+        let sublineHtml = '';
+        if (isConfirmada) {
+            if (isRecorrencia) {
+                const valStr = (s.ultimo_pagamento_valor || s.valor) > 0 ? fM(s.ultimo_pagamento_valor || s.valor) : 'R$ --';
+                const dtPgStr = s.ultimo_pagamento_fmt || s.data_fmt;
+                sublineHtml = `<span style="font-weight:700; color:#0891b2;">${valStr}</span> pago em ${dtPgStr} • Matrícula Original: ${s.data_fmt} (Safra ${s.safra || '--'})`;
+            } else {
+                const valStr = s.valor > 0 ? fM(s.valor) : 'R$ --';
+                sublineHtml = `<span style="font-weight:700; color:#059669;">${valStr}</span> • 1º Pagamento em ${s.data_fmt}`;
+            }
+        } else {
+            sublineHtml = `Inscrição: ${s.data_fmt} • 0 aulas assistidas`;
+        }
 
         return `
           <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-bottom:1px solid var(--line); font-size:12px; transition:background 0.15s;" onmouseover="this.style.background='var(--card-hover)'" onmouseout="this.style.background='transparent'">
             <div style="display:flex; align-items:center; gap:12px; min-width:0;">
-              <div style="width:34px; height:34px; border-radius:50%; background:${isConfirmada ? 'var(--sky-w)' : 'rgba(245,158,11,0.15)'}; color:${isConfirmada ? 'var(--sky-d)' : '#d97706'}; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:11px; flex-shrink:0;">
+              <div style="width:34px; height:34px; border-radius:50%; background:${isConfirmada ? (isRecorrencia ? 'rgba(6,182,212,0.15)' : 'var(--sky-w)') : 'rgba(245,158,11,0.15)'}; color:${isConfirmada ? (isRecorrencia ? '#0891b2' : 'var(--sky-d)') : '#d97706'}; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:11px; flex-shrink:0;">
                 ${initials}
               </div>
               <div style="min-width:0;">
@@ -10564,12 +10743,12 @@ function renderMatriculasTable(students) {
             </div>
 
             <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
-              <div style="text-align:right; max-width:260px;">
-                <span style="display:inline-block; font-size:10.5px; font-weight:700; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:4px; padding:2px 6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:240px;">
+              <div style="text-align:right; max-width:280px;">
+                <span style="display:inline-block; font-size:10.5px; font-weight:700; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:4px; padding:2px 6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:260px;">
                   ${cursoTag}
                 </span>
-                <div style="color:var(--muted); font-size:10px; margin-top:2px;">
-                  ${valHtml} • ${dataTag}
+                <div style="color:var(--muted); font-size:10.5px; margin-top:2px;">
+                  ${sublineHtml}
                 </div>
               </div>
 
