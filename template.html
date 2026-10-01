@@ -2303,9 +2303,9 @@ option {
       <button class="md-close" onclick="closeModalProjecaoDiaria()" style="position:absolute; right:16px; top:16px; background:transparent; border:none; font-size:22px; cursor:pointer; color:var(--muted); line-height:1;" title="Fechar">&times;</button>
       <div style="display:flex; align-items:center; gap:8px;">
         <span style="font-size:20px;">📅</span>
-        <h3 id="mpd-title" style="margin:0; font-size:16px; font-weight:800; color:var(--ink);">Projeção Diária de Recebimentos — Setembro / 2026</h3>
+        <h3 id="mpd-title" style="margin:0; font-size:16px; font-weight:800; color:var(--ink);">Projeção Diária de Recebimentos</h3>
       </div>
-      <p style="margin:4px 0 0 28px; font-size:12px; color:var(--muted);">Acompanhamento diário de faturamento realizado (01 a 21/09) e projetado a vencer (22 a 30/09).</p>
+      <p id="mpd-subtitle" style="margin:4px 0 0 28px; font-size:12px; color:var(--muted);">Acompanhamento diário de faturamento realizado e projetado a vencer no mês vigente.</p>
     </div>
 
     <div style="padding:20px; overflow-y:auto; flex:1;">
@@ -2315,12 +2315,12 @@ option {
       <!-- Gráfico de Barras SVG Interativo -->
       <div style="background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:20px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-          <div style="font-size:12.5px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:6px;">
-            <span>📊</span> Curva Diária de Entradas do Mês (Setembro/2026)
+          <div id="mpd-chart-title" style="font-size:12.5px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:6px;">
+            <span>📊</span> Curva Diária de Entradas do Mês Vigente
           </div>
           <div style="display:flex; gap:12px; font-size:11px;">
-            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; border-radius:2px; background:var(--emerald);"></span> Realizado (01 a 21/09)</span>
-            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; border-radius:2px; background:var(--brand);"></span> A Vencer (22 a 30/09)</span>
+            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; border-radius:2px; background:var(--emerald);"></span> <span id="mpd-legend-real">Realizado</span></span>
+            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; border-radius:2px; background:var(--brand);"></span> <span id="mpd-legend-prev">A Vencer</span></span>
           </div>
         </div>
         <div id="mpd-chart-mount" style="width:100%; min-height:180px; overflow-x:auto;"></div>
@@ -9232,6 +9232,13 @@ function drawCursoView(courseName, force) {
     const mount = document.getElementById('curso-content-mount');
     if (!mount) return;
 
+    const nowRef = new Date();
+    const pad2 = n => String(n).padStart(2, '0');
+    const mesesNomesCompletos = { '01':'Janeiro', '02':'Fevereiro', '03':'Março', '04':'Abril', '05':'Maio', '06':'Junho', '07':'Julho', '08':'Agosto', '09':'Setembro', '10':'Outubro', '11':'Novembro', '12':'Dezembro' };
+    const curYm = `${nowRef.getFullYear()}-${pad2(nowRef.getMonth() + 1)}`;
+    const curMesNomeCompleto = mesesNomesCompletos[pad2(nowRef.getMonth() + 1)] || 'Mês Atual';
+    const curMesAnoLabel = `${curMesNomeCompleto}/${String(nowRef.getFullYear()).slice(2)}`;
+
     // Regra de exclusão de testes e contas internas
     const isInvalidOrInternal = s => {
         const em = (s.email || '').toString().toLowerCase().trim();
@@ -9582,6 +9589,11 @@ function drawCursoView(courseName, force) {
         }
     });
 
+    // Garantir que o mês calendário atual esteja sempre representado no gráfico
+    if (enrollMonthlyMap[curYm] === undefined) {
+        enrollMonthlyMap[curYm] = 0;
+    }
+
     let growthEnrollText = '+0.0%';
     let growthEnrollClass = 'pill-gray';
     if (matriculas30dAntConf > 0) {
@@ -9684,11 +9696,12 @@ function drawCursoView(courseName, force) {
             const anoCurto = "'" + ano.slice(2);
 
             const isPeak = val === maxValEnroll && val > 0;
-            const isLatest = idx === displayedEnrollMonths.length - 1;
+            const isCurrentMonth = ym === curYm;
+            const isLatest = isCurrentMonth || (idx === displayedEnrollMonths.length - 1);
 
             // Cores e Gradientes elegantes
             let fillGrad = 'url(#gradEnrollCyan)';
-            if (isLatest) {
+            if (isCurrentMonth) {
                 fillGrad = 'url(#gradEnrollEmerald)';
             } else if (isPeak) {
                 fillGrad = 'url(#gradEnrollPeak)';
@@ -9699,25 +9712,25 @@ function drawCursoView(courseName, force) {
                 <rect x="${x}" y="${y}" width="${barW}" height="${Math.max(3, h)}" rx="4" fill="${fillGrad}" opacity="0.92">
                 </rect>`;
 
-            // Badge / Valor acima da barra
-            if (val > 0) {
+            // Badge / Valor acima da barra (sempre mostra valor no mês atual e quando > 0)
+            if (val > 0 || isCurrentMonth) {
                 const textY = Math.max(pad.t + 14, y - 6);
-                const textColor = isLatest ? '#10b981' : (isPeak ? '#00f0ff' : 'var(--ink)');
+                const textColor = isCurrentMonth ? '#10b981' : (isPeak ? '#00f0ff' : 'var(--ink)');
                 bars += `<text x="${x + barW/2}" y="${textY}" font-size="10.5" font-family="var(--font-mono, monospace)" font-weight="800" fill="${textColor}" text-anchor="middle">${val}</text>`;
             }
 
             // Indicador de Pico ou Mês Atual acima
-            if (isPeak && !isLatest && val > 0) {
-                bars += `<text x="${x + barW/2}" y="${Math.max(pad.t + 2, y - 18)}" font-size="8.5" font-weight="800" fill="#00f0ff" text-anchor="middle">★ PICO</text>`;
-            } else if (isLatest && val > 0) {
+            if (isCurrentMonth) {
                 bars += `<text x="${x + barW/2}" y="${Math.max(pad.t + 2, y - 18)}" font-size="8.5" font-weight="800" fill="#10b981" text-anchor="middle">ATUAL</text>`;
+            } else if (isPeak && !isCurrentMonth && val > 0) {
+                bars += `<text x="${x + barW/2}" y="${Math.max(pad.t + 2, y - 18)}" font-size="8.5" font-weight="800" fill="#00f0ff" text-anchor="middle">★ PICO</text>`;
             }
 
             bars += `</g>`;
 
             // Rótulo do Eixo X em 2 linhas (Nunca sobrepõe!)
-            labels += `<text x="${x + barW/2}" y="${H - 24}" font-size="10" font-weight="700" fill="${isLatest ? '#10b981' : 'var(--ink)'}" text-anchor="middle">${mesNome}</text>`;
-            labels += `<text x="${x + barW/2}" y="${H - 12}" font-size="8.5" font-weight="600" fill="var(--muted)" text-anchor="middle">${anoCurto}</text>`;
+            labels += `<text x="${x + barW/2}" y="${H - 24}" font-size="10" font-weight="700" fill="${isCurrentMonth ? '#10b981' : 'var(--ink)'}" text-anchor="middle">${mesNome}</text>`;
+            labels += `<text x="${x + barW/2}" y="${H - 12}" font-size="8.5" font-weight="600" fill="${isCurrentMonth ? '#10b981' : 'var(--muted)'}" text-anchor="middle">${anoCurto}</text>`;
         });
 
         enrollSvg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="overflow:visible; display:block;">
@@ -10198,7 +10211,7 @@ function drawCursoView(courseName, force) {
           <div class="exec-card">
             <div class="exec-card-top">
               <span class="exec-card-label">Mês Atual (Pago / Previsto)</span>
-              <span class="exec-pill pill-blue">Setembro/26</span>
+              <span class="exec-pill pill-blue">${curMesAnoLabel}</span>
             </div>
             <div class="exec-card-val" style="color:var(--brand)">${fM(cFin.pago_mes_atual)}</div>
             <div class="exec-card-sub">Previsto mês: ${fM(cFin.previsto_mes_vigente || cFin.proj_mes_atual)} (a vencer: ${fM(cFin.proj_mes_atual)})</div>
@@ -10802,9 +10815,14 @@ let _projecaoDiariaFilter = 'all';
 function getProjecaoDiariaData() {
     if (_projecaoDiariaData) return _projecaoDiariaData;
 
-    const refDay = 21; // Data de corte atual: 21/09/2026
+    const nowRef = new Date();
+    const refDay = nowRef.getDate();
+    const daysInMonth = new Date(nowRef.getFullYear(), nowRef.getMonth() + 1, 0).getDate();
+    const curMesPad = String(nowRef.getMonth() + 1).padStart(2, '0');
+    const curAno = nowRef.getFullYear();
+
     const daysMap = {};
-    for (let d = 1; d <= 30; d++) {
+    for (let d = 1; d <= daysInMonth; d++) {
         daysMap[d] = {
             dia: d,
             realizado: 0,
@@ -10861,7 +10879,7 @@ function getProjecaoDiariaData() {
         const val = Number(sub.valor_parcela) || 0;
         const cr = resolvePlano(sub.plano || sub.description);
         const pv = parseDay(sub.proximo_vencimento || sub.vencimento) || 27;
-        const d = (pv >= 1 && pv <= 30) ? pv : (pv > 30 ? 30 : 1);
+        const d = (pv >= 1 && pv <= daysInMonth) ? pv : (pv > daysInMonth ? daysInMonth : 1);
 
         if (sub.paid_this_month || sub.status_financeiro === 'pago' || sub.status_assinatura === 'received') {
             daysMap[d].realizado += val;
@@ -10876,7 +10894,7 @@ function getProjecaoDiariaData() {
 
     // 2. Normalizar proporcionalmente para bater 100% com os totais de caixa auditados
     let rawReal = 0, rawPrev = 0;
-    for (let d = 1; d <= 30; d++) {
+    for (let d = 1; d <= daysInMonth; d++) {
         rawReal += daysMap[d].realizado;
         rawPrev += daysMap[d].a_vencer;
     }
@@ -10886,7 +10904,7 @@ function getProjecaoDiariaData() {
 
     let totalRealFinal = 0, totalPrevFinal = 0, countRealFinal = 0, countPrevFinal = 0;
 
-    for (let d = 1; d <= 30; d++) {
+    for (let d = 1; d <= daysInMonth; d++) {
         daysMap[d].realizado = Math.round(daysMap[d].realizado * scaleReal * 100) / 100;
         daysMap[d].a_vencer = Math.round(daysMap[d].a_vencer * scalePrev * 100) / 100;
         totalRealFinal += daysMap[d].realizado;
@@ -10902,7 +10920,11 @@ function getProjecaoDiariaData() {
         totalMes: targetTotal,
         countReal: countRealFinal,
         countPrev: countPrevFinal,
-        totalCount: countRealFinal + countPrevFinal
+        totalCount: countRealFinal + countPrevFinal,
+        refDay,
+        daysInMonth,
+        curMesPad,
+        curAno
     };
     return _projecaoDiariaData;
 }
@@ -10917,7 +10939,7 @@ function renderProjecaoDiariaChart(data) {
     const W = 860, H = 160, pad = { l: 45, r: 15, t: 20, b: 28 };
     const chartW = W - pad.l - pad.r;
     const chartH = H - pad.t - pad.b;
-    const step = chartW / 30;
+    const step = chartW / days.length;
     const barW = Math.max(12, Math.min(20, step - 6));
 
     let grid = '', bars = '', labels = '';
@@ -10943,11 +10965,11 @@ function renderProjecaoDiariaChart(data) {
 
         bars += `
           <rect x="${x}" y="${y}" width="${barW}" height="${Math.max(2, h)}" rx="3" fill="${color}" opacity="${opacity}">
-            <title>Dia ${String(d.dia).padStart(2,'0')}/09: ${isReal ? 'Realizado' : 'A Vencer'} = ${valFormatted} (${d.count_real + d.count_prev} cobranças)</title>
+            <title>Dia ${String(d.dia).padStart(2,'0')}/${data.curMesPad || '10'}: ${isReal ? 'Realizado' : 'A Vencer'} = ${valFormatted} (${d.count_real + d.count_prev} cobranças)</title>
           </rect>
         `;
 
-        if (d.dia === 21) {
+        if (d.is_today) {
             bars += `<text x="${x + barW/2}" y="${pad.t - 5}" font-size="8.5" font-weight="800" fill="var(--emerald-d)" text-anchor="middle">HOJE</text>`;
         } else if (val > 0 && (d.dia === 27 || d.dia === 26 || d.dia === 14 || d.dia === 30 || d.dia === 22)) {
             const shortVal = typeof fM === 'function' ? fM(val).replace('R$ ','').replace(',00','') : Math.round(val);
@@ -10994,7 +11016,7 @@ function filterModalProjecaoDays(filterType) {
 
         let stBadge = '';
         if (isToday) {
-            stBadge = `<span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(16,185,129,0.15); color:var(--emerald-d); font-weight:800; font-size:10.5px;">📌 Hoje (D-21)</span>`;
+            stBadge = `<span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(16,185,129,0.15); color:var(--emerald-d); font-weight:800; font-size:10.5px;">📌 Hoje (D-${data.refDay})</span>`;
         } else if (isFuture) {
             stBadge = `<span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(2,132,199,0.1); color:#0284c7; font-weight:700; font-size:10.5px;">⏳ A Vencer</span>`;
         } else {
@@ -11011,7 +11033,7 @@ function filterModalProjecaoDays(filterType) {
 
         return `
           <tr style="border-bottom:1px solid var(--line); ${rowBg}">
-            <td style="padding:9px 14px; font-weight:700; color:var(--ink);">Dia ${String(d.dia).padStart(2,'0')}/09</td>
+            <td style="padding:9px 14px; font-weight:700; color:var(--ink);">Dia ${String(d.dia).padStart(2,'0')}/${data.curMesPad || '10'}</td>
             <td style="padding:9px 14px;">${stBadge}</td>
             <td style="padding:9px 14px; text-align:right; color:var(--emerald-d); font-weight:${d.realizado > 0 ? '700' : '400'}">${realFormatted}</td>
             <td style="padding:9px 14px; text-align:right; color:#0284c7; font-weight:${d.a_vencer > 0 ? '700' : '400'}">${vencFormatted}</td>
@@ -11030,7 +11052,7 @@ function exportModalProjecaoCSV() {
     const headers = ['Dia', 'Data', 'Situacao', 'Valor_Realizado_BRL', 'Valor_A_Vencer_BRL', 'Total_Dia_BRL', 'Qtd_Cobrancas', 'Cursos_Detalhamento'];
     const rows = days.map(d => {
         const sit = d.is_today ? 'Hoje' : (d.is_future ? 'A Vencer' : 'Realizado');
-        const dt = `${String(d.dia).padStart(2,'0')}/09/2026`;
+        const dt = `${String(d.dia).padStart(2,'0')}/${data.curMesPad || '10'}/${data.curAno || '2026'}`;
         const cursosStr = Object.entries(d.cursos).map(([c, v]) => `${c}: ${v.toFixed(2)}`).join(' | ');
         return [
             d.dia,
@@ -11049,7 +11071,7 @@ function exportModalProjecaoCSV() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `projecao_diaria_recebimentos_setembro_2026.csv`);
+    link.setAttribute('download', `projecao_diaria_recebimentos_${data.curMesPad || '10'}_${data.curAno || '2026'}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -11065,6 +11087,32 @@ function openModalProjecaoDiaria() {
             return;
         }
 
+        const nowRef = new Date();
+        const refDay = data.refDay || nowRef.getDate();
+        const daysInMonth = data.daysInMonth || new Date(nowRef.getFullYear(), nowRef.getMonth() + 1, 0).getDate();
+        const pad2 = n => String(n).padStart(2, '0');
+        const mesesNomesCompletos = { '01':'Janeiro', '02':'Fevereiro', '03':'Março', '04':'Abril', '05':'Maio', '06':'Junho', '07':'Julho', '08':'Agosto', '09':'Setembro', '10':'Outubro', '11':'Novembro', '12':'Dezembro' };
+        const curMesNomeCompleto = mesesNomesCompletos[pad2(nowRef.getMonth() + 1)] || 'Mês Atual';
+        const curAno = nowRef.getFullYear();
+        const mesAnoFmt = `${curMesNomeCompleto} / ${curAno}`;
+        const mesAnoCompact = `${curMesNomeCompleto}/${curAno}`;
+
+        // Header and titles dinâmicos
+        const mpdTitle = document.getElementById('mpd-title');
+        if (mpdTitle) mpdTitle.textContent = `Projeção Diária de Recebimentos — ${mesAnoFmt}`;
+
+        const mpdSubtitle = document.getElementById('mpd-subtitle');
+        if (mpdSubtitle) mpdSubtitle.textContent = `Acompanhamento diário de faturamento realizado (01 a ${pad2(refDay)}/${pad2(nowRef.getMonth() + 1)}) e projetado a vencer (${pad2(Math.min(refDay + 1, daysInMonth))} a ${daysInMonth}/${pad2(nowRef.getMonth() + 1)}).`;
+
+        const mpdChartTitle = document.getElementById('mpd-chart-title');
+        if (mpdChartTitle) mpdChartTitle.innerHTML = `<span>📊</span> Curva Diária de Entradas do Mês (${mesAnoCompact})`;
+
+        const mpdLegendReal = document.getElementById('mpd-legend-real');
+        if (mpdLegendReal) mpdLegendReal.textContent = `Realizado (01 a ${pad2(refDay)}/${pad2(nowRef.getMonth() + 1)})`;
+
+        const mpdLegendPrev = document.getElementById('mpd-legend-prev');
+        if (mpdLegendPrev) mpdLegendPrev.textContent = `A Vencer (${pad2(Math.min(refDay + 1, daysInMonth))} a ${daysInMonth}/${pad2(nowRef.getMonth() + 1)})`;
+
         // 1. Render KPIs
         const kpisMount = document.getElementById('mpd-kpis');
         if (kpisMount) {
@@ -11073,13 +11121,14 @@ function openModalProjecaoDiaria() {
             const valTotalMes = typeof fM === 'function' ? fM(data.totalMes) : ('R$ ' + data.totalMes.toFixed(2));
             const valTotalReal = typeof fM === 'function' ? fM(data.totalReal) : ('R$ ' + data.totalReal.toFixed(2));
             const valTotalPrev = typeof fM === 'function' ? fM(data.totalPrev) : ('R$ ' + data.totalPrev.toFixed(2));
-            const valMediaDia = typeof fM === 'function' ? fM(data.totalMes / 30) : ('R$ ' + (data.totalMes / 30).toFixed(2));
+            const valMediaDia = typeof fM === 'function' ? fM(data.totalMes / daysInMonth) : ('R$ ' + (data.totalMes / daysInMonth).toFixed(2));
+            const diasRestantes = Math.max(0, daysInMonth - refDay);
 
             kpisMount.innerHTML = `
               <div class="exec-card" style="border-top:3px solid var(--emerald); background:rgba(5,150,105,0.02)">
                 <div class="exec-card-top">
                   <span class="exec-card-label">Receita Prevista Mês</span>
-                  <span class="exec-pill pill-green">Setembro/2026</span>
+                  <span class="exec-pill pill-green">${mesAnoCompact}</span>
                 </div>
                 <div class="exec-card-val" style="color:var(--emerald-d)">${valTotalMes}</div>
                 <div class="exec-card-sub">${data.totalCount} lançamentos previstos no mês</div>
@@ -11087,7 +11136,7 @@ function openModalProjecaoDiaria() {
 
               <div class="exec-card" style="border-top:3px solid var(--emerald)">
                 <div class="exec-card-top">
-                  <span class="exec-card-label">Já Realizado (01 a 21/09)</span>
+                  <span class="exec-card-label">Já Realizado (01 a ${pad2(refDay)}/${pad2(nowRef.getMonth() + 1)})</span>
                   <span class="exec-pill pill-green">${pctReal}% do mês</span>
                 </div>
                 <div class="exec-card-val" style="color:var(--emerald-d)">${valTotalReal}</div>
@@ -11096,17 +11145,17 @@ function openModalProjecaoDiaria() {
 
               <div class="exec-card" style="border-top:3px solid var(--brand); background:rgba(2,132,199,0.02)">
                 <div class="exec-card-top">
-                  <span class="exec-card-label">A Vencer (22 a 30/09)</span>
+                  <span class="exec-card-label">A Vencer (${pad2(Math.min(refDay + 1, daysInMonth))} a ${daysInMonth}/${pad2(nowRef.getMonth() + 1)})</span>
                   <span class="exec-pill pill-blue">${pctPrev}% do mês</span>
                 </div>
                 <div class="exec-card-val" style="color:#0284c7">${valTotalPrev}</div>
-                <div class="exec-card-sub">${data.countPrev} cobranças previstas nos próximos 9 dias</div>
+                <div class="exec-card-sub">${data.countPrev} cobranças previstas nos próximos ${diasRestantes} dias</div>
               </div>
 
               <div class="exec-card" style="border-top:3px solid #7c3aed">
                 <div class="exec-card-top">
                   <span class="exec-card-label">Média Diária Prevista</span>
-                  <span class="exec-pill pill-purple">30 Dias</span>
+                  <span class="exec-pill pill-purple">${daysInMonth} Dias</span>
                 </div>
                 <div class="exec-card-val" style="color:#7c3aed">${valMediaDia}</div>
                 <div class="exec-card-sub">Previsibilidade média diária de faturamento</div>
