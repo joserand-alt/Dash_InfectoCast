@@ -22510,5 +22510,23 @@
       "gateway-cativa-digital",
       "cativa-digital"
     ]
+  },
+  "michareyesb@gmail.com|sos-antibiotico": {
+    "email": "michareyesb@gmail.com",
+    "nome": "MICHAEL",
+    "curso": "S.O.S ANTIBIOTICO",
+    "origem": "Asaas",
+    "data_matricula": "01/07/2026",
+    "status": "success",
+    "data_tagueamento": "2026-10-01 11:42:35",
+    "tags_aplicadas": [
+      "aluno-ativo",
+      "aluno-matriculado",
+      "academy-pago",
+      "curso-livre",
+      "sos-antibiotico",
+      "gateway-asaas",
+      "asaas-pago"
+    ]
   }
 }
