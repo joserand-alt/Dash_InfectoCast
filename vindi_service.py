@@ -47,39 +47,61 @@ def fetch_all_vindi_subscriptions():
     print(f"[VINDI] Total de {len(subs)} assinaturas encontradas.")
     return subs
 
-def fetch_all_vindi_bills():
-    """Busca todas as faturas na API Vindi de forma paralela (ou usa raw se recente)."""
-    if os.path.exists(RAW_BILLS_PATH):
+def fetch_all_vindi_bills(force_reload=False):
+    """Busca todas as faturas na API Vindi de forma paralela (e sempre checa as últimas páginas para novas faturas)."""
+    bills = []
+    loaded_from_cache = False
+    if not force_reload and os.path.exists(RAW_BILLS_PATH):
         try:
-            mtime = datetime.fromtimestamp(os.path.getmtime(RAW_BILLS_PATH))
-            if datetime.now() - mtime < timedelta(hours=CACHE_TTL_HOURS):
-                with open(RAW_BILLS_PATH, 'r', encoding='utf-8') as f:
-                    bills = json.load(f)
-                print(f"[VINDI] Carregadas {len(bills)} faturas do raw cache local.")
-                return bills
+            with open(RAW_BILLS_PATH, 'r', encoding='utf-8') as f:
+                bills = json.load(f)
+            print(f"[VINDI] Carregadas {len(bills)} faturas do raw cache local.")
+            loaded_from_cache = True
         except Exception as e:
             print(f"[VINDI] Erro ao ler raw bills: {e}")
 
-    print("[VINDI] Baixando faturas da API Vindi com ThreadPoolExecutor...")
-    bills = []
-    max_pages = 85
-    def _fetch(p):
-        ok, data, _ = _api_get(f"bills?per_page=50&page={p}")
-        return p, data.get('bills', []) if ok and data else []
+    if loaded_from_cache:
+        # Sempre busca rapidamente as últimas páginas (80 a 90) para capturar faturas emitidas hoje/recentemente
+        print("[VINDI] Verificando faturas recentes em tempo real nas páginas mais novas...")
+        def _fetch_page(p):
+            ok, data, _ = _api_get(f"bills?per_page=50&page={p}")
+            return p, data.get('bills', []) if ok and data else []
 
-    with ThreadPoolExecutor(max_workers=10) as executor:
-        futures = {executor.submit(_fetch, p): p for p in range(1, max_pages + 1)}
-        for f in as_completed(futures):
-            p, batch = f.result()
-            if batch:
-                bills.extend(batch)
+        with ThreadPoolExecutor(max_workers=6) as executor:
+            futures = [executor.submit(_fetch_page, p) for p in range(80, 92)]
+            for f in as_completed(futures):
+                _, batch = f.result()
+                if batch:
+                    bills.extend(batch)
+    else:
+        print("[VINDI] Baixando faturas completas da API Vindi com ThreadPoolExecutor...")
+        def _fetch_page(p):
+            ok, data, _ = _api_get(f"bills?per_page=50&page={p}")
+            return p, data.get('bills', []) if ok and data else []
 
-    print(f"[VINDI] Total de {len(bills)} faturas baixadas.")
+        with ThreadPoolExecutor(max_workers=15) as executor:
+            futures = [executor.submit(_fetch_page, p) for p in range(1, 92)]
+            for f in as_completed(futures):
+                _, batch = f.result()
+                if batch:
+                    bills.extend(batch)
+
+    # Deduplica faturas por ID mantendo a versão mais recente
+    seen_ids = set()
+    deduped_bills = []
+    for b in bills:
+        bid = b.get('id')
+        if bid and bid not in seen_ids:
+            seen_ids.add(bid)
+            deduped_bills.append(b)
+
+    deduped_bills.sort(key=lambda x: str(x.get('created_at', '')), reverse=True)
+    print(f"[VINDI] Total consolidado: {len(deduped_bills)} faturas Vindi ativas.")
     try:
         with open(RAW_BILLS_PATH, 'w', encoding='utf-8') as f:
-            json.dump(bills, f)
+            json.dump(deduped_bills, f)
     except: pass
-    return bills
+    return deduped_bills
 
 def _format_date(iso_str):
     if not iso_str: return ""
@@ -126,7 +148,7 @@ def get_vindi_data(force_reload=False):
             print(f"[VINDI CACHE] Rebuscando: {e}")
 
     subs = fetch_all_vindi_subscriptions()
-    bills = fetch_all_vindi_bills()
+    bills = fetch_all_vindi_bills(force_reload=force_reload)
     now = datetime.now()
 
     bills_by_cid = {}
@@ -295,11 +317,18 @@ def get_vindi_data(force_reload=False):
         paid_cycles = len([b for b in unique_bills if b['status'] == 'pago'])
         remaining_cycles = max(0, total_cycles - paid_cycles) if sub_status == 'active' else 0
 
+        cur_m_str = now.strftime('/%m/%Y')
+        cur_ym_str = now.strftime('%Y-%m')
+        cur_m_short = now.strftime('/%m/%y')
         paid_this_month = any(
-            b['status'] == 'pago' and ('/09/2026' in b.get('data_pagamento', '') or '2026-09' in b.get('data_pagamento_iso', '') or '/09/26' in b.get('data_pagamento', ''))
+            b['status'] == 'pago' and (cur_ym_str in b.get('data_pagamento_iso', '') or cur_m_str in b.get('data_pagamento', '') or cur_m_short in b.get('data_pagamento', ''))
             for b in unique_bills
         )
-        is_next_month = bool(next_b_fmt and ('/10/2026' in next_b_fmt or '2026-10' in (next_b_iso or '') or '/10/26' in next_b_fmt or '/11/2026' in next_b_fmt or '/12/2026' in next_b_fmt))
+        next_m_dt = (now.replace(day=1) + timedelta(days=32)).replace(day=1)
+        next_m_str = next_m_dt.strftime('/%m/%Y')
+        next_ym_str = next_m_dt.strftime('%Y-%m')
+        next_m_short = next_m_dt.strftime('/%m/%y')
+        is_next_month = bool(next_b_fmt and (next_m_str in next_b_fmt or next_ym_str in (next_b_iso or '') or next_m_short in next_b_fmt))
         start_m = 1 if (paid_this_month or is_next_month) else 0
 
         if sub_status == 'canceled':

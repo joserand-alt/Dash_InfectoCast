@@ -1788,7 +1788,7 @@ def main():
     financeiro_data = {}
     try:
         from vindi_service import get_vindi_data
-        vindi_res = get_vindi_data(force_reload=False)
+        vindi_res = get_vindi_data(force_reload=True)
         vindi_map = vindi_res.get('data', {}) if isinstance(vindi_res, dict) and 'data' in vindi_res else vindi_res
         financeiro_data = vindi_res.get('financeiro', {}) if isinstance(vindi_res, dict) else {}
         if isinstance(vindi_res, dict):
@@ -1975,6 +1975,10 @@ def main():
         for key, asaas_st in asaas_map.items():
             if not isinstance(asaas_st, dict): continue
             st_email = (asaas_st.get('customer_email') or '').lower().strip()
+            if not st_email:
+                ext_id = asaas_st.get('aluno_id_extref') or asaas_st.get('customer_id') or key
+                if ext_id:
+                    st_email = f"aluno_{ext_id}@infectocast.com.br"
             if not st_email or st_email in existing_emails:
                 continue
             
