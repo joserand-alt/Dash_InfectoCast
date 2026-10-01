@@ -5194,6 +5194,7 @@ function parsePlanCycles(planoStr) {
 }
 
 function computeUnifiedFinancialDataset(gatewayFilter) {
+    const nowRef = new Date();
     const rawStudents = ((CURRENT_DATA && CURRENT_DATA.students && CURRENT_DATA.students.length > 0) ? CURRENT_DATA.students : (DATA && DATA.students ? DATA.students : [])).filter(s => !isInvalidOrInternal(s));
     const emailToCourse = {};
     const nameToCourse = {};
@@ -5408,7 +5409,7 @@ function computeUnifiedFinancialDataset(gatewayFilter) {
                 const dtVenc = (f.vencimento || f.vencimento_iso || '').toString();
                 const dObj = _parseDateSafe(dtVenc);
                 if (dObj) {
-                    const baseDateRef = new Date(2026, 8, 1);
+                    const baseDateRef = new Date(nowRef.getFullYear(), nowRef.getMonth(), 1);
                     const diffMeses = (dObj.getFullYear() - baseDateRef.getFullYear()) * 12 + (dObj.getMonth() - baseDateRef.getMonth());
                     if (diffMeses >= 0 && diffMeses < 18) {
                         cm.projecao_18m_sim[diffMeses] += val;
@@ -5438,7 +5439,7 @@ function computeUnifiedFinancialDataset(gatewayFilter) {
 
     // Timeline de 18 meses futuros
     const futureMonths = [];
-    const baseDate = new Date(2026, 8, 1); // 2026-09
+    const baseDate = new Date(nowRef.getFullYear(), nowRef.getMonth(), 1);
     const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
     for (let i = 0; i < 18; i++) {
         const d = new Date(baseDate.getFullYear(), baseDate.getMonth() + i, 1);
@@ -6421,14 +6422,35 @@ function drawExecView(force) {
         subReceitaRealizada = `Vindi (${fM(recVindiPer)}) + Asaas (${fM(recAsaasPer)})`;
     }
 
-    const recMesAtual = finUnifiedGlobal.global.pago_mes_atual || ((Number(vKpis.recebido_mes_atual) || 0) + (Number(aKpis.recebido_mes_atual) || 0));
-    const aVencerMesVigente = finUnifiedGlobal.global.proj_mes_atual || ((Number(vKpis.a_vencer_mes_atual) || 0) + (Number(aKpis.a_vencer_mes_atual) || 0));
-    const totalPrevistoMesVigente = finUnifiedGlobal.global.previsto_mes_vigente || (recMesAtual + aVencerMesVigente);
-    const mrrConsolidado = finUnifiedGlobal.global.mrr || ((Number(vKpis.mrr_ativo) || 0) + (Number(aKpis.mrr_ativo) || 0));
-    const proj30d = finUnifiedGlobal.global.proj_1m || ((Number(vKpis.projecao_30d) || 0) + (Number(aKpis.projecao_30d) || 0));
-    const proj3mConsolidada = finUnifiedGlobal.global.proj_3m || (mrrConsolidado * 3);
-    const proj6mConsolidada = finUnifiedGlobal.global.proj_6m || (mrrConsolidado * 6);
-    const proj12m = finUnifiedGlobal.global.proj_12m || (mrrConsolidado * 12);
+    const recMesAtual = (finUnifiedGlobal.global.pago_mes_atual > 0) ? finUnifiedGlobal.global.pago_mes_atual : ((Number(vKpis.recebido_mes_atual) || 0) + (Number(aKpis.recebido_mes_atual) || 0));
+    const aVencerMesVigente = Math.max(
+        finUnifiedGlobal.global.proj_mes_atual || 0,
+        (Number(vKpis.a_vencer_mes_atual) || 0) + (Number(aKpis.a_vencer_mes_atual) || 0)
+    );
+    const totalPrevistoMesVigente = recMesAtual + aVencerMesVigente;
+    const mrrConsolidado = Math.max(
+        finUnifiedGlobal.global.mrr || 0,
+        (Number(vKpis.mrr_ativo) || 0) + (Number(aKpis.mrr_ativo) || 0)
+    );
+    const proj30d = Math.max(
+        finUnifiedGlobal.global.proj_1m || 0,
+        (Number(vKpis.projecao_30d) || 0) + (Number(aKpis.projecao_30d) || 0)
+    );
+    const proj3mConsolidada = Math.max(
+        finUnifiedGlobal.global.proj_3m || 0,
+        (Number(vKpis.projecao_3m) || 0) + (Number(aKpis.projecao_3m) || 0),
+        mrrConsolidado * 3
+    );
+    const proj6mConsolidada = Math.max(
+        finUnifiedGlobal.global.proj_6m || 0,
+        (Number(vKpis.projecao_6m) || 0) + (Number(aKpis.projecao_6m) || 0),
+        mrrConsolidado * 6
+    );
+    const proj12m = Math.max(
+        finUnifiedGlobal.global.proj_12m || 0,
+        (Number(vKpis.projecao_12m) || 0) + (Number(aKpis.projecao_12m) || 0),
+        mrrConsolidado * 12
+    );
     const atrasoTotal = (Number(vKpis.total_em_atraso) || 0) + (Number(aKpis.total_em_atraso) || 0);
     const qtdAtrasoTotal = (Number(vKpis.qtd_em_atraso) || 0) + (Number(aKpis.qtd_em_atraso) || 0);
     const taxaAdimplencia = vKpis.taxa_adimplencia || uKpis.taxa_adimplencia || 95;
