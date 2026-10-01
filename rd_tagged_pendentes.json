@@ -223,5 +223,65 @@
       "sos-antibiotico",
       "origem-academy"
     ]
+  },
+  "drapodlasinski@gmail.com|sos-antibiotico": {
+    "email": "drapodlasinski@gmail.com",
+    "nome": "Yasmin",
+    "curso": "S.O.S ANTIBIOTICO",
+    "plataforma": "Academy",
+    "data_inscricao": "2026-09-19 00:00:00",
+    "status": "success",
+    "data_tagueamento": "2026-10-01 11:12:39",
+    "tags_aplicadas": [
+      "matricula-pendente",
+      "curso-livre",
+      "sos-antibiotico",
+      "origem-academy"
+    ]
+  },
+  "limafilipe13@hotmail.com|sos-antibiotico": {
+    "email": "limafilipe13@hotmail.com",
+    "nome": "Filipe",
+    "curso": "S.O.S ANTIBIOTICO",
+    "plataforma": "Academy",
+    "data_inscricao": "2026-09-10 00:00:00",
+    "status": "success",
+    "data_tagueamento": "2026-10-01 11:12:40",
+    "tags_aplicadas": [
+      "matricula-pendente",
+      "curso-livre",
+      "sos-antibiotico",
+      "origem-academy"
+    ]
+  },
+  "vivianvidal01@gmail.com|pos-graduacao-em-prevencao-e-controle-de-infeccao-hospitalar-ccih": {
+    "email": "vivianvidal01@gmail.com",
+    "nome": "Vivian",
+    "curso": "POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)",
+    "plataforma": "Academy",
+    "data_inscricao": "2026-09-16 00:00:00",
+    "status": "success",
+    "data_tagueamento": "2026-10-01 11:12:41",
+    "tags_aplicadas": [
+      "matricula-pendente",
+      "pos-graduacao",
+      "pos-ccih",
+      "origem-academy"
+    ]
+  },
+  "elizandramartini@hotmail.com|pos-graduacao-em-infectopediatria": {
+    "email": "elizandramartini@hotmail.com",
+    "nome": "Elizandra",
+    "curso": "POS-GRADUACAO EM INFECTOPEDIATRIA",
+    "plataforma": "Academy",
+    "data_inscricao": "2026-09-29 00:00:00",
+    "status": "success",
+    "data_tagueamento": "2026-10-01 11:12:42",
+    "tags_aplicadas": [
+      "matricula-pendente",
+      "pos-graduacao",
+      "pos-infectopediatria",
+      "origem-academy"
+    ]
   }
 }
