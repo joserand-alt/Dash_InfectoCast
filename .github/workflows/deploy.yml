@@ -2,8 +2,8 @@ name: Sincronizacao Automatica das APIs & Deploy no GitHub Pages
 
 on:
   schedule:
-    # Executa automaticamente de hora em hora em ponto (24h/7d na nuvem)
-    - cron: '*/15 * * * *'
+    # Executa a cada 15 min em minutos descolados (07, 22, 37, 52) para evitar descarte por congestionamento na fila do GitHub
+    - cron: '7,22,37,52 * * * *'
   push:
     branches: [ main ]
   workflow_dispatch:
@@ -65,6 +65,18 @@ jobs:
             echo "Nenhuma alteracao detectada."
           fi
 
+      - name: Keepalive - Evitar desativacao automatica por inatividade
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "${TIMESTAMP} - sync OK" > .last_sync
+          git add .last_sync
+          git commit -m "keepalive: ${TIMESTAMP} [skip ci]" || true
+          git push origin main || true
+
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v4
 
@@ -76,4 +88,3 @@ jobs:
       - name: Publicar no GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
