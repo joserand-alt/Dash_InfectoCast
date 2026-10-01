@@ -1788,7 +1788,16 @@ def main():
     financeiro_data = {}
     try:
         from vindi_service import get_vindi_data
-        vindi_res = get_vindi_data(force_reload=True)
+        vindi_res = get_vindi_data(force_reload=False)
+        if not vindi_res or len(vindi_res.get('financeiro', {}).get('faturas_tabela', [])) < 1000:
+            if os.path.exists('vindi_cache.json'):
+                try:
+                    with open('vindi_cache.json', 'r', encoding='utf-8') as f_vc:
+                        cached_v = json.load(f_vc)
+                        if len(cached_v.get('financeiro', {}).get('faturas_tabela', [])) > len(vindi_res.get('financeiro', {}).get('faturas_tabela', []) if vindi_res else []):
+                            vindi_res = cached_v
+                except Exception as _e_vc:
+                    pass
         vindi_map = vindi_res.get('data', {}) if isinstance(vindi_res, dict) and 'data' in vindi_res else vindi_res
         financeiro_data = vindi_res.get('financeiro', {}) if isinstance(vindi_res, dict) else {}
         if isinstance(vindi_res, dict):
@@ -1990,11 +1999,19 @@ def main():
             existing_emails.add(st_email)
             curso_resolved, curso_inferido, curso_origem = _infer_curso_from_asaas(asaas_st, st_email)
             
-            # Data de inscricao/fatura
-            dt_insc_str = None
-            if faturas:
-                f0 = faturas[0]
-                dt_insc_str = f0.get('data_criacao') or f0.get('dateCreated') or f0.get('data_pagamento_iso') or f0.get('vencimento_iso')
+            # Data de inscricao/fatura (apenas datas válidas <= hoje)
+            valid_as_dates = []
+            for ft in faturas:
+                for d_k in ['data_pagamento', 'data_pagamento_iso', 'data_criacao', 'dateCreated', 'vencimento', 'vencimento_iso']:
+                    v_val = ft.get(d_k)
+                    if v_val:
+                        try:
+                            d_p = pd.to_datetime(str(v_val).split('T')[0], dayfirst=True)
+                            if pd.notnull(d_p) and d_p.date() <= datetime.date.today():
+                                valid_as_dates.append(d_p)
+                        except:
+                            pass
+            dt_insc_str = min(valid_as_dates).strftime('%d/%m/%Y') if valid_as_dates else None
             
             is_pending = (tot_pago <= 0)
             st_nome = asaas_st.get('customer_name') or ('Lead / Inscrição Academy' if is_pending else 'Aluno Academy')
@@ -2233,12 +2250,85 @@ def main():
                 final_dt_str = earliest_d.strftime('%d/%m/%Y')
 
         if not final_dt_str and dt_orig:
-            final_dt_str = str(dt_orig)[:10]
+            try:
+                dt_p = pd.to_datetime(str(dt_orig).split('T')[0], dayfirst=True)
+                if pd.notnull(dt_p) and dt_p.date() <= datetime.date.today():
+                    final_dt_str = dt_p.strftime('%d/%m/%Y')
+            except:
+                pass
 
-        if final_dt_str:
-            s['data_insc'] = final_dt_str
-            s['data_inscricao'] = final_dt_str
-            s['inscricao'] = final_dt_str
+        if not final_dt_str:
+            final_dt_str = hoje.strftime('%d/%m/%Y')
+
+        s['data_insc'] = final_dt_str
+        s['data_inscricao'] = final_dt_str
+        s['inscricao'] = final_dt_str
+
+    # =========================================================================
+    # DEDUPLICAÇÃO & UNIFICAÇÃO PERFEITA DE ESTUDANTES (1 REGISTRO POR ALUNO/CURSO)
+    # =========================================================================
+    unified_students_map = {}
+    for s in students:
+        em_clean = str(s.get('email', '')).lower().strip()
+        c_clean = canonicalize_curso(str(s.get('curso', '')).strip(), em_clean)
+        key = (em_clean, c_clean)
+        
+        if key not in unified_students_map:
+            s_copy = dict(s)
+            s_copy['curso'] = c_clean
+            unified_students_map[key] = s_copy
+        else:
+            target = unified_students_map[key]
+            nm_curr = str(s.get('nome', '')).strip()
+            nm_targ = str(target.get('nome', '')).strip()
+            if nm_curr and (not nm_targ or nm_targ == em_clean or (len(nm_curr) > len(nm_targ) and not nm_curr.isupper())):
+                target['nome'] = nm_curr
+            elif nm_curr and not nm_targ:
+                target['nome'] = nm_curr
+                
+            if s.get('telefone') and not target.get('telefone'):
+                target['telefone'] = s['telefone']
+                
+            if s.get('acessou'):
+                target['acessou'] = True
+            if (s.get('aulas_feitas') or 0) > (target.get('aulas_feitas') or 0):
+                target['aulas_feitas'] = s['aulas_feitas']
+            if (s.get('aulas_concluidas') or 0) > (target.get('aulas_concluidas') or 0):
+                target['aulas_concluidas'] = s['aulas_concluidas']
+            if (s.get('aulas_iniciadas') or 0) > (target.get('aulas_iniciadas') or 0):
+                target['aulas_iniciadas'] = s['aulas_iniciadas']
+            if (s.get('logins') or 0) > (target.get('logins') or 0):
+                target['logins'] = s['logins']
+            if (s.get('progresso') or 0) > (target.get('progresso') or 0):
+                target['progresso'] = s['progresso']
+                
+            if s.get('vindi') and not target.get('vindi'):
+                target['vindi'] = s['vindi']
+            if s.get('asaas') and not target.get('asaas'):
+                target['asaas'] = s['asaas']
+                
+            if len(s.get('events', []) or []) > len(target.get('events', []) or []):
+                target['events'] = s['events']
+                
+            d1 = s.get('data_insc')
+            d2 = target.get('data_insc')
+            if d1 and d2:
+                try:
+                    p1 = pd.to_datetime(d1, dayfirst=True)
+                    p2 = pd.to_datetime(d2, dayfirst=True)
+                    if p1 < p2:
+                        target['data_insc'] = d1
+                        target['data_inscricao'] = d1
+                        target['inscricao'] = d1
+                except:
+                    pass
+            elif d1 and not d2:
+                target['data_insc'] = d1
+                target['data_inscricao'] = d1
+                target['inscricao'] = d1
+
+    students = list(unified_students_map.values())
+    print(f'[UNIFICAÇÃO] Base final consolidada sem duplicatas: {len(students)} estudantes únicos.')
 
     # =========================================================================
     # AUTO-HEALING DE CURSOS: Priorização Oficial (Academy/Cativa Logs -> Asaas/Vindi Financeiro -> RD Tags)

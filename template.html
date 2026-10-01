@@ -5874,8 +5874,28 @@ function getMatriculasAuditoriaData() {
         }
 
         if (isPendente) {
-            const rawInscStr = s.data_insc || s.data_inscricao || s.data_matricula || s.first || (s.asaas && s.asaas.faturas && s.asaas.faturas[0] && (s.asaas.faturas[0].data_criacao || s.asaas.faturas[0].dateCreated || s.asaas.faturas[0].vencimento_iso || s.asaas.faturas[0].vencimento)) || (s.vindi && s.vindi.faturas && s.vindi.faturas[0] && (s.vindi.faturas[0].vencimento_iso || s.vindi.faturas[0].vencimento)) || s.created_at;
-            const dtInsc = parseDateUniversal(rawInscStr);
+            const dtCandidates = [
+                s.data_insc, s.data_inscricao, s.data_matricula, s.first, s.created_at
+            ];
+            if (s.asaas && s.asaas.faturas) {
+                s.asaas.faturas.forEach(f => {
+                    dtCandidates.push(f.data_pagamento, f.data_pagamento_iso, f.data_criacao, f.dateCreated, f.vencimento_iso, f.vencimento);
+                });
+            }
+            if (s.vindi && s.vindi.faturas) {
+                s.vindi.faturas.forEach(f => {
+                    dtCandidates.push(f.data_pagamento, f.data_pagamento_iso, f.vencimento_iso, f.vencimento);
+                });
+            }
+            let dtInsc = null;
+            const validDates = dtCandidates.map(parseDateUniversal).filter(d => d && d <= now);
+            if (validDates.length > 0) {
+                validDates.sort((a, b) => a - b);
+                dtInsc = validDates[0];
+            } else {
+                dtInsc = parseDateUniversal(s.data_insc || s.data_inscricao || s.first);
+                if (!dtInsc || dtInsc > now) dtInsc = now;
+            }
             if (dtInsc && dtInsc <= now) {
                 const diffMs = now.getTime() - dtInsc.getTime();
                 const is48h = (dtInsc >= t48hCalendar && dtInsc <= now) || (diffMs >= -3600000 && diffMs <= 48 * 3600 * 1000) || (dtInsc.getHours() === 0 && diffMs <= 72 * 3600 * 1000 && diffMs >= -3600000);
@@ -9301,11 +9321,37 @@ function drawCursoView(courseName, force) {
         if (!pendAuditMap.has(em + '___ANY')) pendAuditMap.set(em + '___ANY', m);
     });
 
-    // Enriquecimento Robusto da Base Completa de Alunos
+    // Enriquecimento Robusto e Deduplicação da Base Completa de Alunos
     const rawStudents = (DATA && DATA.students) ? DATA.students.filter(s => !isInvalidOrInternal(s)) : [];
     const curric = (DATA && DATA.curriculum) ? DATA.curriculum : {};
 
-    const allEnrichedStudents = rawStudents.map(s => {
+    const dedupRawMap = new Map();
+    rawStudents.forEach(s => {
+        const em = (s.email || '').toLowerCase().trim();
+        const cCan = resolveCanonicalCourse(s.curso);
+        const k = em + '___' + cCan;
+        if (!dedupRawMap.has(k)) {
+            dedupRawMap.set(k, { ...s });
+        } else {
+            const exist = dedupRawMap.get(k);
+            if (s.nome && (!exist.nome || exist.nome === em || (s.nome.length > exist.nome.length && !s.nome.toUpperCase().includes(s.nome)))) {
+                exist.nome = s.nome;
+            }
+            if (s.acessou) exist.acessou = true;
+            if ((s.aulas_feitas || 0) > (exist.aulas_feitas || 0)) exist.aulas_feitas = s.aulas_feitas;
+            if ((s.aulas_concluidas || 0) > (exist.aulas_concluidas || 0)) exist.aulas_concluidas = s.aulas_concluidas;
+            if ((s.aulas_iniciadas || 0) > (exist.aulas_iniciadas || 0)) exist.aulas_iniciadas = s.aulas_iniciadas;
+            if ((s.logins || 0) > (exist.logins || 0)) exist.logins = s.logins;
+            if ((s.progresso || 0) > (exist.progresso || 0)) exist.progresso = s.progresso;
+            if (s.vindi && !exist.vindi) exist.vindi = s.vindi;
+            if (s.asaas && !exist.asaas) exist.asaas = s.asaas;
+            if ((s.events || []).length > (exist.events || []).length) exist.events = s.events;
+            if (s.data_insc && !exist.data_insc) exist.data_insc = s.data_insc;
+        }
+    });
+    const uniqueRawStudents = Array.from(dedupRawMap.values());
+
+    const allEnrichedStudents = uniqueRawStudents.map(s => {
         const scopy = { ...s };
         scopy.canonical_curso = resolveCanonicalCourse(s.curso);
         const em = (s.email || '').toLowerCase().trim();
@@ -9559,23 +9605,15 @@ function drawCursoView(courseName, force) {
 
     const parseEnrollDate = (s) => {
         if (!s) return null;
-        if (s.matricula_data instanceof Date && !isNaN(s.matricula_data.getTime())) return s.matricula_data;
-        const dtStr = (s.data_insc || s.data_inscricao || s.inscricao || s.data_matricula || '').toString().trim();
-        if (!dtStr) return null;
-        if (dtStr.includes('/')) {
-            const p = dtStr.split('/');
-            if (p.length === 3) {
-                const yr = parseInt(p[2].length === 2 ? '20' + p[2] : p[2], 10);
-                return new Date(yr, parseInt(p[1], 10) - 1, parseInt(p[0], 10));
-            }
-        } else if (dtStr.includes('-')) {
-            const p = dtStr.slice(0, 10).split('-');
-            if (p.length === 3) {
-                return new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
-            }
+        if (s.matricula_data instanceof Date && !isNaN(s.matricula_data.getTime()) && s.matricula_data <= now) return s.matricula_data;
+        const dtStr = (s.data_insc || s.data_inscricao || s.inscricao || s.data_matricula || s.first || '').toString().trim();
+        const d = parseDateUniversal(dtStr);
+        if (d && d <= now) return d;
+        if (s.first) {
+            const dFirst = parseDateUniversal(s.first);
+            if (dFirst && dFirst <= now) return dFirst;
         }
-        const d = new Date(dtStr);
-        return isNaN(d.getTime()) ? null : d;
+        return (d && d <= now) ? d : null;
     };
 
     cStudents.forEach(s => {
@@ -10360,7 +10398,19 @@ function drawCursoView(courseName, force) {
                         ${getStatusChip(s.status)}
                       </td>
                       <td style="padding:10px 14px; color:var(--ink)">
-                        ${s.data_insc || s.data_inscricao || s.inscricao || '-'}
+                        ${(() => {
+                            const d = parseEnrollDate(s);
+                            if (d) {
+                                const pad = n => n < 10 ? '0' + n : n;
+                                return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear();
+                            }
+                            const raw = (s.data_insc || s.data_inscricao || s.inscricao || '').toString().trim();
+                            if (raw.includes('-')) {
+                                const p = raw.slice(0, 10).split('-');
+                                if (p.length === 3) return p[2] + '/' + p[1] + '/' + p[0];
+                            }
+                            return raw || '-';
+                        })()}
                       </td>
                       <td style="padding:10px 14px; font-weight:700; color:var(--ink)">
                         ${s.aulas_feitas || 0} aulas
