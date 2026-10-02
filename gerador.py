@@ -2531,15 +2531,6 @@ def main():
     old_asaas = old_st.get('asaas',{}).get('faturas_count', curr_asaas_fats)
     old_rd = old_st.get('rd_station',{}).get('sync_count', curr_rd_sync)
 
-    # Carregar Dados do Fluxo de Caixa, DRE e Modelo de Previsão de Liquidez
-    try:
-        from caixa_service import get_caixa_data
-        caixa_data = get_caixa_data(financeiro_data=financeiro_data, asaas_financeiro=asaas_financeiro)
-        print(f"[FLUXO DE CAIXA] Dados de caixa carregados com sucesso: R$ {caixa_data.get('resumo_setembro',{}).get('total_saidas', 0):,.2f} em saídas analisadas.")
-    except Exception as e:
-        print(f"[FLUXO DE CAIXA] Aviso ao carregar dados de caixa: {e}")
-        caixa_data = {}
-
     data = {
         "meta": {
             "generated": now_dt.strftime("%d/%m/%Y"),
@@ -2614,8 +2605,7 @@ def main():
         "wa_chats": wa_chats,
         "financeiro": financeiro_data,
         "rd_conversas": rd_conversas_data,
-        "financeiro_asaas": asaas_financeiro,
-        "caixa": caixa_data
+        "financeiro_asaas": asaas_financeiro
     }
 
     # Otimização de alta performance do payload JSON
