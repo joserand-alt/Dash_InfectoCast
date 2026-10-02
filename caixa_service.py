@@ -202,6 +202,8 @@ def get_caixa_data(financeiro_data=None, asaas_financeiro=None):
             "saldo_minimo": round(saldo_min, 2),
             "data_saldo_minimo": data_min,
             "total_transacoes": len(outflow_items),
+            "estornos_anulados_count": len(raw_extrato.get("estornos_anulados", [])),
+            "estornos_anulados_total": round(sum(e.get("valor", 0) for e in raw_extrato.get("estornos_anulados", [])), 2),
             "dias_movimentados": len(daily_summary),
             "media_saida_dia_util": round(total_saidas / (len(daily_summary) or 1), 2)
         },

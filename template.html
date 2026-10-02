@@ -2304,7 +2304,7 @@ option {
             <h2 style="font-size:22px; font-weight:800; color:var(--ink); margin:0">💸 Fluxo de Caixa &amp; DRE Gerencial</h2>
             <span style="font-size:11px; font-weight:700; padding:2px 10px; border-radius:12px; background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid rgba(239,68,68,0.25)">Extrato Bancário &amp; Previsão</span>
           </div>
-          <p style="margin:4px 0 0; font-size:13px; color:var(--muted)">Análise detalhada de saídas de caixa dia a dia, DRE contábil, extrato itemizado e modelo de projeção de liquidez futura.</p>
+          <p style="margin:4px 0 0; font-size:13px; color:var(--muted)">Análise detalhada de saídas de caixa dia a dia, DRE contábil, extrato itemizado e projeção futura. <span style="display:inline-block; margin-left:6px; font-size:11px; font-weight:700; color:#10b981; background:rgba(16,185,129,0.1); padding:2px 8px; border-radius:6px; border:1px solid rgba(16,185,129,0.25)">🛡️ Saneado: 7 estornos duplicados (R$ 53,4k) anulados</span></p>
         </div>
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
           <div style="display:flex; align-items:center; gap:6px; background:var(--card); border:1px solid var(--line2); padding:5px 8px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.03)">
@@ -2505,7 +2505,7 @@ option {
       <div style="background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px 22px; box-shadow:0 2px 10px rgba(0,0,0,0.03)">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px">
           <div>
-            <h3 style="font-size:15.5px; font-weight:800; color:var(--ink); margin:0">📋 Extrato Completo de Saídas (90 Lançamentos)</h3>
+            <h3 style="font-size:15.5px; font-weight:800; color:var(--ink); margin:0">📋 Extrato Completo de Saídas (83 Lançamentos Reais)</h3>
             <p style="margin:2px 0 0; font-size:11.5px; color:var(--muted)">Busca rápida e filtragem por categoria, fornecedor ou modalidade de pagamento.</p>
           </div>
           <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
@@ -12201,12 +12201,13 @@ function _renderCaixaKpiCards(resumo) {
     };
 
     const saldoFinal = resumo.saldo_final || 55730.86;
-    const totalEntradas = resumo.total_entradas || 360727.66;
-    const totalSaidas = resumo.total_saidas || 470870.94;
+    const totalEntradas = resumo.total_entradas || 307323.10;
+    const totalSaidas = resumo.total_saidas || 417466.38;
     const resLiquido = resumo.resultado_liquido || -110143.28;
     const saldoMin = resumo.saldo_minimo || 13023.47;
     const dataMin = resumo.data_saldo_minimo || '25/09/2026';
-    const mediaDia = resumo.media_saida_dia_util || 21403.22;
+    const totalLancamentos = resumo.total_transacoes || 83;
+    const estornosTotal = resumo.estornos_anulados_total || 53404.56;
 
     grid.innerHTML = `
         <div class="kpi-card" style="border-left:4px solid #06b6d4; background:var(--card); padding:16px 18px; border-radius:10px; border:1px solid var(--line)">
@@ -12215,17 +12216,17 @@ function _renderCaixaKpiCards(resumo) {
             <div style="font-size:11px; color:var(--muted)">Posição em 30/09/2026 (Nubank PJ)</div>
         </div>
         <div class="kpi-card" style="border-left:4px solid #10b981; background:var(--card); padding:16px 18px; border-radius:10px; border:1px solid var(--line)">
-            <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px">Total Entradas (Set/26)</div>
+            <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px">Total Entradas Líquidas</div>
             <div style="font-size:22px; font-weight:800; color:#10b981; margin:4px 0">${fmtBRL(totalEntradas)}</div>
-            <div style="font-size:11px; color:var(--muted)">Yapay, Vindi & Pix recebidos</div>
+            <div style="font-size:11px; color:var(--muted)">Yapay, Vindi & Pix (sem estornos)</div>
         </div>
         <div class="kpi-card" style="border-left:4px solid #f43f5e; background:var(--card); padding:16px 18px; border-radius:10px; border:1px solid var(--line)">
-            <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px">Total Saídas (Set/26)</div>
+            <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px">Total Saídas Líquidas</div>
             <div style="font-size:22px; font-weight:800; color:#f43f5e; margin:4px 0">${fmtBRL(totalSaidas)}</div>
-            <div style="font-size:11px; color:var(--muted)">90 lançamentos de débito / Pix</div>
+            <div style="font-size:11px; color:var(--muted)">${totalLancamentos} débitos reais (purificados)</div>
         </div>
         <div class="kpi-card" style="border-left:4px solid #ef4444; background:var(--card); padding:16px 18px; border-radius:10px; border:1px solid var(--line)">
-            <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px">Resultado do Mês</div>
+            <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px">Resultado Líquido do Mês</div>
             <div style="font-size:22px; font-weight:800; color:#ef4444; margin:4px 0">${fmtBRL(resLiquido)}</div>
             <div style="font-size:11px; color:#ef4444; font-weight:700">Burn Líquido de Caixa</div>
         </div>
@@ -12235,9 +12236,9 @@ function _renderCaixaKpiCards(resumo) {
             <div style="font-size:11px; color:var(--muted)">Atingido em <b>${dataMin}</b></div>
         </div>
         <div class="kpi-card" style="border-left:4px solid #8b5cf6; background:var(--card); padding:16px 18px; border-radius:10px; border:1px solid var(--line)">
-            <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px">Média Saída / Dia Útil</div>
-            <div style="font-size:22px; font-weight:800; color:#8b5cf6; margin:4px 0">${fmtBRL(mediaDia)}</div>
-            <div style="font-size:11px; color:var(--muted)">Em 22 dias com saídas</div>
+            <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px">Estornos Anulados</div>
+            <div style="font-size:22px; font-weight:800; color:#8b5cf6; margin:4px 0">${fmtBRL(estornosTotal)}</div>
+            <div style="font-size:11px; color:#10b981; font-weight:700">7 pares estornados expurgados</div>
         </div>
     `;
 }

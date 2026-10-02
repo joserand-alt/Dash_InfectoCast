@@ -3,38 +3,12 @@
     {
       "data": "01/09/2026",
       "dia": 1,
+      "entradas_brutas": 10461.91,
       "entradas": 10461.91,
+      "saidas_brutas": 51700.0,
       "saidas": 51700.0,
+      "estornos": 0.0,
       "saldo": 124636.05,
-      "raw_saidas": [
-        "[01/09/2026][S=True, E=False] Pagamento de fatura 10.000,00",
-        "[01/09/2026][S=True, E=False] Transferência enviada pelo Pix José Rand de Sousa Costa - •••.031.087-•• - NU 20.000,00",
-        "[01/09/2026][S=True, E=False] PAGAMENTOS - IP (0260) Agência: 1 Conta:",
-        "[01/09/2026][S=True, E=False] 1928638-1",
-        "[01/09/2026][S=True, E=False] Transferência enviada pelo Pix 64.036.289 GUILHERME COTTA MARIANO - 6.200,00",
-        "[01/09/2026][S=True, E=False] 64.036.289/0001-81 - NU PAGAMENTOS - IP",
-        "[01/09/2026][S=True, E=False] (0260) Agência: 1 Conta: 467290926-0",
-        "[01/09/2026][S=True, E=False] Transferência enviada pelo Pix 68.059.115 RODRIGO MUCHAGATA LOPES SILVA - 3.500,00",
-        "[01/09/2026][S=True, E=False] 68.059.115/0001-95 - NU PAGAMENTOS - IP",
-        "[01/09/2026][S=True, E=False] (0260) Agência: 1 Conta: 620143405-6",
-        "[01/09/2026][S=True, E=False] Transferência enviada pelo Pix Carolina Larocca Santos - •••.691.179-•• - CC 4.000,00",
-        "[01/09/2026][S=True, E=False] UNICRED UNIÃO LTDA - UNICRED UNIÃO Agência:",
-        "[01/09/2026][S=True, E=False] INFECTOCAST SERVICOS EDUCACIONAIS LTDA",
-        "[01/09/2026][S=True, E=False] CNPJ 54.924.986/0001-15 Agência 0001 Conta",
-        "[01/09/2026][S=True, E=False] 476440809-8",
-        "[01/09/2026][S=True, E=False] 01 DE SETEMBRO DE 2026 a 30 DE SETEMBRO DE 2026 VALORES EM R$",
-        "[01/09/2026][S=True, E=False] 1708 Conta: 802974-1",
-        "[01/09/2026][S=True, E=False] Transferência enviada pelo Pix CRISTIANE LUCCHETTI - •••.605.778-•• - ITAÚ 8.000,00",
-        "[01/09/2026][S=True, E=False] UNIBANCO S.A. (0341) Agência: 758 Conta: 31363-",
-        "[01/09/2026][S=True, E=False] 9"
-      ],
-      "raw_entradas": [
-        "[01/09/2026][S=False, E=True] Depósito recebido STRIPE BRASIL PARTICIPACOES LTDA * Crédito 27,45",
-        "[01/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 9.059,64",
-        "[01/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 1.374,82",
-        "[01/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[01/09/2026][S=False, E=True] 145 Conta: 94423-7"
-      ],
       "items": [
         {
           "data": "01/09/2026",
@@ -43,7 +17,8 @@
           "descricao_raw": "",
           "categoria": "Cartão de Crédito / Fatura",
           "subcategoria": "Cartão PJ (Nubank)",
-          "valor": 10000.0
+          "valor": 10000.0,
+          "estornado": false
         },
         {
           "data": "01/09/2026",
@@ -52,7 +27,8 @@
           "descricao_raw": "José Rand de Sousa Costa - •••.031.087-•• - NU",
           "categoria": "Sócios / Distribuição",
           "subcategoria": "José Rand de Sousa Costa",
-          "valor": 20000.0
+          "valor": 20000.0,
+          "estornado": false
         },
         {
           "data": "01/09/2026",
@@ -61,7 +37,8 @@
           "descricao_raw": "64.036.289 GUILHERME COTTA MARIANO -",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 6200.0
+          "valor": 6200.0,
+          "estornado": false
         },
         {
           "data": "01/09/2026",
@@ -70,7 +47,8 @@
           "descricao_raw": "68.059.115 RODRIGO MUCHAGATA LOPES SILVA -",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 3500.0
+          "valor": 3500.0,
+          "estornado": false
         },
         {
           "data": "01/09/2026",
@@ -79,7 +57,8 @@
           "descricao_raw": "Carolina Larocca Santos - •••.691.179-•• - CC",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 4000.0
+          "valor": 4000.0,
+          "estornado": false
         },
         {
           "data": "01/09/2026",
@@ -88,69 +67,21 @@
           "descricao_raw": "CRISTIANE LUCCHETTI - •••.605.778-•• - ITAÚ",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 8000.0
+          "valor": 8000.0,
+          "estornado": false
         }
-      ],
-      "items_sum": 51700.0
+      ]
     },
     {
       "data": "02/09/2026",
       "dia": 2,
-      "entradas": 44919.31,
-      "saidas": 50500.0,
+      "entradas_brutas": 44919.31,
+      "entradas": 14919.31,
+      "saidas_brutas": 50500.0,
+      "saidas": 20500.0,
+      "estornos": 30000.0,
       "saldo": 119055.36,
-      "raw_saidas": [
-        "[02/09/2026][S=True, E=False] Transferência enviada pelo Pix William Dunke de Lima - •••.500.739-•• - BCO DO 15.000,00",
-        "[02/09/2026][S=True, E=False] BRASIL S.A. (0001) Agência: 1863 Conta: 85369-0",
-        "[02/09/2026][S=True, E=False] Transferência enviada pelo Pix William Dunke de Lima - •••.500.739-•• - BCO DO 15.000,00",
-        "[02/09/2026][S=True, E=False] BRASIL S.A. (0001) Agência: 1863 Conta: 85369-0",
-        "[02/09/2026][S=True, E=False] Transferência enviada pelo Pix PEDRO RODRIGUES CORREA LTDA - 60.848.904 5.500,00",
-        "[02/09/2026][S=True, E=False] /0001-01 - BCO C6 S.A. (0336) Agência: 1 Conta:",
-        "[02/09/2026][S=True, E=False] Tem alguma dúvida? Mande uma mensagem para nosso time de atendimento pelo chat do app ou ligue 4020 0185 (capitais e regiões",
-        "[02/09/2026][S=True, E=False] metropolitanas) ou 0800 591 2117 (demais localidades). Atendimento 24h.",
-        "[02/09/2026][S=True, E=False] Caso a solução fornecida nos canais de atendimento não tenha sido satisfatória, fale com a Ouvidoria em 0800 887 0463 ou pelos meios",
-        "[02/09/2026][S=True, E=False] disponíveis em nubank.com.br/contatos#ouvidoria . Atendimento das 8h às 18h em dias úteis.",
-        "[02/09/2026][S=True, E=False] Extrato gerado dia 01 de outubro de 2026 às 01:04 2 de 19",
-        "[02/09/2026][S=True, E=False] INFECTOCAST SERVICOS EDUCACIONAIS LTDA",
-        "[02/09/2026][S=True, E=False] CNPJ 54.924.986/0001-15 Agência 0001 Conta",
-        "[02/09/2026][S=True, E=False] 476440809-8",
-        "[02/09/2026][S=True, E=False] 01 DE SETEMBRO DE 2026 a 30 DE SETEMBRO DE 2026 VALORES EM R$",
-        "[02/09/2026][S=True, E=False] 38451588-6",
-        "[02/09/2026][S=True, E=False] Transferência enviada pelo Pix WILLIAM DUNKE DE LIMA - •••.500.739-•• - BCO DO 15.000,00",
-        "[02/09/2026][S=True, E=False] BRASIL S.A. (0001) Agência: 1863 Conta: 85369-0"
-      ],
-      "raw_entradas": [
-        "[02/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 12.158,98",
-        "[02/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 1.374,82",
-        "[02/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[02/09/2026][S=False, E=True] 145 Conta: 94423-7",
-        "[02/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 1.385,51",
-        "[02/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[02/09/2026][S=False, E=True] 145 Conta: 94423-7",
-        "[02/09/2026][S=False, E=True] Estorno - Transferência enviada pelo William Dunke de Lima - •••.500.739-•• - BCO DO 15.000,00",
-        "[02/09/2026][S=False, E=True] Pix BRASIL S.A. (0001) Agência: 1863 Conta: 85369-0",
-        "[02/09/2026][S=False, E=True] Estorno - Transferência enviada pelo William Dunke de Lima - •••.500.739-•• - BCO DO 15.000,00",
-        "[02/09/2026][S=False, E=True] Pix BRASIL S.A. (0001) Agência: 1863 Conta: 85369-0"
-      ],
       "items": [
-        {
-          "data": "02/09/2026",
-          "dia": 2,
-          "tipo": "Transferência enviada pelo Pix",
-          "descricao_raw": "William Dunke de Lima - •••.500.739-•• - BCO DO",
-          "categoria": "Professores & Prestadores PF",
-          "subcategoria": "Honorários / Prestadores",
-          "valor": 15000.0
-        },
-        {
-          "data": "02/09/2026",
-          "dia": 2,
-          "tipo": "Transferência enviada pelo Pix",
-          "descricao_raw": "William Dunke de Lima - •••.500.739-•• - BCO DO",
-          "categoria": "Professores & Prestadores PF",
-          "subcategoria": "Honorários / Prestadores",
-          "valor": 15000.0
-        },
         {
           "data": "02/09/2026",
           "dia": 2,
@@ -158,7 +89,8 @@
           "descricao_raw": "PEDRO RODRIGUES CORREA LTDA - 60.848.904",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 5500.0
+          "valor": 5500.0,
+          "estornado": false
         },
         {
           "data": "02/09/2026",
@@ -167,48 +99,20 @@
           "descricao_raw": "WILLIAM DUNKE DE LIMA - •••.500.739-•• - BCO DO",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 15000.0
+          "valor": 15000.0,
+          "estornado": false
         }
-      ],
-      "items_sum": 50500.0
+      ]
     },
     {
       "data": "03/09/2026",
       "dia": 3,
+      "entradas_brutas": 6451.7,
       "entradas": 6451.7,
+      "saidas_brutas": 23054.0,
       "saidas": 23054.0,
+      "estornos": 0.0,
       "saldo": 102453.06,
-      "raw_saidas": [
-        "[03/09/2026][S=True, E=False] Pagamento de fatura 10.000,00",
-        "[03/09/2026][S=True, E=False] Transferência enviada pelo Pix KARINA BERNARDES DA SILVA - •••.012.158-•• - 3.500,00",
-        "[03/09/2026][S=True, E=False] ITAÚ UNIBANCO S.A. (0341) Agência: 745 Conta:",
-        "[03/09/2026][S=True, E=False] 22857-7",
-        "[03/09/2026][S=True, E=False] Transferência enviada pelo Pix 51.873.338 ANA CRISTINA OLIVEIRA NUNES 5.000,00",
-        "[03/09/2026][S=True, E=False] COLARES - 51.873.338/0001-99 - NU",
-        "[03/09/2026][S=True, E=False] PAGAMENTOS - IP (0260) Agência: 1 Conta:",
-        "[03/09/2026][S=True, E=False] 36397840-2",
-        "[03/09/2026][S=True, E=False] Transferência enviada pelo Pix Robson Barboza Pinto - •••.367.827-•• - NU 4.500,00",
-        "[03/09/2026][S=True, E=False] PAGAMENTOS - IP (0260) Agência: 1 Conta:",
-        "[03/09/2026][S=True, E=False] 79182609-7",
-        "[03/09/2026][S=True, E=False] Transferência enviada pelo Pix CRISTIANE LUCCHETTI - •••.605.778-•• - ITAÚ 54,00",
-        "[03/09/2026][S=True, E=False] UNIBANCO S.A. (0341) Agência: 758 Conta: 31363-",
-        "[03/09/2026][S=True, E=False] 9",
-        "[03/09/2026][S=True, E=False] Tem alguma dúvida? Mande uma mensagem para nosso time de atendimento pelo chat do app ou ligue 4020 0185 (capitais e regiões",
-        "[03/09/2026][S=True, E=False] metropolitanas) ou 0800 591 2117 (demais localidades). Atendimento 24h.",
-        "[03/09/2026][S=True, E=False] Caso a solução fornecida nos canais de atendimento não tenha sido satisfatória, fale com a Ouvidoria em 0800 887 0463 ou pelos meios",
-        "[03/09/2026][S=True, E=False] disponíveis em nubank.com.br/contatos#ouvidoria . Atendimento das 8h às 18h em dias úteis.",
-        "[03/09/2026][S=True, E=False] Extrato gerado dia 01 de outubro de 2026 às 01:04 3 de 19",
-        "[03/09/2026][S=True, E=False] INFECTOCAST SERVICOS EDUCACIONAIS LTDA",
-        "[03/09/2026][S=True, E=False] CNPJ 54.924.986/0001-15 Agência 0001 Conta",
-        "[03/09/2026][S=True, E=False] 476440809-8",
-        "[03/09/2026][S=True, E=False] 01 DE SETEMBRO DE 2026 a 30 DE SETEMBRO DE 2026 VALORES EM R$"
-      ],
-      "raw_entradas": [
-        "[03/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 5.482,60",
-        "[03/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 969,10",
-        "[03/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[03/09/2026][S=False, E=True] 145 Conta: 94423-7"
-      ],
       "items": [
         {
           "data": "03/09/2026",
@@ -217,7 +121,8 @@
           "descricao_raw": "",
           "categoria": "Cartão de Crédito / Fatura",
           "subcategoria": "Cartão PJ (Nubank)",
-          "valor": 10000.0
+          "valor": 10000.0,
+          "estornado": false
         },
         {
           "data": "03/09/2026",
@@ -226,7 +131,8 @@
           "descricao_raw": "KARINA BERNARDES DA SILVA - •••.012.158-•• -",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 3500.0
+          "valor": 3500.0,
+          "estornado": false
         },
         {
           "data": "03/09/2026",
@@ -235,7 +141,8 @@
           "descricao_raw": "51.873.338 ANA CRISTINA OLIVEIRA NUNES",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 5000.0
+          "valor": 5000.0,
+          "estornado": false
         },
         {
           "data": "03/09/2026",
@@ -244,7 +151,8 @@
           "descricao_raw": "Robson Barboza Pinto - •••.367.827-•• - NU",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 4500.0
+          "valor": 4500.0,
+          "estornado": false
         },
         {
           "data": "03/09/2026",
@@ -253,95 +161,20 @@
           "descricao_raw": "CRISTIANE LUCCHETTI - •••.605.778-•• - ITAÚ",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 54.0
+          "valor": 54.0,
+          "estornado": false
         }
-      ],
-      "items_sum": 23054.0
+      ]
     },
     {
       "data": "04/09/2026",
       "dia": 4,
-      "entradas": 50470.22,
-      "saidas": 50858.38,
+      "entradas_brutas": 50470.22,
+      "entradas": 28065.66,
+      "saidas_brutas": 50858.38,
+      "saidas": 28453.82,
+      "estornos": 22404.56,
       "saldo": 102064.9,
-      "raw_saidas": [
-        "[04/09/2026][S=True, E=False] Tem alguma dúvida? Mande uma mensagem para nosso time de atendimento pelo chat do app ou ligue 4020 0185 (capitais e regiões",
-        "[04/09/2026][S=True, E=False] metropolitanas) ou 0800 591 2117 (demais localidades). Atendimento 24h.",
-        "[04/09/2026][S=True, E=False] Caso a solução fornecida nos canais de atendimento não tenha sido satisfatória, fale com a Ouvidoria em 0800 887 0463 ou pelos meios",
-        "[04/09/2026][S=True, E=False] disponíveis em nubank.com.br/contatos#ouvidoria . Atendimento das 8h às 18h em dias úteis.",
-        "[04/09/2026][S=True, E=False] Extrato gerado dia 01 de outubro de 2026 às 01:04 4 de 19",
-        "[04/09/2026][S=True, E=False] INFECTOCAST SERVICOS EDUCACIONAIS LTDA",
-        "[04/09/2026][S=True, E=False] CNPJ 54.924.986/0001-15 Agência 0001 Conta",
-        "[04/09/2026][S=True, E=False] 476440809-8",
-        "[04/09/2026][S=True, E=False] 01 DE SETEMBRO DE 2026 a 30 DE SETEMBRO DE 2026 VALORES EM R$",
-        "[04/09/2026][S=True, E=False] Transferência enviada pelo Pix Sara Vieira Nery - •••.739.058-•• - NU PAGAMENTOS 1.200,00",
-        "[04/09/2026][S=True, E=False] - IP (0260) Agência: 1 Conta: 50738576-0",
-        "[04/09/2026][S=True, E=False] Transferência enviada pelo Pix 53.683.352 ESTER ARAUJO DA SILVA FORTUNATO 5.601,14",
-        "[04/09/2026][S=True, E=False] - 53.683.352/0001-55 - PICPAY (0380) Agência: 1",
-        "[04/09/2026][S=True, E=False] Conta: 124280140-5",
-        "[04/09/2026][S=True, E=False] Transferência enviada pelo Pix 53.683.352 ESTER ARAUJO DA SILVA FORTUNATO 5.601,14",
-        "[04/09/2026][S=True, E=False] - 53.683.352/0001-55 - PICPAY (0380) Agência: 1",
-        "[04/09/2026][S=True, E=False] Conta: 124280140-5",
-        "[04/09/2026][S=True, E=False] Transferência enviada pelo Pix Sara Vieira Nery - •••.739.058-•• - NU PAGAMENTOS 1.200,00",
-        "[04/09/2026][S=True, E=False] - IP (0260) Agência: 1 Conta: 50738576-0",
-        "[04/09/2026][S=True, E=False] Transferência enviada pelo Pix 66.318.872 LUIS FELIPPE FARIA DE MEDEIROS - 3.000,00",
-        "[04/09/2026][S=True, E=False] 66.318.872/0001-00 - NU PAGAMENTOS - IP",
-        "[04/09/2026][S=True, E=False] (0260) Agência: 1 Conta: 699497877-1",
-        "[04/09/2026][S=True, E=False] Transferência enviada pelo Pix 53.699.078 DANIELA QUEIROZ DE LOYOLA - 6.000,00",
-        "[04/09/2026][S=True, E=False] 53.699.078/0001-02 - BCO C6 S.A. (0336)",
-        "[04/09/2026][S=True, E=False] Agência: 1 Conta: 43184556-5",
-        "[04/09/2026][S=True, E=False] Transferência enviada pelo Pix 55.382.864 BRUNA DE SANTIS LIMA - 55.382.864 3.290,18",
-        "[04/09/2026][S=True, E=False] /0001-07 - BCO BRADESCO S.A. (0237) Agência:",
-        "[04/09/2026][S=True, E=False] 2282 Conta: 63552-9",
-        "[04/09/2026][S=True, E=False] Transferência enviada pelo Pix Vinicius Correa da Silva - •••.633.698-•• - NU 1.662,50",
-        "[04/09/2026][S=True, E=False] PAGAMENTOS - IP (0260) Agência: 1 Conta:",
-        "[04/09/2026][S=True, E=False] 34766954-3",
-        "[04/09/2026][S=True, E=False] Transferência enviada pelo Pix BRUNO GUALAME FERNANDEZ LTDA - 65.190.165 6.500,00",
-        "[04/09/2026][S=True, E=False] /0001-19 - DOCK IP S.A. (0301) Agência: 1 Conta:",
-        "[04/09/2026][S=True, E=False] 31111297-2",
-        "[04/09/2026][S=True, E=False] Transferência enviada pelo Pix 53.683.352 ESTER ARAUJO DA SILVA FORTUNATO 5.601,14",
-        "[04/09/2026][S=True, E=False] Tem alguma dúvida? Mande uma mensagem para nosso time de atendimento pelo chat do app ou ligue 4020 0185 (capitais e regiões",
-        "[04/09/2026][S=True, E=False] metropolitanas) ou 0800 591 2117 (demais localidades). Atendimento 24h.",
-        "[04/09/2026][S=True, E=False] Caso a solução fornecida nos canais de atendimento não tenha sido satisfatória, fale com a Ouvidoria em 0800 887 0463 ou pelos meios",
-        "[04/09/2026][S=True, E=False] disponíveis em nubank.com.br/contatos#ouvidoria . Atendimento das 8h às 18h em dias úteis.",
-        "[04/09/2026][S=True, E=False] Extrato gerado dia 01 de outubro de 2026 às 01:04 5 de 19",
-        "[04/09/2026][S=True, E=False] INFECTOCAST SERVICOS EDUCACIONAIS LTDA",
-        "[04/09/2026][S=True, E=False] CNPJ 54.924.986/0001-15 Agência 0001 Conta",
-        "[04/09/2026][S=True, E=False] 476440809-8",
-        "[04/09/2026][S=True, E=False] 01 DE SETEMBRO DE 2026 a 30 DE SETEMBRO DE 2026 VALORES EM R$",
-        "[04/09/2026][S=True, E=False] - 53.683.352/0001-55 - PICPAY (0380) Agência: 1",
-        "[04/09/2026][S=True, E=False] Conta: 124280140-5",
-        "[04/09/2026][S=True, E=False] Transferência enviada pelo Pix 53.683.352 Ester Araujo da Silva Fortunato - 5.601,14",
-        "[04/09/2026][S=True, E=False] 53.683.352/0001-55 - PICPAY (0380) Agência: 1",
-        "[04/09/2026][S=True, E=False] Conta: 124280140-5",
-        "[04/09/2026][S=True, E=False] Transferência enviada pelo Pix 53.683.352 ester araujo da silva fortunato - 5.601,14",
-        "[04/09/2026][S=True, E=False] 53.683.352/0001-55 - BCO C6 S.A. (0336)",
-        "[04/09/2026][S=True, E=False] Agência: 1 Conta: 31058812-0"
-      ],
-      "raw_entradas": [
-        "[04/09/2026][S=False, E=True] Transferência Recebida BRG SUPLEMENTOS NUTRICIONAIS L - 57.235.426 18.181,82",
-        "[04/09/2026][S=False, E=True] /0001-41 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[04/09/2026][S=False, E=True] 7374 Conta: 4007-4",
-        "[04/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 6.578,24",
-        "[04/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 2.337,20",
-        "[04/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[04/09/2026][S=False, E=True] 145 Conta: 94423-7",
-        "[04/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 968,40",
-        "[04/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[04/09/2026][S=False, E=True] 145 Conta: 94423-7",
-        "[04/09/2026][S=False, E=True] Estorno - Transferência enviada pelo 53.683.352 ESTER ARAUJO DA SILVA FORTUNATO 5.601,14",
-        "[04/09/2026][S=False, E=True] Pix - 53.683.352/0001-55 - PICPAY (0380) Agência: 1",
-        "[04/09/2026][S=False, E=True] Conta: 124280140-5",
-        "[04/09/2026][S=False, E=True] Estorno - Transferência enviada pelo 53.683.352 ESTER ARAUJO DA SILVA FORTUNATO 5.601,14",
-        "[04/09/2026][S=False, E=True] Pix - 53.683.352/0001-55 - PICPAY (0380) Agência: 1",
-        "[04/09/2026][S=False, E=True] Conta: 124280140-5",
-        "[04/09/2026][S=False, E=True] Estorno - Transferência enviada pelo 53.683.352 ESTER ARAUJO DA SILVA FORTUNATO 5.601,14",
-        "[04/09/2026][S=False, E=True] Pix - 53.683.352/0001-55 - PICPAY (0380) Agência: 1",
-        "[04/09/2026][S=False, E=True] Conta: 124280140-5",
-        "[04/09/2026][S=False, E=True] Estorno - Transferência enviada pelo 53.683.352 Ester Araujo da Silva Fortunato - 5.601,14",
-        "[04/09/2026][S=False, E=True] Pix 53.683.352/0001-55 - PICPAY (0380) Agência: 1",
-        "[04/09/2026][S=False, E=True] Conta: 124280140-5"
-      ],
       "items": [
         {
           "data": "04/09/2026",
@@ -350,25 +183,8 @@
           "descricao_raw": "Sara Vieira Nery - •••.739.058-•• - NU PAGAMENTOS",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 1200.0
-        },
-        {
-          "data": "04/09/2026",
-          "dia": 4,
-          "tipo": "Transferência enviada pelo Pix",
-          "descricao_raw": "53.683.352 ESTER ARAUJO DA SILVA FORTUNATO",
-          "categoria": "Sócios / Distribuição",
-          "subcategoria": "Ester Araujo da Silva Fortunato",
-          "valor": 5601.14
-        },
-        {
-          "data": "04/09/2026",
-          "dia": 4,
-          "tipo": "Transferência enviada pelo Pix",
-          "descricao_raw": "53.683.352 ESTER ARAUJO DA SILVA FORTUNATO",
-          "categoria": "Sócios / Distribuição",
-          "subcategoria": "Ester Araujo da Silva Fortunato",
-          "valor": 5601.14
+          "valor": 1200.0,
+          "estornado": false
         },
         {
           "data": "04/09/2026",
@@ -377,7 +193,8 @@
           "descricao_raw": "Sara Vieira Nery - •••.739.058-•• - NU PAGAMENTOS",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 1200.0
+          "valor": 1200.0,
+          "estornado": false
         },
         {
           "data": "04/09/2026",
@@ -386,7 +203,8 @@
           "descricao_raw": "66.318.872 LUIS FELIPPE FARIA DE MEDEIROS -",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 3000.0
+          "valor": 3000.0,
+          "estornado": false
         },
         {
           "data": "04/09/2026",
@@ -395,7 +213,8 @@
           "descricao_raw": "53.699.078 DANIELA QUEIROZ DE LOYOLA -",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 6000.0
+          "valor": 6000.0,
+          "estornado": false
         },
         {
           "data": "04/09/2026",
@@ -404,7 +223,8 @@
           "descricao_raw": "55.382.864 BRUNA DE SANTIS LIMA - 55.382.864",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 3290.18
+          "valor": 3290.18,
+          "estornado": false
         },
         {
           "data": "04/09/2026",
@@ -413,7 +233,8 @@
           "descricao_raw": "Vinicius Correa da Silva - •••.633.698-•• - NU",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 1662.5
+          "valor": 1662.5,
+          "estornado": false
         },
         {
           "data": "04/09/2026",
@@ -422,25 +243,8 @@
           "descricao_raw": "BRUNO GUALAME FERNANDEZ LTDA - 65.190.165",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 6500.0
-        },
-        {
-          "data": "04/09/2026",
-          "dia": 4,
-          "tipo": "Transferência enviada pelo Pix",
-          "descricao_raw": "53.683.352 ESTER ARAUJO DA SILVA FORTUNATO",
-          "categoria": "Sócios / Distribuição",
-          "subcategoria": "Ester Araujo da Silva Fortunato",
-          "valor": 5601.14
-        },
-        {
-          "data": "04/09/2026",
-          "dia": 4,
-          "tipo": "Transferência enviada pelo Pix",
-          "descricao_raw": "53.683.352 Ester Araujo da Silva Fortunato -",
-          "categoria": "Sócios / Distribuição",
-          "subcategoria": "Ester Araujo da Silva Fortunato",
-          "valor": 5601.14
+          "valor": 6500.0,
+          "estornado": false
         },
         {
           "data": "04/09/2026",
@@ -449,23 +253,20 @@
           "descricao_raw": "53.683.352 ester araujo da silva fortunato -",
           "categoria": "Sócios / Distribuição",
           "subcategoria": "Ester Araujo da Silva Fortunato",
-          "valor": 5601.14
+          "valor": 5601.14,
+          "estornado": false
         }
-      ],
-      "items_sum": 50858.380000000005
+      ]
     },
     {
       "data": "07/09/2026",
       "dia": 7,
+      "entradas_brutas": 0.0,
       "entradas": 0.0,
+      "saidas_brutas": 8100.0,
       "saidas": 8100.0,
+      "estornos": 0.0,
       "saldo": 93964.9,
-      "raw_saidas": [
-        "[07/09/2026][S=True, E=False] Transferência enviada pelo Pix 44 920 503 CLARA SEPULVEDA SOARES 8.100,00",
-        "[07/09/2026][S=True, E=False] CARVALHO - 44.920.503/0001-50 - BANCO INTER",
-        "[07/09/2026][S=True, E=False] (0077) Agência: 1 Conta: 18858225-8"
-      ],
-      "raw_entradas": [],
       "items": [
         {
           "data": "07/09/2026",
@@ -474,47 +275,20 @@
           "descricao_raw": "44 920 503 CLARA SEPULVEDA SOARES",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 8100.0
+          "valor": 8100.0,
+          "estornado": false
         }
-      ],
-      "items_sum": 8100.0
+      ]
     },
     {
       "data": "08/09/2026",
       "dia": 8,
+      "entradas_brutas": 34263.03,
       "entradas": 34263.03,
+      "saidas_brutas": 23685.0,
       "saidas": 23685.0,
+      "estornos": 0.0,
       "saldo": 104542.93,
-      "raw_saidas": [
-        "[08/09/2026][S=True, E=False] Tem alguma dúvida? Mande uma mensagem para nosso time de atendimento pelo chat do app ou ligue 4020 0185 (capitais e regiões",
-        "[08/09/2026][S=True, E=False] metropolitanas) ou 0800 591 2117 (demais localidades). Atendimento 24h.",
-        "[08/09/2026][S=True, E=False] Caso a solução fornecida nos canais de atendimento não tenha sido satisfatória, fale com a Ouvidoria em 0800 887 0463 ou pelos meios",
-        "[08/09/2026][S=True, E=False] disponíveis em nubank.com.br/contatos#ouvidoria . Atendimento das 8h às 18h em dias úteis.",
-        "[08/09/2026][S=True, E=False] Extrato gerado dia 01 de outubro de 2026 às 01:04 6 de 19",
-        "[08/09/2026][S=True, E=False] INFECTOCAST SERVICOS EDUCACIONAIS LTDA",
-        "[08/09/2026][S=True, E=False] CNPJ 54.924.986/0001-15 Agência 0001 Conta",
-        "[08/09/2026][S=True, E=False] 476440809-8",
-        "[08/09/2026][S=True, E=False] 01 DE SETEMBRO DE 2026 a 30 DE SETEMBRO DE 2026 VALORES EM R$",
-        "[08/09/2026][S=True, E=False] Transferência enviada pelo Pix ELLEMENTAR ESTUDIO DE FOTO E FILME - 7.690,00",
-        "[08/09/2026][S=True, E=False] 16.782.758/0001-69 - BCO C6 S.A. (0336)",
-        "[08/09/2026][S=True, E=False] Agência: 1 Conta: 29534606-0",
-        "[08/09/2026][S=True, E=False] Transferência enviada pelo Pix NANI.COM - 50.636.375/0001-10 - NU 15.000,00",
-        "[08/09/2026][S=True, E=False] PAGAMENTOS - IP (0260) Agência: 1 Conta:",
-        "[08/09/2026][S=True, E=False] 170123681-1",
-        "[08/09/2026][S=True, E=False] Transferência enviada pelo Pix CONTASS ASSESSORIA CONTABIL LTDA - 495,00",
-        "[08/09/2026][S=True, E=False] 11.115.997/0001-41 - CCLA REG LESTE BACIA RIO",
-        "[08/09/2026][S=True, E=False] DOCE Agência: 4346 Conta: 3326-0",
-        "[08/09/2026][S=True, E=False] Pagamento de fatura 500,00"
-      ],
-      "raw_entradas": [
-        "[08/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 30.525,08",
-        "[08/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 2.352,45",
-        "[08/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[08/09/2026][S=False, E=True] 145 Conta: 94423-7",
-        "[08/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 1.385,50",
-        "[08/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[08/09/2026][S=False, E=True] 145 Conta: 94423-7"
-      ],
       "items": [
         {
           "data": "08/09/2026",
@@ -523,7 +297,8 @@
           "descricao_raw": "ELLEMENTAR ESTUDIO DE FOTO E FILME -",
           "categoria": "Produção Audiovisual & Marketing",
           "subcategoria": "Ellementar Estúdio Foto e Filme",
-          "valor": 7690.0
+          "valor": 7690.0,
+          "estornado": false
         },
         {
           "data": "08/09/2026",
@@ -532,7 +307,8 @@
           "descricao_raw": "NANI.COM - 50.636.375/0001-10 - NU",
           "categoria": "Produção Audiovisual & Marketing",
           "subcategoria": "Nani.com (Marketing/Agência)",
-          "valor": 15000.0
+          "valor": 15000.0,
+          "estornado": false
         },
         {
           "data": "08/09/2026",
@@ -541,7 +317,8 @@
           "descricao_raw": "CONTASS ASSESSORIA CONTABIL LTDA -",
           "categoria": "Contabilidade & Jurídico",
           "subcategoria": "Contass Assessoria Contábil",
-          "valor": 495.0
+          "valor": 495.0,
+          "estornado": false
         },
         {
           "data": "08/09/2026",
@@ -550,44 +327,20 @@
           "descricao_raw": "",
           "categoria": "Cartão de Crédito / Fatura",
           "subcategoria": "Cartão PJ (Nubank)",
-          "valor": 500.0
+          "valor": 500.0,
+          "estornado": false
         }
-      ],
-      "items_sum": 23685.0
+      ]
     },
     {
       "data": "09/09/2026",
       "dia": 9,
+      "entradas_brutas": 10967.4,
       "entradas": 10967.4,
+      "saidas_brutas": 16000.0,
       "saidas": 16000.0,
+      "estornos": 0.0,
       "saldo": 99510.33,
-      "raw_saidas": [
-        "[09/09/2026][S=True, E=False] Transferência enviada pelo Pix L S S SERVICOS MEDICOS - 37.914.953/0001-75 - 7.800,00",
-        "[09/09/2026][S=True, E=False] ITAÚ UNIBANCO S.A. (0341) Agência: 775 Conta:",
-        "[09/09/2026][S=True, E=False] 24540-0",
-        "[09/09/2026][S=True, E=False] Transferência enviada pelo Pix ESTRATEGIA 1 SERVICOS EM TECNOLOGIA DA 5.250,00",
-        "[09/09/2026][S=True, E=False] INFORMACAO LTDA - 14.918.324/0001-18 - BCO",
-        "[09/09/2026][S=True, E=False] SANTANDER (BRASIL) S.A. (0033) Agência: 3705",
-        "[09/09/2026][S=True, E=False] Conta: 13002537-0",
-        "[09/09/2026][S=True, E=False] Pagamento de fatura 550,00",
-        "[09/09/2026][S=True, E=False] Tem alguma dúvida? Mande uma mensagem para nosso time de atendimento pelo chat do app ou ligue 4020 0185 (capitais e regiões",
-        "[09/09/2026][S=True, E=False] metropolitanas) ou 0800 591 2117 (demais localidades). Atendimento 24h.",
-        "[09/09/2026][S=True, E=False] Caso a solução fornecida nos canais de atendimento não tenha sido satisfatória, fale com a Ouvidoria em 0800 887 0463 ou pelos meios",
-        "[09/09/2026][S=True, E=False] disponíveis em nubank.com.br/contatos#ouvidoria . Atendimento das 8h às 18h em dias úteis.",
-        "[09/09/2026][S=True, E=False] Extrato gerado dia 01 de outubro de 2026 às 01:04 7 de 19",
-        "[09/09/2026][S=True, E=False] INFECTOCAST SERVICOS EDUCACIONAIS LTDA",
-        "[09/09/2026][S=True, E=False] CNPJ 54.924.986/0001-15 Agência 0001 Conta",
-        "[09/09/2026][S=True, E=False] 476440809-8",
-        "[09/09/2026][S=True, E=False] 01 DE SETEMBRO DE 2026 a 30 DE SETEMBRO DE 2026 VALORES EM R$",
-        "[09/09/2026][S=True, E=False] Pagamento de fatura 1.200,00",
-        "[09/09/2026][S=True, E=False] Pagamento de fatura 1.200,00"
-      ],
-      "raw_entradas": [
-        "[09/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 1.373,83",
-        "[09/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[09/09/2026][S=False, E=True] 145 Conta: 94423-7",
-        "[09/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 9.593,57"
-      ],
       "items": [
         {
           "data": "09/09/2026",
@@ -596,7 +349,8 @@
           "descricao_raw": "L S S SERVICOS MEDICOS - 37.914.953/0001-75 -",
           "categoria": "Corpo Docente & Especialistas",
           "subcategoria": "Serviços Médicos / Professores",
-          "valor": 7800.0
+          "valor": 7800.0,
+          "estornado": false
         },
         {
           "data": "09/09/2026",
@@ -605,7 +359,8 @@
           "descricao_raw": "ESTRATEGIA 1 SERVICOS EM TECNOLOGIA DA",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 5250.0
+          "valor": 5250.0,
+          "estornado": false
         },
         {
           "data": "09/09/2026",
@@ -614,7 +369,8 @@
           "descricao_raw": "",
           "categoria": "Cartão de Crédito / Fatura",
           "subcategoria": "Cartão PJ (Nubank)",
-          "valor": 550.0
+          "valor": 550.0,
+          "estornado": false
         },
         {
           "data": "09/09/2026",
@@ -623,7 +379,8 @@
           "descricao_raw": "",
           "categoria": "Cartão de Crédito / Fatura",
           "subcategoria": "Cartão PJ (Nubank)",
-          "valor": 1200.0
+          "valor": 1200.0,
+          "estornado": false
         },
         {
           "data": "09/09/2026",
@@ -632,31 +389,20 @@
           "descricao_raw": "",
           "categoria": "Cartão de Crédito / Fatura",
           "subcategoria": "Cartão PJ (Nubank)",
-          "valor": 1200.0
+          "valor": 1200.0,
+          "estornado": false
         }
-      ],
-      "items_sum": 16000.0
+      ]
     },
     {
       "data": "10/09/2026",
       "dia": 10,
+      "entradas_brutas": 6383.22,
       "entradas": 6383.22,
+      "saidas_brutas": 40480.39,
       "saidas": 40480.39,
+      "estornos": 0.0,
       "saldo": 65413.16,
-      "raw_saidas": [
-        "[10/09/2026][S=True, E=False] Pagamento de boleto efetuado FUNDACAO FACULDADE DE MEDICINA 11.775,32",
-        "[10/09/2026][S=True, E=False] Pagamento de fatura 20.000,00",
-        "[10/09/2026][S=True, E=False] Transferência enviada pelo Pix L S S SERVICOS MEDICOS - 37.914.953/0001-75 - 1.200,00",
-        "[10/09/2026][S=True, E=False] ITAÚ UNIBANCO S.A. (0341) Agência: 775 Conta:",
-        "[10/09/2026][S=True, E=False] 24540-0",
-        "[10/09/2026][S=True, E=False] Transferência enviada pelo Pix RAW STUDIO LTDA - 64.916.813/0001-09 - NU 7.500,00",
-        "[10/09/2026][S=True, E=False] PAGAMENTOS - IP (0260) Agência: 1 Conta:",
-        "[10/09/2026][S=True, E=False] 755270420-1",
-        "[10/09/2026][S=True, E=False] Pagamento de boleto efetuado PREF MUN SAO PAULO-C 5,07"
-      ],
-      "raw_entradas": [
-        "[10/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 6.383,22"
-      ],
       "items": [
         {
           "data": "10/09/2026",
@@ -665,7 +411,8 @@
           "descricao_raw": "FUNDACAO FACULDADE DE MEDICINA",
           "categoria": "Parcerias Acadêmicas & Certificação",
           "subcategoria": "Fundação Faculdade de Medicina",
-          "valor": 11775.32
+          "valor": 11775.32,
+          "estornado": false
         },
         {
           "data": "10/09/2026",
@@ -674,7 +421,8 @@
           "descricao_raw": "",
           "categoria": "Cartão de Crédito / Fatura",
           "subcategoria": "Cartão PJ (Nubank)",
-          "valor": 20000.0
+          "valor": 20000.0,
+          "estornado": false
         },
         {
           "data": "10/09/2026",
@@ -683,7 +431,8 @@
           "descricao_raw": "L S S SERVICOS MEDICOS - 37.914.953/0001-75 -",
           "categoria": "Corpo Docente & Especialistas",
           "subcategoria": "Serviços Médicos / Professores",
-          "valor": 1200.0
+          "valor": 1200.0,
+          "estornado": false
         },
         {
           "data": "10/09/2026",
@@ -692,7 +441,8 @@
           "descricao_raw": "RAW STUDIO LTDA - 64.916.813/0001-09 - NU",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 7500.0
+          "valor": 7500.0,
+          "estornado": false
         },
         {
           "data": "10/09/2026",
@@ -701,40 +451,20 @@
           "descricao_raw": "PREF MUN SAO PAULO-C",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 5.07
+          "valor": 5.07,
+          "estornado": false
         }
-      ],
-      "items_sum": 40480.39
+      ]
     },
     {
       "data": "11/09/2026",
       "dia": 11,
+      "entradas_brutas": 6669.86,
       "entradas": 6669.86,
+      "saidas_brutas": 3000.0,
       "saidas": 3000.0,
+      "estornos": 0.0,
       "saldo": 69083.02,
-      "raw_saidas": [
-        "[11/09/2026][S=True, E=False] Transferência enviada pelo Pix CELINE MOCARZEL MIRANDA - •••.102.798-•• - 3.000,00",
-        "[11/09/2026][S=True, E=False] BANCO INTER (0077) Agência: 1 Conta: 13880939-",
-        "[11/09/2026][S=True, E=False] 9"
-      ],
-      "raw_entradas": [
-        "[11/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 2.534,73",
-        "[11/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 1.385,50",
-        "[11/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[11/09/2026][S=False, E=True] 145 Conta: 94423-7",
-        "[11/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 2.749,63",
-        "[11/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[11/09/2026][S=False, E=True] Tem alguma dúvida? Mande uma mensagem para nosso time de atendimento pelo chat do app ou ligue 4020 0185 (capitais e regiões",
-        "[11/09/2026][S=False, E=True] metropolitanas) ou 0800 591 2117 (demais localidades). Atendimento 24h.",
-        "[11/09/2026][S=False, E=True] Caso a solução fornecida nos canais de atendimento não tenha sido satisfatória, fale com a Ouvidoria em 0800 887 0463 ou pelos meios",
-        "[11/09/2026][S=False, E=True] disponíveis em nubank.com.br/contatos#ouvidoria . Atendimento das 8h às 18h em dias úteis.",
-        "[11/09/2026][S=False, E=True] Extrato gerado dia 01 de outubro de 2026 às 01:04 8 de 19",
-        "[11/09/2026][S=False, E=True] INFECTOCAST SERVICOS EDUCACIONAIS LTDA",
-        "[11/09/2026][S=False, E=True] CNPJ 54.924.986/0001-15 Agência 0001 Conta",
-        "[11/09/2026][S=False, E=True] 476440809-8",
-        "[11/09/2026][S=False, E=True] 01 DE SETEMBRO DE 2026 a 30 DE SETEMBRO DE 2026 VALORES EM R$",
-        "[11/09/2026][S=False, E=True] 145 Conta: 94423-7"
-      ],
       "items": [
         {
           "data": "11/09/2026",
@@ -743,28 +473,20 @@
           "descricao_raw": "CELINE MOCARZEL MIRANDA - •••.102.798-•• -",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 3000.0
+          "valor": 3000.0,
+          "estornado": false
         }
-      ],
-      "items_sum": 3000.0
+      ]
     },
     {
       "data": "14/09/2026",
       "dia": 14,
+      "entradas_brutas": 17181.29,
       "entradas": 17181.29,
+      "saidas_brutas": 4000.0,
       "saidas": 4000.0,
+      "estornos": 0.0,
       "saldo": 82264.31,
-      "raw_saidas": [
-        "[14/09/2026][S=True, E=False] Transferência enviada pelo Pix Mateus de Andrade Porfirio - •••.932.529-•• - 4.000,00",
-        "[14/09/2026][S=True, E=False] MERCADO PAGO IP LTDA. (0323) Agência: 1",
-        "[14/09/2026][S=True, E=False] Conta: 8753318902-8"
-      ],
-      "raw_entradas": [
-        "[14/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 15.806,47",
-        "[14/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 1.374,82",
-        "[14/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[14/09/2026][S=False, E=True] 145 Conta: 94423-7"
-      ],
       "items": [
         {
           "data": "14/09/2026",
@@ -773,51 +495,20 @@
           "descricao_raw": "Mateus de Andrade Porfirio - •••.932.529-•• -",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 4000.0
+          "valor": 4000.0,
+          "estornado": false
         }
-      ],
-      "items_sum": 4000.0
+      ]
     },
     {
       "data": "15/09/2026",
       "dia": 15,
+      "entradas_brutas": 2572.97,
       "entradas": 2572.97,
+      "saidas_brutas": 42393.23,
       "saidas": 42393.23,
+      "estornos": 0.0,
       "saldo": 42444.05,
-      "raw_saidas": [
-        "[15/09/2026][S=True, E=False] Transferência enviada pelo Pix Klinger Soares Faico Filho - •••.318.776-•• - NU 20.000,00",
-        "[15/09/2026][S=True, E=False] PAGAMENTOS - IP (0260) Agência: 1 Conta:",
-        "[15/09/2026][S=True, E=False] Tem alguma dúvida? Mande uma mensagem para nosso time de atendimento pelo chat do app ou ligue 4020 0185 (capitais e regiões",
-        "[15/09/2026][S=True, E=False] metropolitanas) ou 0800 591 2117 (demais localidades). Atendimento 24h.",
-        "[15/09/2026][S=True, E=False] Caso a solução fornecida nos canais de atendimento não tenha sido satisfatória, fale com a Ouvidoria em 0800 887 0463 ou pelos meios",
-        "[15/09/2026][S=True, E=False] disponíveis em nubank.com.br/contatos#ouvidoria . Atendimento das 8h às 18h em dias úteis.",
-        "[15/09/2026][S=True, E=False] Extrato gerado dia 01 de outubro de 2026 às 01:04 9 de 19",
-        "[15/09/2026][S=True, E=False] INFECTOCAST SERVICOS EDUCACIONAIS LTDA",
-        "[15/09/2026][S=True, E=False] CNPJ 54.924.986/0001-15 Agência 0001 Conta",
-        "[15/09/2026][S=True, E=False] 476440809-8",
-        "[15/09/2026][S=True, E=False] 01 DE SETEMBRO DE 2026 a 30 DE SETEMBRO DE 2026 VALORES EM R$",
-        "[15/09/2026][S=True, E=False] 5999330-0",
-        "[15/09/2026][S=True, E=False] Transferência enviada pelo Pix QUINTOANDAR - 16.788.643/0001-81 - ITAÚ 5.006,33",
-        "[15/09/2026][S=True, E=False] UNIBANCO S.A. (0341) Agência: 8792 Conta:",
-        "[15/09/2026][S=True, E=False] 45268-5",
-        "[15/09/2026][S=True, E=False] Transferência enviada pelo Pix 50.630.530 MURILO GARCIA GOUVEA - 3.500,00",
-        "[15/09/2026][S=True, E=False] 50.630.530/0001-91 - NU PAGAMENTOS - IP",
-        "[15/09/2026][S=True, E=False] (0260) Agência: 1 Conta: 821473374-1",
-        "[15/09/2026][S=True, E=False] Transferência enviada pelo Pix BAZAPREBI SERVICOS MEDICOS LTDA - 47.276.649 12.500,00",
-        "[15/09/2026][S=True, E=False] /0001-01 - NU PAGAMENTOS - IP (0260) Agência: 1",
-        "[15/09/2026][S=True, E=False] Conta: 93211238-3",
-        "[15/09/2026][S=True, E=False] Transferência enviada pelo Pix 61.275.347 DENILSON BATISTA DE CARVALHO 697,00",
-        "[15/09/2026][S=True, E=False] SILVA - 61.275.347/0001-31 - NU PAGAMENTOS - IP",
-        "[15/09/2026][S=True, E=False] (0260) Agência: 1 Conta: 945304986-7",
-        "[15/09/2026][S=True, E=False] Pagamento de boleto efetuado YELLOW DATA S I EM TI LTDA 449,00",
-        "[15/09/2026][S=True, E=False] Transferência enviada pelo Pix VINDI PAGAMENTOS ONLINE - 14.338.304/0001- 240,90",
-        "[15/09/2026][S=True, E=False] 78 - ITAÚ UNIBANCO S.A. (0341) Agência: 145",
-        "[15/09/2026][S=True, E=False] Conta: 5656-0"
-      ],
-      "raw_entradas": [
-        "[15/09/2026][S=False, E=True] Depósito recebido STRIPE BRASIL PARTICIPACOES LTDA * Crédito 38,10",
-        "[15/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 2.534,87"
-      ],
       "items": [
         {
           "data": "15/09/2026",
@@ -826,7 +517,8 @@
           "descricao_raw": "Klinger Soares Faico Filho - •••.318.776-•• - NU",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 20000.0
+          "valor": 20000.0,
+          "estornado": false
         },
         {
           "data": "15/09/2026",
@@ -835,7 +527,8 @@
           "descricao_raw": "QUINTOANDAR - 16.788.643/0001-81 - ITAÚ",
           "categoria": "Aluguel & Infraestrutura",
           "subcategoria": "QuintoAndar (Aluguel/Sede)",
-          "valor": 5006.33
+          "valor": 5006.33,
+          "estornado": false
         },
         {
           "data": "15/09/2026",
@@ -844,7 +537,8 @@
           "descricao_raw": "50.630.530 MURILO GARCIA GOUVEA -",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 3500.0
+          "valor": 3500.0,
+          "estornado": false
         },
         {
           "data": "15/09/2026",
@@ -853,7 +547,8 @@
           "descricao_raw": "BAZAPREBI SERVICOS MEDICOS LTDA - 47.276.649",
           "categoria": "Corpo Docente & Especialistas",
           "subcategoria": "Serviços Médicos / Professores",
-          "valor": 12500.0
+          "valor": 12500.0,
+          "estornado": false
         },
         {
           "data": "15/09/2026",
@@ -862,7 +557,8 @@
           "descricao_raw": "61.275.347 DENILSON BATISTA DE CARVALHO",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 697.0
+          "valor": 697.0,
+          "estornado": false
         },
         {
           "data": "15/09/2026",
@@ -871,7 +567,8 @@
           "descricao_raw": "YELLOW DATA S I EM TI LTDA",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 449.0
+          "valor": 449.0,
+          "estornado": false
         },
         {
           "data": "15/09/2026",
@@ -880,40 +577,20 @@
           "descricao_raw": "VINDI PAGAMENTOS ONLINE - 14.338.304/0001-",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 240.9
+          "valor": 240.9,
+          "estornado": false
         }
-      ],
-      "items_sum": 42393.23
+      ]
     },
     {
       "data": "16/09/2026",
       "dia": 16,
+      "entradas_brutas": 2345.32,
       "entradas": 2345.32,
+      "saidas_brutas": 13060.0,
       "saidas": 13060.0,
+      "estornos": 0.0,
       "saldo": 31729.37,
-      "raw_saidas": [
-        "[16/09/2026][S=True, E=False] Transferência enviada pelo Pix AYRTON SANTOS SILVEIRA SERVICOS MEDICOS 7.500,00",
-        "[16/09/2026][S=True, E=False] LTDA - 66.328.814/0001-68 - BCO C6 S.A. (0336)",
-        "[16/09/2026][S=True, E=False] Agência: 1 Conta: 42158492-0",
-        "[16/09/2026][S=True, E=False] Tem alguma dúvida? Mande uma mensagem para nosso time de atendimento pelo chat do app ou ligue 4020 0185 (capitais e regiões",
-        "[16/09/2026][S=True, E=False] metropolitanas) ou 0800 591 2117 (demais localidades). Atendimento 24h.",
-        "[16/09/2026][S=True, E=False] Caso a solução fornecida nos canais de atendimento não tenha sido satisfatória, fale com a Ouvidoria em 0800 887 0463 ou pelos meios",
-        "[16/09/2026][S=True, E=False] disponíveis em nubank.com.br/contatos#ouvidoria . Atendimento das 8h às 18h em dias úteis.",
-        "[16/09/2026][S=True, E=False] Extrato gerado dia 01 de outubro de 2026 às 01:04 10 de 19",
-        "[16/09/2026][S=True, E=False] INFECTOCAST SERVICOS EDUCACIONAIS LTDA",
-        "[16/09/2026][S=True, E=False] CNPJ 54.924.986/0001-15 Agência 0001 Conta",
-        "[16/09/2026][S=True, E=False] 476440809-8",
-        "[16/09/2026][S=True, E=False] 01 DE SETEMBRO DE 2026 a 30 DE SETEMBRO DE 2026 VALORES EM R$",
-        "[16/09/2026][S=True, E=False] Transferência enviada pelo Pix Giovanna Barattino Niccheri - •••.679.778-•• - NU 3.360,00",
-        "[16/09/2026][S=True, E=False] PAGAMENTOS - IP (0260) Agência: 1 Conta:",
-        "[16/09/2026][S=True, E=False] 79382628-0",
-        "[16/09/2026][S=True, E=False] Transferência enviada pelo Pix PEDRO RODRIGUES CORREA LTDA - 60.848.904 2.200,00",
-        "[16/09/2026][S=True, E=False] /0001-01 - BCO C6 S.A. (0336) Agência: 1 Conta:",
-        "[16/09/2026][S=True, E=False] 38451588-6"
-      ],
-      "raw_entradas": [
-        "[16/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 2.345,32"
-      ],
       "items": [
         {
           "data": "16/09/2026",
@@ -922,7 +599,8 @@
           "descricao_raw": "AYRTON SANTOS SILVEIRA SERVICOS MEDICOS",
           "categoria": "Corpo Docente & Especialistas",
           "subcategoria": "Serviços Médicos / Professores",
-          "valor": 7500.0
+          "valor": 7500.0,
+          "estornado": false
         },
         {
           "data": "16/09/2026",
@@ -931,7 +609,8 @@
           "descricao_raw": "Giovanna Barattino Niccheri - •••.679.778-•• - NU",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 3360.0
+          "valor": 3360.0,
+          "estornado": false
         },
         {
           "data": "16/09/2026",
@@ -940,63 +619,31 @@
           "descricao_raw": "PEDRO RODRIGUES CORREA LTDA - 60.848.904",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 2200.0
+          "valor": 2200.0,
+          "estornado": false
         }
-      ],
-      "items_sum": 13060.0
+      ]
     },
     {
       "data": "17/09/2026",
       "dia": 17,
+      "entradas_brutas": 23501.03,
       "entradas": 23501.03,
+      "saidas_brutas": 0.0,
       "saidas": 0.0,
+      "estornos": 0.0,
       "saldo": 55230.4,
-      "raw_saidas": [],
-      "raw_entradas": [
-        "[17/09/2026][S=False, E=True] Transferência Recebida DG VENTURES 1 LTDA. - 46.610.784/0001-70 - 7.500,00",
-        "[17/09/2026][S=False, E=True] BCO BRADESCO S.A. (0237) Agência: 3042 Conta:",
-        "[17/09/2026][S=False, E=True] 494-4",
-        "[17/09/2026][S=False, E=True] Transferência Recebida DG VENTURES 1 LTDA. - 46.610.784/0001-70 - 7.500,00",
-        "[17/09/2026][S=False, E=True] BCO BRADESCO S.A. (0237) Agência: 3042 Conta:",
-        "[17/09/2026][S=False, E=True] 494-4",
-        "[17/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 4.553,58",
-        "[17/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 3.947,45",
-        "[17/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[17/09/2026][S=False, E=True] 145 Conta: 94423-7"
-      ],
-      "items": [],
-      "items_sum": 0
+      "items": []
     },
     {
       "data": "18/09/2026",
       "dia": 18,
+      "entradas_brutas": 4007.5,
       "entradas": 4007.5,
+      "saidas_brutas": 419.94,
       "saidas": 419.94,
+      "estornos": 0.0,
       "saldo": 58817.96,
-      "raw_saidas": [
-        "[18/09/2026][S=True, E=False] Tem alguma dúvida? Mande uma mensagem para nosso time de atendimento pelo chat do app ou ligue 4020 0185 (capitais e regiões",
-        "[18/09/2026][S=True, E=False] metropolitanas) ou 0800 591 2117 (demais localidades). Atendimento 24h.",
-        "[18/09/2026][S=True, E=False] Caso a solução fornecida nos canais de atendimento não tenha sido satisfatória, fale com a Ouvidoria em 0800 887 0463 ou pelos meios",
-        "[18/09/2026][S=True, E=False] disponíveis em nubank.com.br/contatos#ouvidoria . Atendimento das 8h às 18h em dias úteis.",
-        "[18/09/2026][S=True, E=False] Extrato gerado dia 01 de outubro de 2026 às 01:04 11 de 19",
-        "[18/09/2026][S=True, E=False] INFECTOCAST SERVICOS EDUCACIONAIS LTDA",
-        "[18/09/2026][S=True, E=False] CNPJ 54.924.986/0001-15 Agência 0001 Conta",
-        "[18/09/2026][S=True, E=False] 476440809-8",
-        "[18/09/2026][S=True, E=False] 01 DE SETEMBRO DE 2026 a 30 DE SETEMBRO DE 2026 VALORES EM R$",
-        "[18/09/2026][S=True, E=False] Transferência enviada pelo Pix RECEITA FEDERAL - 00.394.460/0058-87 - ITAÚ 178,31",
-        "[18/09/2026][S=True, E=False] UNIBANCO S.A. (0341) Agência: 332 Conta: 81010-",
-        "[18/09/2026][S=True, E=False] 0",
-        "[18/09/2026][S=True, E=False] Transferência enviada pelo Pix RECEITA FEDERAL - 00.394.460/0058-87 - ITAÚ 185,57",
-        "[18/09/2026][S=True, E=False] UNIBANCO S.A. (0341) Agência: 332 Conta: 81010-",
-        "[18/09/2026][S=True, E=False] 0",
-        "[18/09/2026][S=True, E=False] Transferência enviada pelo Pix RECEITA FEDERAL - 00.394.460/0058-87 - BCO 56,06",
-        "[18/09/2026][S=True, E=False] DO BRASIL S.A. (0001) Agência: 1607 Conta:",
-        "[18/09/2026][S=True, E=False] 333666-2"
-      ],
-      "raw_entradas": [
-        "[18/09/2026][S=False, E=True] Depósito recebido STRIPE BRASIL PARTICIPACOES LTDA * Crédito 38,97",
-        "[18/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 3.968,53"
-      ],
       "items": [
         {
           "data": "18/09/2026",
@@ -1005,7 +652,8 @@
           "descricao_raw": "RECEITA FEDERAL - 00.394.460/0058-87 - ITAÚ",
           "categoria": "Impostos & Tributos",
           "subcategoria": "Receita Federal / Tributos",
-          "valor": 178.31
+          "valor": 178.31,
+          "estornado": false
         },
         {
           "data": "18/09/2026",
@@ -1014,7 +662,8 @@
           "descricao_raw": "RECEITA FEDERAL - 00.394.460/0058-87 - ITAÚ",
           "categoria": "Impostos & Tributos",
           "subcategoria": "Receita Federal / Tributos",
-          "valor": 185.57
+          "valor": 185.57,
+          "estornado": false
         },
         {
           "data": "18/09/2026",
@@ -1023,90 +672,20 @@
           "descricao_raw": "RECEITA FEDERAL - 00.394.460/0058-87 - BCO",
           "categoria": "Impostos & Tributos",
           "subcategoria": "Receita Federal / Tributos",
-          "valor": 56.06
+          "valor": 56.06,
+          "estornado": false
         }
-      ],
-      "items_sum": 419.94
+      ]
     },
     {
       "data": "21/09/2026",
       "dia": 21,
-      "entradas": 37937.64,
-      "saidas": 80961.28,
+      "entradas_brutas": 37937.64,
+      "entradas": 36937.64,
+      "saidas_brutas": 80961.28,
+      "saidas": 79961.28,
+      "estornos": 1000.0,
       "saldo": 15794.32,
-      "raw_saidas": [
-        "[21/09/2026][S=True, E=False] Tem alguma dúvida? Mande uma mensagem para nosso time de atendimento pelo chat do app ou ligue 4020 0185 (capitais e regiões",
-        "[21/09/2026][S=True, E=False] metropolitanas) ou 0800 591 2117 (demais localidades). Atendimento 24h.",
-        "[21/09/2026][S=True, E=False] Caso a solução fornecida nos canais de atendimento não tenha sido satisfatória, fale com a Ouvidoria em 0800 887 0463 ou pelos meios",
-        "[21/09/2026][S=True, E=False] disponíveis em nubank.com.br/contatos#ouvidoria . Atendimento das 8h às 18h em dias úteis.",
-        "[21/09/2026][S=True, E=False] Extrato gerado dia 01 de outubro de 2026 às 01:04 12 de 19",
-        "[21/09/2026][S=True, E=False] INFECTOCAST SERVICOS EDUCACIONAIS LTDA",
-        "[21/09/2026][S=True, E=False] CNPJ 54.924.986/0001-15 Agência 0001 Conta",
-        "[21/09/2026][S=True, E=False] 476440809-8",
-        "[21/09/2026][S=True, E=False] 01 DE SETEMBRO DE 2026 a 30 DE SETEMBRO DE 2026 VALORES EM R$",
-        "[21/09/2026][S=True, E=False] Pagamento de fatura 30.545,09",
-        "[21/09/2026][S=True, E=False] Transferência enviada pelo Pix ERIC GRIECCO MARCHIOTTO - •••.529.208-•• - 4.500,00",
-        "[21/09/2026][S=True, E=False] BANCO INTER (0077) Agência: 1 Conta: 51394808-2",
-        "[21/09/2026][S=True, E=False] Transferência enviada pelo Pix INFECTOPEDS - 57.318.961/0001-66 - ITAÚ 20.114,99",
-        "[21/09/2026][S=True, E=False] UNIBANCO S.A. (0341) Agência: 1579 Conta:",
-        "[21/09/2026][S=True, E=False] 99088-6",
-        "[21/09/2026][S=True, E=False] Transferência enviada pelo Pix BRUNA GEHLEN LTDA - 65.858.372/0001-07 - BCO 566,67",
-        "[21/09/2026][S=True, E=False] DO BRASIL S.A. (0001) Agência: 2817 Conta: 48132-",
-        "[21/09/2026][S=True, E=False] 7",
-        "[21/09/2026][S=True, E=False] Transferência enviada pelo Pix FLAVIA JACQUELINE ALMEIDA - •••.997.478-•• - 1.000,00",
-        "[21/09/2026][S=True, E=False] BCO BRADESCO S.A. (0237) Agência: 93 Conta:",
-        "[21/09/2026][S=True, E=False] 125011-6",
-        "[21/09/2026][S=True, E=False] Transferência enviada pelo Pix ISADORA CRISTINA DE CARVALHO CAMPOS - •••. 956,67",
-        "[21/09/2026][S=True, E=False] 592.866-•• - BCO SANTANDER (BRASIL) S.A. (0033)",
-        "[21/09/2026][S=True, E=False] Agência: 4438 Conta: 1010019-5",
-        "[21/09/2026][S=True, E=False] Transferência enviada pelo Pix INSTITUTO PARSANTE - 26.166.626/0001-66 - ITAÚ 583,33",
-        "[21/09/2026][S=True, E=False] UNIBANCO S.A. (0341) Agência: 4903 Conta:",
-        "[21/09/2026][S=True, E=False] 98647-1",
-        "[21/09/2026][S=True, E=False] Transferência enviada pelo Pix Simone de Paula e Passos Frigo - •••.134.298-•• - NU 4.363,33",
-        "[21/09/2026][S=True, E=False] PAGAMENTOS - IP (0260) Agência: 1 Conta:",
-        "[21/09/2026][S=True, E=False] 62221962-0",
-        "[21/09/2026][S=True, E=False] Transferência enviada pelo Pix RECEITA FEDERAL - 00.394.460/0058-87 - BCO 12.376,20",
-        "[21/09/2026][S=True, E=False] DO BRASIL S.A. (0001) Agência: 1607 Conta:",
-        "[21/09/2026][S=True, E=False] 333666-2",
-        "[21/09/2026][S=True, E=False] Pagamento de boleto efetuado FUNDACAO FACULDADE DE MEDICINA 2.080,00",
-        "[21/09/2026][S=True, E=False] Transferência enviada pelo Pix FOCACCIA AMARAL E LAMONICA SOCIEDADE DE 237,02",
-        "[21/09/2026][S=True, E=False] Tem alguma dúvida? Mande uma mensagem para nosso time de atendimento pelo chat do app ou ligue 4020 0185 (capitais e regiões",
-        "[21/09/2026][S=True, E=False] metropolitanas) ou 0800 591 2117 (demais localidades). Atendimento 24h.",
-        "[21/09/2026][S=True, E=False] Caso a solução fornecida nos canais de atendimento não tenha sido satisfatória, fale com a Ouvidoria em 0800 887 0463 ou pelos meios",
-        "[21/09/2026][S=True, E=False] disponíveis em nubank.com.br/contatos#ouvidoria . Atendimento das 8h às 18h em dias úteis.",
-        "[21/09/2026][S=True, E=False] Extrato gerado dia 01 de outubro de 2026 às 01:04 13 de 19",
-        "[21/09/2026][S=True, E=False] INFECTOCAST SERVICOS EDUCACIONAIS LTDA",
-        "[21/09/2026][S=True, E=False] CNPJ 54.924.986/0001-15 Agência 0001 Conta",
-        "[21/09/2026][S=True, E=False] 476440809-8",
-        "[21/09/2026][S=True, E=False] 01 DE SETEMBRO DE 2026 a 30 DE SETEMBRO DE 2026 VALORES EM R$",
-        "[21/09/2026][S=True, E=False] ADVOGADOS - 05.568.013/0001-85 - ITAÚ",
-        "[21/09/2026][S=True, E=False] UNIBANCO S.A. (0341) Agência: 350 Conta: 67436-",
-        "[21/09/2026][S=True, E=False] 2",
-        "[21/09/2026][S=True, E=False] Transferência enviada pelo Pix PASCUOTTE SERVICOS MEDICOS LTDA. - 2.346,25",
-        "[21/09/2026][S=True, E=False] 32.551.642/0001-75 - BCO BRADESCO S.A. (0237)",
-        "[21/09/2026][S=True, E=False] Agência: 476 Conta: 731851-0",
-        "[21/09/2026][S=True, E=False] Transferência enviada pelo Pix Unidade Oetopedica Integrada - 60.298.296/0001- 1.000,00",
-        "[21/09/2026][S=True, E=False] 09 - BCO DO BRASIL S.A. (0001) Agência: 5803",
-        "[21/09/2026][S=True, E=False] Conta: 39733-4",
-        "[21/09/2026][S=True, E=False] Transferência enviada pelo Pix SHPP BRASIL INSTITUICAO DE PAG - 38.372.267 291,73",
-        "[21/09/2026][S=True, E=False] /0001-82 - BCO SANTANDER (BRASIL) S.A. (0033)",
-        "[21/09/2026][S=True, E=False] Agência: 3689 Conta: 13023089-6"
-      ],
-      "raw_entradas": [
-        "[21/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 12.570,91",
-        "[21/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 2.611,27",
-        "[21/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[21/09/2026][S=False, E=True] 145 Conta: 94423-7",
-        "[21/09/2026][S=False, E=True] Transferência Recebida BRG SUPLEMENTOS NUTRICIONAIS L - 57.235.426 18.181,82",
-        "[21/09/2026][S=False, E=True] /0001-41 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[21/09/2026][S=False, E=True] 7374 Conta: 4007-4",
-        "[21/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 3.573,64",
-        "[21/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[21/09/2026][S=False, E=True] 145 Conta: 94423-7",
-        "[21/09/2026][S=False, E=True] Estorno - Transferência enviada pelo Unidade Oetopedica Integrada - 60.298.296/0001- 1.000,00",
-        "[21/09/2026][S=False, E=True] Pix 09 - BCO DO BRASIL S.A. (0001) Agência: 5803",
-        "[21/09/2026][S=False, E=True] Conta: 39733-4"
-      ],
       "items": [
         {
           "data": "21/09/2026",
@@ -1115,7 +694,8 @@
           "descricao_raw": "",
           "categoria": "Cartão de Crédito / Fatura",
           "subcategoria": "Cartão PJ (Nubank)",
-          "valor": 30545.09
+          "valor": 30545.09,
+          "estornado": false
         },
         {
           "data": "21/09/2026",
@@ -1124,7 +704,8 @@
           "descricao_raw": "ERIC GRIECCO MARCHIOTTO - •••.529.208-•• -",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 4500.0
+          "valor": 4500.0,
+          "estornado": false
         },
         {
           "data": "21/09/2026",
@@ -1133,7 +714,8 @@
           "descricao_raw": "INFECTOPEDS - 57.318.961/0001-66 - ITAÚ",
           "categoria": "Corpo Docente & Especialistas",
           "subcategoria": "InfectoPeds Serviços Médicos",
-          "valor": 20114.99
+          "valor": 20114.99,
+          "estornado": false
         },
         {
           "data": "21/09/2026",
@@ -1142,7 +724,8 @@
           "descricao_raw": "BRUNA GEHLEN LTDA - 65.858.372/0001-07 - BCO",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 566.67
+          "valor": 566.67,
+          "estornado": false
         },
         {
           "data": "21/09/2026",
@@ -1151,7 +734,8 @@
           "descricao_raw": "FLAVIA JACQUELINE ALMEIDA - •••.997.478-•• -",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 1000.0
+          "valor": 1000.0,
+          "estornado": false
         },
         {
           "data": "21/09/2026",
@@ -1160,7 +744,8 @@
           "descricao_raw": "ISADORA CRISTINA DE CARVALHO CAMPOS - •••.",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 956.67
+          "valor": 956.67,
+          "estornado": false
         },
         {
           "data": "21/09/2026",
@@ -1169,7 +754,8 @@
           "descricao_raw": "INSTITUTO PARSANTE - 26.166.626/0001-66 - ITAÚ",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 583.33
+          "valor": 583.33,
+          "estornado": false
         },
         {
           "data": "21/09/2026",
@@ -1178,7 +764,8 @@
           "descricao_raw": "Simone de Paula e Passos Frigo - •••.134.298-•• - NU",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 4363.33
+          "valor": 4363.33,
+          "estornado": false
         },
         {
           "data": "21/09/2026",
@@ -1187,7 +774,8 @@
           "descricao_raw": "RECEITA FEDERAL - 00.394.460/0058-87 - BCO",
           "categoria": "Impostos & Tributos",
           "subcategoria": "Receita Federal / Tributos",
-          "valor": 12376.2
+          "valor": 12376.2,
+          "estornado": false
         },
         {
           "data": "21/09/2026",
@@ -1196,7 +784,8 @@
           "descricao_raw": "FUNDACAO FACULDADE DE MEDICINA",
           "categoria": "Parcerias Acadêmicas & Certificação",
           "subcategoria": "Fundação Faculdade de Medicina",
-          "valor": 2080.0
+          "valor": 2080.0,
+          "estornado": false
         },
         {
           "data": "21/09/2026",
@@ -1205,7 +794,8 @@
           "descricao_raw": "FOCACCIA AMARAL E LAMONICA SOCIEDADE DE",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 237.02
+          "valor": 237.02,
+          "estornado": false
         },
         {
           "data": "21/09/2026",
@@ -1214,16 +804,8 @@
           "descricao_raw": "PASCUOTTE SERVICOS MEDICOS LTDA. -",
           "categoria": "Corpo Docente & Especialistas",
           "subcategoria": "Serviços Médicos / Professores",
-          "valor": 2346.25
-        },
-        {
-          "data": "21/09/2026",
-          "dia": 21,
-          "tipo": "Transferência enviada pelo Pix",
-          "descricao_raw": "Unidade Oetopedica Integrada - 60.298.296/0001-",
-          "categoria": "Professores & Prestadores PF",
-          "subcategoria": "Honorários / Prestadores",
-          "valor": 1000.0
+          "valor": 2346.25,
+          "estornado": false
         },
         {
           "data": "21/09/2026",
@@ -1232,59 +814,31 @@
           "descricao_raw": "SHPP BRASIL INSTITUICAO DE PAG - 38.372.267",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 291.73
+          "valor": 291.73,
+          "estornado": false
         }
-      ],
-      "items_sum": 80961.28
+      ]
     },
     {
       "data": "22/09/2026",
       "dia": 22,
+      "entradas_brutas": 4948.67,
       "entradas": 4948.67,
+      "saidas_brutas": 0.0,
       "saidas": 0.0,
+      "estornos": 0.0,
       "saldo": 20742.99,
-      "raw_saidas": [],
-      "raw_entradas": [
-        "[22/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 4.948,67"
-      ],
-      "items": [],
-      "items_sum": 0
+      "items": []
     },
     {
       "data": "23/09/2026",
       "dia": 23,
+      "entradas_brutas": 10041.38,
       "entradas": 10041.38,
+      "saidas_brutas": 4210.0,
       "saidas": 4210.0,
+      "estornos": 0.0,
       "saldo": 26574.37,
-      "raw_saidas": [
-        "[23/09/2026][S=True, E=False] Transferência enviada pelo Pix EDUARDO ABDALLA SAAD - •••.075.988-•• - BCO 1.000,00",
-        "[23/09/2026][S=True, E=False] DO BRASIL S.A. (0001) Agência: 5803 Conta:",
-        "[23/09/2026][S=True, E=False] 39733-4",
-        "[23/09/2026][S=True, E=False] Transferência enviada pelo Pix BARROS E SOARES SERVICOS MEDICOS LTDA - 3.125,00",
-        "[23/09/2026][S=True, E=False] 55.597.841/0001-10 - BCO C6 S.A. (0336) Agência:",
-        "[23/09/2026][S=True, E=False] 1 Conta: 33439767-7",
-        "[23/09/2026][S=True, E=False] Transferência enviada pelo Pix VINDI PAGAMENTOS ONLINE - 14.338.304/0001- 85,00",
-        "[23/09/2026][S=True, E=False] 78 - ITAÚ UNIBANCO S.A. (0341) Agência: 145",
-        "[23/09/2026][S=True, E=False] Conta: 5656-0"
-      ],
-      "raw_entradas": [
-        "[23/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 7.688,93",
-        "[23/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 977,63",
-        "[23/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[23/09/2026][S=False, E=True] 145 Conta: 94423-7",
-        "[23/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 1.374,82",
-        "[23/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[23/09/2026][S=False, E=True] 145 Conta: 94423-7",
-        "[23/09/2026][S=False, E=True] Tem alguma dúvida? Mande uma mensagem para nosso time de atendimento pelo chat do app ou ligue 4020 0185 (capitais e regiões",
-        "[23/09/2026][S=False, E=True] metropolitanas) ou 0800 591 2117 (demais localidades). Atendimento 24h.",
-        "[23/09/2026][S=False, E=True] Caso a solução fornecida nos canais de atendimento não tenha sido satisfatória, fale com a Ouvidoria em 0800 887 0463 ou pelos meios",
-        "[23/09/2026][S=False, E=True] disponíveis em nubank.com.br/contatos#ouvidoria . Atendimento das 8h às 18h em dias úteis.",
-        "[23/09/2026][S=False, E=True] Extrato gerado dia 01 de outubro de 2026 às 01:04 14 de 19",
-        "[23/09/2026][S=False, E=True] INFECTOCAST SERVICOS EDUCACIONAIS LTDA",
-        "[23/09/2026][S=False, E=True] CNPJ 54.924.986/0001-15 Agência 0001 Conta",
-        "[23/09/2026][S=False, E=True] 476440809-8",
-        "[23/09/2026][S=False, E=True] 01 DE SETEMBRO DE 2026 a 30 DE SETEMBRO DE 2026 VALORES EM R$"
-      ],
       "items": [
         {
           "data": "23/09/2026",
@@ -1293,7 +847,8 @@
           "descricao_raw": "EDUARDO ABDALLA SAAD - •••.075.988-•• - BCO",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 1000.0
+          "valor": 1000.0,
+          "estornado": false
         },
         {
           "data": "23/09/2026",
@@ -1302,7 +857,8 @@
           "descricao_raw": "BARROS E SOARES SERVICOS MEDICOS LTDA -",
           "categoria": "Corpo Docente & Especialistas",
           "subcategoria": "Serviços Médicos / Professores",
-          "valor": 3125.0
+          "valor": 3125.0,
+          "estornado": false
         },
         {
           "data": "23/09/2026",
@@ -1311,29 +867,20 @@
           "descricao_raw": "VINDI PAGAMENTOS ONLINE - 14.338.304/0001-",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 85.0
+          "valor": 85.0,
+          "estornado": false
         }
-      ],
-      "items_sum": 4210.0
+      ]
     },
     {
       "data": "24/09/2026",
       "dia": 24,
+      "entradas_brutas": 17242.96,
       "entradas": 17242.96,
+      "saidas_brutas": 4518.57,
       "saidas": 4518.57,
+      "estornos": 0.0,
       "saldo": 39298.76,
-      "raw_saidas": [
-        "[24/09/2026][S=True, E=False] Pagamento de boleto efetuado Claro 18,57",
-        "[24/09/2026][S=True, E=False] Transferência enviada pelo Pix 44 920 503 CLARA SEPULVEDA SOARES 4.500,00",
-        "[24/09/2026][S=True, E=False] CARVALHO - 44.920.503/0001-50 - BANCO INTER",
-        "[24/09/2026][S=True, E=False] (0077) Agência: 1 Conta: 18858225-8"
-      ],
-      "raw_entradas": [
-        "[24/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 15.868,14",
-        "[24/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 1.374,82",
-        "[24/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[24/09/2026][S=False, E=True] 145 Conta: 94423-7"
-      ],
       "items": [
         {
           "data": "24/09/2026",
@@ -1342,7 +889,8 @@
           "descricao_raw": "Claro",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 18.57
+          "valor": 18.57,
+          "estornado": false
         },
         {
           "data": "24/09/2026",
@@ -1351,76 +899,20 @@
           "descricao_raw": "44 920 503 CLARA SEPULVEDA SOARES",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 4500.0
+          "valor": 4500.0,
+          "estornado": false
         }
-      ],
-      "items_sum": 4518.57
+      ]
     },
     {
       "data": "25/09/2026",
       "dia": 25,
+      "entradas_brutas": 9287.38,
       "entradas": 9287.38,
+      "saidas_brutas": 35562.67,
       "saidas": 35562.67,
+      "estornos": 0.0,
       "saldo": 13023.47,
-      "raw_saidas": [
-        "[25/09/2026][S=True, E=False] Transferência enviada pelo Pix ELAINE CRISTINA FERREIRA IANNI - •••.981.068-•• - 1.000,00",
-        "[25/09/2026][S=True, E=False] ITAÚ UNIBANCO S.A. (0341) Agência: 1073 Conta:",
-        "[25/09/2026][S=True, E=False] 47242-3",
-        "[25/09/2026][S=True, E=False] Transferência enviada pelo Pix 64.961.948 BIANCA DASSA BALACIANO - 6.500,00",
-        "[25/09/2026][S=True, E=False] 64.961.948/0001-96 - BCO C6 S.A. (0336)",
-        "[25/09/2026][S=True, E=False] Agência: 1 Conta: 42457684-8",
-        "[25/09/2026][S=True, E=False] Transferência enviada pelo Pix Felipe dos Reis Lanzetti Silva - •••.833.618-•• - NU 4.500,00",
-        "[25/09/2026][S=True, E=False] PAGAMENTOS - IP (0260) Agência: 1 Conta:",
-        "[25/09/2026][S=True, E=False] 5915211-6",
-        "[25/09/2026][S=True, E=False] Transferência enviada pelo Pix EUSEBIO LINO DOS SANTOS JUNIOR - •••.736.555- 3.859,33",
-        "[25/09/2026][S=True, E=False] •• - ITAÚ UNIBANCO S.A. (0341) Agência: 3005",
-        "[25/09/2026][S=True, E=False] Conta: 15311-3",
-        "[25/09/2026][S=True, E=False] Transferência enviada pelo Pix BEATRIZ NAYRA DIAS DE ANDRADE - •••.585.927-•• 2.403,34",
-        "[25/09/2026][S=True, E=False] - ITAÚ UNIBANCO S.A. (0341) Agência: 8906",
-        "[25/09/2026][S=True, E=False] Conta: 25595-8",
-        "[25/09/2026][S=True, E=False] Transferência enviada pelo Pix CAROLINA LAROCCA SANTOS - •••.691.179-•• - CC 6.500,00",
-        "[25/09/2026][S=True, E=False] UNICRED UNIÃO LTDA - UNICRED UNIÃO Agência:",
-        "[25/09/2026][S=True, E=False] 1708 Conta: 802974-1",
-        "[25/09/2026][S=True, E=False] Transferência enviada pelo Pix ASSIR RICARDI JUNIOR INFORMATICA E SERVICOS 1.400,00",
-        "[25/09/2026][S=True, E=False] LTDA - 66.669.839/0001-25 - ITAÚ UNIBANCO S.A.",
-        "[25/09/2026][S=True, E=False] (0341) Agência: 740 Conta: 8280-5",
-        "[25/09/2026][S=True, E=False] Tem alguma dúvida? Mande uma mensagem para nosso time de atendimento pelo chat do app ou ligue 4020 0185 (capitais e regiões",
-        "[25/09/2026][S=True, E=False] metropolitanas) ou 0800 591 2117 (demais localidades). Atendimento 24h.",
-        "[25/09/2026][S=True, E=False] Caso a solução fornecida nos canais de atendimento não tenha sido satisfatória, fale com a Ouvidoria em 0800 887 0463 ou pelos meios",
-        "[25/09/2026][S=True, E=False] disponíveis em nubank.com.br/contatos#ouvidoria . Atendimento das 8h às 18h em dias úteis.",
-        "[25/09/2026][S=True, E=False] Extrato gerado dia 01 de outubro de 2026 às 01:04 16 de 19",
-        "[25/09/2026][S=True, E=False] INFECTOCAST SERVICOS EDUCACIONAIS LTDA",
-        "[25/09/2026][S=True, E=False] CNPJ 54.924.986/0001-15 Agência 0001 Conta",
-        "[25/09/2026][S=True, E=False] 476440809-8",
-        "[25/09/2026][S=True, E=False] 01 DE SETEMBRO DE 2026 a 30 DE SETEMBRO DE 2026 VALORES EM R$",
-        "[25/09/2026][S=True, E=False] Transferência enviada pelo Pix GDR SERVICOS MEDICOS S/S LTDA - 31.175.361 2.500,00",
-        "[25/09/2026][S=True, E=False] /0001-00 - BCO SANTANDER (BRASIL) S.A. (0033)",
-        "[25/09/2026][S=True, E=False] Agência: 3919 Conta: 13005753-6",
-        "[25/09/2026][S=True, E=False] Transferência enviada pelo Pix BL2 SERVICOS MEDICOS SS - 27.229.732/0001-04 2.700,00",
-        "[25/09/2026][S=True, E=False] - BCO DO BRASIL S.A. (0001) Agência: 7044",
-        "[25/09/2026][S=True, E=False] Conta: 15256-0",
-        "[25/09/2026][S=True, E=False] Transferência enviada pelo Pix BIANCA SESTREN - •••.051.121-•• - BCO SANTANDER 2.200,00",
-        "[25/09/2026][S=True, E=False] (BRASIL) S.A. (0033) Agência: 2027 Conta:",
-        "[25/09/2026][S=True, E=False] 1045673-3",
-        "[25/09/2026][S=True, E=False] Transferência enviada pelo Pix LOHANNA VALESKA DE SOUSA TAVARES - •••. 2.000,00",
-        "[25/09/2026][S=True, E=False] 088.693-•• - BCO DO BRASIL S.A. (0001) Agência:",
-        "[25/09/2026][S=True, E=False] 94 Conta: 48317-6"
-      ],
-      "raw_entradas": [
-        "[25/09/2026][S=False, E=True] Tem alguma dúvida? Mande uma mensagem para nosso time de atendimento pelo chat do app ou ligue 4020 0185 (capitais e regiões",
-        "[25/09/2026][S=False, E=True] metropolitanas) ou 0800 591 2117 (demais localidades). Atendimento 24h.",
-        "[25/09/2026][S=False, E=True] Caso a solução fornecida nos canais de atendimento não tenha sido satisfatória, fale com a Ouvidoria em 0800 887 0463 ou pelos meios",
-        "[25/09/2026][S=False, E=True] disponíveis em nubank.com.br/contatos#ouvidoria . Atendimento das 8h às 18h em dias úteis.",
-        "[25/09/2026][S=False, E=True] Extrato gerado dia 01 de outubro de 2026 às 01:04 15 de 19",
-        "[25/09/2026][S=False, E=True] INFECTOCAST SERVICOS EDUCACIONAIS LTDA",
-        "[25/09/2026][S=False, E=True] CNPJ 54.924.986/0001-15 Agência 0001 Conta",
-        "[25/09/2026][S=False, E=True] 476440809-8",
-        "[25/09/2026][S=False, E=True] 01 DE SETEMBRO DE 2026 a 30 DE SETEMBRO DE 2026 VALORES EM R$",
-        "[25/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 6.951,25",
-        "[25/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 2.336,13",
-        "[25/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[25/09/2026][S=False, E=True] 145 Conta: 94423-7"
-      ],
       "items": [
         {
           "data": "25/09/2026",
@@ -1429,7 +921,8 @@
           "descricao_raw": "ELAINE CRISTINA FERREIRA IANNI - •••.981.068-•• -",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 1000.0
+          "valor": 1000.0,
+          "estornado": false
         },
         {
           "data": "25/09/2026",
@@ -1438,7 +931,8 @@
           "descricao_raw": "64.961.948 BIANCA DASSA BALACIANO -",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 6500.0
+          "valor": 6500.0,
+          "estornado": false
         },
         {
           "data": "25/09/2026",
@@ -1447,7 +941,8 @@
           "descricao_raw": "Felipe dos Reis Lanzetti Silva - •••.833.618-•• - NU",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 4500.0
+          "valor": 4500.0,
+          "estornado": false
         },
         {
           "data": "25/09/2026",
@@ -1456,7 +951,8 @@
           "descricao_raw": "EUSEBIO LINO DOS SANTOS JUNIOR - •••.736.555-",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 3859.33
+          "valor": 3859.33,
+          "estornado": false
         },
         {
           "data": "25/09/2026",
@@ -1465,7 +961,8 @@
           "descricao_raw": "BEATRIZ NAYRA DIAS DE ANDRADE - •••.585.927-••",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 2403.34
+          "valor": 2403.34,
+          "estornado": false
         },
         {
           "data": "25/09/2026",
@@ -1474,7 +971,8 @@
           "descricao_raw": "CAROLINA LAROCCA SANTOS - •••.691.179-•• - CC",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 6500.0
+          "valor": 6500.0,
+          "estornado": false
         },
         {
           "data": "25/09/2026",
@@ -1483,7 +981,8 @@
           "descricao_raw": "ASSIR RICARDI JUNIOR INFORMATICA E SERVICOS",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 1400.0
+          "valor": 1400.0,
+          "estornado": false
         },
         {
           "data": "25/09/2026",
@@ -1492,7 +991,8 @@
           "descricao_raw": "GDR SERVICOS MEDICOS S/S LTDA - 31.175.361",
           "categoria": "Corpo Docente & Especialistas",
           "subcategoria": "Serviços Médicos / Professores",
-          "valor": 2500.0
+          "valor": 2500.0,
+          "estornado": false
         },
         {
           "data": "25/09/2026",
@@ -1501,7 +1001,8 @@
           "descricao_raw": "BL2 SERVICOS MEDICOS SS - 27.229.732/0001-04",
           "categoria": "Corpo Docente & Especialistas",
           "subcategoria": "Serviços Médicos / Professores",
-          "valor": 2700.0
+          "valor": 2700.0,
+          "estornado": false
         },
         {
           "data": "25/09/2026",
@@ -1510,7 +1011,8 @@
           "descricao_raw": "BIANCA SESTREN - •••.051.121-•• - BCO SANTANDER",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 2200.0
+          "valor": 2200.0,
+          "estornado": false
         },
         {
           "data": "25/09/2026",
@@ -1519,56 +1021,31 @@
           "descricao_raw": "LOHANNA VALESKA DE SOUSA TAVARES - •••.",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 2000.0
+          "valor": 2000.0,
+          "estornado": false
         }
-      ],
-      "items_sum": 35562.67
+      ]
     },
     {
       "data": "28/09/2026",
       "dia": 28,
+      "entradas_brutas": 48993.12,
       "entradas": 48993.12,
+      "saidas_brutas": 0.0,
       "saidas": 0.0,
+      "estornos": 0.0,
       "saldo": 62016.59,
-      "raw_saidas": [],
-      "raw_entradas": [
-        "[28/09/2026][S=False, E=True] Transferência Recebida LABORATORIOS SERVIER DO BRASIL - 42.374.207 30.000,00",
-        "[28/09/2026][S=False, E=True] /0001-76 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[28/09/2026][S=False, E=True] 5662 Conta: 4985-6",
-        "[28/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 16.243,48",
-        "[28/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 2.749,64",
-        "[28/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[28/09/2026][S=False, E=True] 145 Conta: 94423-7"
-      ],
-      "items": [],
-      "items_sum": 0
+      "items": []
     },
     {
       "data": "29/09/2026",
       "dia": 29,
+      "entradas_brutas": 8757.59,
       "entradas": 8757.59,
+      "saidas_brutas": 18360.0,
       "saidas": 18360.0,
+      "estornos": 0.0,
       "saldo": 52414.18,
-      "raw_saidas": [
-        "[29/09/2026][S=True, E=False] Transferência enviada pelo Pix GABRIELA INGRID DA SILVA - •••.829.148-•• - ITAÚ 18.000,00",
-        "[29/09/2026][S=True, E=False] UNIBANCO S.A. (0341) Agência: 536 Conta: 501-0",
-        "[29/09/2026][S=True, E=False] Pagamento de boleto efetuado TOTAL PASS PARTICIPACOES LTDA 360,00"
-      ],
-      "raw_entradas": [
-        "[29/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 7.382,77",
-        "[29/09/2026][S=False, E=True] Tem alguma dúvida? Mande uma mensagem para nosso time de atendimento pelo chat do app ou ligue 4020 0185 (capitais e regiões",
-        "[29/09/2026][S=False, E=True] metropolitanas) ou 0800 591 2117 (demais localidades). Atendimento 24h.",
-        "[29/09/2026][S=False, E=True] Caso a solução fornecida nos canais de atendimento não tenha sido satisfatória, fale com a Ouvidoria em 0800 887 0463 ou pelos meios",
-        "[29/09/2026][S=False, E=True] disponíveis em nubank.com.br/contatos#ouvidoria . Atendimento das 8h às 18h em dias úteis.",
-        "[29/09/2026][S=False, E=True] Extrato gerado dia 01 de outubro de 2026 às 01:04 17 de 19",
-        "[29/09/2026][S=False, E=True] INFECTOCAST SERVICOS EDUCACIONAIS LTDA",
-        "[29/09/2026][S=False, E=True] CNPJ 54.924.986/0001-15 Agência 0001 Conta",
-        "[29/09/2026][S=False, E=True] 476440809-8",
-        "[29/09/2026][S=False, E=True] 01 DE SETEMBRO DE 2026 a 30 DE SETEMBRO DE 2026 VALORES EM R$",
-        "[29/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 1.374,82",
-        "[29/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[29/09/2026][S=False, E=True] 145 Conta: 94423-7"
-      ],
       "items": [
         {
           "data": "29/09/2026",
@@ -1577,7 +1054,8 @@
           "descricao_raw": "GABRIELA INGRID DA SILVA - •••.829.148-•• - ITAÚ",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 18000.0
+          "valor": 18000.0,
+          "estornado": false
         },
         {
           "data": "29/09/2026",
@@ -1586,28 +1064,20 @@
           "descricao_raw": "TOTAL PASS PARTICIPACOES LTDA",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 360.0
+          "valor": 360.0,
+          "estornado": false
         }
-      ],
-      "items_sum": 18360.0
+      ]
     },
     {
       "data": "30/09/2026",
       "dia": 30,
+      "entradas_brutas": 3324.16,
       "entradas": 3324.16,
+      "saidas_brutas": 7.48,
       "saidas": 7.48,
+      "estornos": 0.0,
       "saldo": 55730.86,
-      "raw_saidas": [
-        "[30/09/2026][S=True, E=False] Transferência enviada pelo Pix DIRETORIA GERAL DE FINANCAS - DGFIN - 7,48",
-        "[30/09/2026][S=True, E=False] 46.377.222/0003-90 - BCO DO BRASIL S.A. (0001)",
-        "[30/09/2026][S=True, E=False] Agência: 1897 Conta: 1300001-2"
-      ],
-      "raw_entradas": [
-        "[30/09/2026][S=False, E=True] Depósito recebido YAPAY PAGAMENTOS ONLINE LTDA * Antecipação 1.949,34",
-        "[30/09/2026][S=False, E=True] Transferência recebida pelo Pix YAPAY PAGAMENTOS ONLINE LTDA - 14.338.304 1.374,82",
-        "[30/09/2026][S=False, E=True] /0001-78 - ITAÚ UNIBANCO S.A. (0341) Agência:",
-        "[30/09/2026][S=False, E=True] 145 Conta: 94423-7"
-      ],
       "items": [
         {
           "data": "30/09/2026",
@@ -1616,10 +1086,10 @@
           "descricao_raw": "DIRETORIA GERAL DE FINANCAS - DGFIN -",
           "categoria": "Professores & Prestadores PF",
           "subcategoria": "Honorários / Prestadores",
-          "valor": 7.48
+          "valor": 7.48,
+          "estornado": false
         }
-      ],
-      "items_sum": 7.48
+      ]
     }
   ],
   "outflow_items": [
@@ -1630,7 +1100,8 @@
       "descricao_raw": "",
       "categoria": "Cartão de Crédito / Fatura",
       "subcategoria": "Cartão PJ (Nubank)",
-      "valor": 10000.0
+      "valor": 10000.0,
+      "estornado": false
     },
     {
       "data": "01/09/2026",
@@ -1639,7 +1110,8 @@
       "descricao_raw": "José Rand de Sousa Costa - •••.031.087-•• - NU",
       "categoria": "Sócios / Distribuição",
       "subcategoria": "José Rand de Sousa Costa",
-      "valor": 20000.0
+      "valor": 20000.0,
+      "estornado": false
     },
     {
       "data": "01/09/2026",
@@ -1648,7 +1120,8 @@
       "descricao_raw": "64.036.289 GUILHERME COTTA MARIANO -",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 6200.0
+      "valor": 6200.0,
+      "estornado": false
     },
     {
       "data": "01/09/2026",
@@ -1657,7 +1130,8 @@
       "descricao_raw": "68.059.115 RODRIGO MUCHAGATA LOPES SILVA -",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 3500.0
+      "valor": 3500.0,
+      "estornado": false
     },
     {
       "data": "01/09/2026",
@@ -1666,7 +1140,8 @@
       "descricao_raw": "Carolina Larocca Santos - •••.691.179-•• - CC",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 4000.0
+      "valor": 4000.0,
+      "estornado": false
     },
     {
       "data": "01/09/2026",
@@ -1675,25 +1150,8 @@
       "descricao_raw": "CRISTIANE LUCCHETTI - •••.605.778-•• - ITAÚ",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 8000.0
-    },
-    {
-      "data": "02/09/2026",
-      "dia": 2,
-      "tipo": "Transferência enviada pelo Pix",
-      "descricao_raw": "William Dunke de Lima - •••.500.739-•• - BCO DO",
-      "categoria": "Professores & Prestadores PF",
-      "subcategoria": "Honorários / Prestadores",
-      "valor": 15000.0
-    },
-    {
-      "data": "02/09/2026",
-      "dia": 2,
-      "tipo": "Transferência enviada pelo Pix",
-      "descricao_raw": "William Dunke de Lima - •••.500.739-•• - BCO DO",
-      "categoria": "Professores & Prestadores PF",
-      "subcategoria": "Honorários / Prestadores",
-      "valor": 15000.0
+      "valor": 8000.0,
+      "estornado": false
     },
     {
       "data": "02/09/2026",
@@ -1702,7 +1160,8 @@
       "descricao_raw": "PEDRO RODRIGUES CORREA LTDA - 60.848.904",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 5500.0
+      "valor": 5500.0,
+      "estornado": false
     },
     {
       "data": "02/09/2026",
@@ -1711,7 +1170,8 @@
       "descricao_raw": "WILLIAM DUNKE DE LIMA - •••.500.739-•• - BCO DO",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 15000.0
+      "valor": 15000.0,
+      "estornado": false
     },
     {
       "data": "03/09/2026",
@@ -1720,7 +1180,8 @@
       "descricao_raw": "",
       "categoria": "Cartão de Crédito / Fatura",
       "subcategoria": "Cartão PJ (Nubank)",
-      "valor": 10000.0
+      "valor": 10000.0,
+      "estornado": false
     },
     {
       "data": "03/09/2026",
@@ -1729,7 +1190,8 @@
       "descricao_raw": "KARINA BERNARDES DA SILVA - •••.012.158-•• -",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 3500.0
+      "valor": 3500.0,
+      "estornado": false
     },
     {
       "data": "03/09/2026",
@@ -1738,7 +1200,8 @@
       "descricao_raw": "51.873.338 ANA CRISTINA OLIVEIRA NUNES",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 5000.0
+      "valor": 5000.0,
+      "estornado": false
     },
     {
       "data": "03/09/2026",
@@ -1747,7 +1210,8 @@
       "descricao_raw": "Robson Barboza Pinto - •••.367.827-•• - NU",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 4500.0
+      "valor": 4500.0,
+      "estornado": false
     },
     {
       "data": "03/09/2026",
@@ -1756,7 +1220,8 @@
       "descricao_raw": "CRISTIANE LUCCHETTI - •••.605.778-•• - ITAÚ",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 54.0
+      "valor": 54.0,
+      "estornado": false
     },
     {
       "data": "04/09/2026",
@@ -1765,25 +1230,8 @@
       "descricao_raw": "Sara Vieira Nery - •••.739.058-•• - NU PAGAMENTOS",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 1200.0
-    },
-    {
-      "data": "04/09/2026",
-      "dia": 4,
-      "tipo": "Transferência enviada pelo Pix",
-      "descricao_raw": "53.683.352 ESTER ARAUJO DA SILVA FORTUNATO",
-      "categoria": "Sócios / Distribuição",
-      "subcategoria": "Ester Araujo da Silva Fortunato",
-      "valor": 5601.14
-    },
-    {
-      "data": "04/09/2026",
-      "dia": 4,
-      "tipo": "Transferência enviada pelo Pix",
-      "descricao_raw": "53.683.352 ESTER ARAUJO DA SILVA FORTUNATO",
-      "categoria": "Sócios / Distribuição",
-      "subcategoria": "Ester Araujo da Silva Fortunato",
-      "valor": 5601.14
+      "valor": 1200.0,
+      "estornado": false
     },
     {
       "data": "04/09/2026",
@@ -1792,7 +1240,8 @@
       "descricao_raw": "Sara Vieira Nery - •••.739.058-•• - NU PAGAMENTOS",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 1200.0
+      "valor": 1200.0,
+      "estornado": false
     },
     {
       "data": "04/09/2026",
@@ -1801,7 +1250,8 @@
       "descricao_raw": "66.318.872 LUIS FELIPPE FARIA DE MEDEIROS -",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 3000.0
+      "valor": 3000.0,
+      "estornado": false
     },
     {
       "data": "04/09/2026",
@@ -1810,7 +1260,8 @@
       "descricao_raw": "53.699.078 DANIELA QUEIROZ DE LOYOLA -",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 6000.0
+      "valor": 6000.0,
+      "estornado": false
     },
     {
       "data": "04/09/2026",
@@ -1819,7 +1270,8 @@
       "descricao_raw": "55.382.864 BRUNA DE SANTIS LIMA - 55.382.864",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 3290.18
+      "valor": 3290.18,
+      "estornado": false
     },
     {
       "data": "04/09/2026",
@@ -1828,7 +1280,8 @@
       "descricao_raw": "Vinicius Correa da Silva - •••.633.698-•• - NU",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 1662.5
+      "valor": 1662.5,
+      "estornado": false
     },
     {
       "data": "04/09/2026",
@@ -1837,25 +1290,8 @@
       "descricao_raw": "BRUNO GUALAME FERNANDEZ LTDA - 65.190.165",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 6500.0
-    },
-    {
-      "data": "04/09/2026",
-      "dia": 4,
-      "tipo": "Transferência enviada pelo Pix",
-      "descricao_raw": "53.683.352 ESTER ARAUJO DA SILVA FORTUNATO",
-      "categoria": "Sócios / Distribuição",
-      "subcategoria": "Ester Araujo da Silva Fortunato",
-      "valor": 5601.14
-    },
-    {
-      "data": "04/09/2026",
-      "dia": 4,
-      "tipo": "Transferência enviada pelo Pix",
-      "descricao_raw": "53.683.352 Ester Araujo da Silva Fortunato -",
-      "categoria": "Sócios / Distribuição",
-      "subcategoria": "Ester Araujo da Silva Fortunato",
-      "valor": 5601.14
+      "valor": 6500.0,
+      "estornado": false
     },
     {
       "data": "04/09/2026",
@@ -1864,7 +1300,8 @@
       "descricao_raw": "53.683.352 ester araujo da silva fortunato -",
       "categoria": "Sócios / Distribuição",
       "subcategoria": "Ester Araujo da Silva Fortunato",
-      "valor": 5601.14
+      "valor": 5601.14,
+      "estornado": false
     },
     {
       "data": "07/09/2026",
@@ -1873,7 +1310,8 @@
       "descricao_raw": "44 920 503 CLARA SEPULVEDA SOARES",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 8100.0
+      "valor": 8100.0,
+      "estornado": false
     },
     {
       "data": "08/09/2026",
@@ -1882,7 +1320,8 @@
       "descricao_raw": "ELLEMENTAR ESTUDIO DE FOTO E FILME -",
       "categoria": "Produção Audiovisual & Marketing",
       "subcategoria": "Ellementar Estúdio Foto e Filme",
-      "valor": 7690.0
+      "valor": 7690.0,
+      "estornado": false
     },
     {
       "data": "08/09/2026",
@@ -1891,7 +1330,8 @@
       "descricao_raw": "NANI.COM - 50.636.375/0001-10 - NU",
       "categoria": "Produção Audiovisual & Marketing",
       "subcategoria": "Nani.com (Marketing/Agência)",
-      "valor": 15000.0
+      "valor": 15000.0,
+      "estornado": false
     },
     {
       "data": "08/09/2026",
@@ -1900,7 +1340,8 @@
       "descricao_raw": "CONTASS ASSESSORIA CONTABIL LTDA -",
       "categoria": "Contabilidade & Jurídico",
       "subcategoria": "Contass Assessoria Contábil",
-      "valor": 495.0
+      "valor": 495.0,
+      "estornado": false
     },
     {
       "data": "08/09/2026",
@@ -1909,7 +1350,8 @@
       "descricao_raw": "",
       "categoria": "Cartão de Crédito / Fatura",
       "subcategoria": "Cartão PJ (Nubank)",
-      "valor": 500.0
+      "valor": 500.0,
+      "estornado": false
     },
     {
       "data": "09/09/2026",
@@ -1918,7 +1360,8 @@
       "descricao_raw": "L S S SERVICOS MEDICOS - 37.914.953/0001-75 -",
       "categoria": "Corpo Docente & Especialistas",
       "subcategoria": "Serviços Médicos / Professores",
-      "valor": 7800.0
+      "valor": 7800.0,
+      "estornado": false
     },
     {
       "data": "09/09/2026",
@@ -1927,7 +1370,8 @@
       "descricao_raw": "ESTRATEGIA 1 SERVICOS EM TECNOLOGIA DA",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 5250.0
+      "valor": 5250.0,
+      "estornado": false
     },
     {
       "data": "09/09/2026",
@@ -1936,7 +1380,8 @@
       "descricao_raw": "",
       "categoria": "Cartão de Crédito / Fatura",
       "subcategoria": "Cartão PJ (Nubank)",
-      "valor": 550.0
+      "valor": 550.0,
+      "estornado": false
     },
     {
       "data": "09/09/2026",
@@ -1945,7 +1390,8 @@
       "descricao_raw": "",
       "categoria": "Cartão de Crédito / Fatura",
       "subcategoria": "Cartão PJ (Nubank)",
-      "valor": 1200.0
+      "valor": 1200.0,
+      "estornado": false
     },
     {
       "data": "09/09/2026",
@@ -1954,7 +1400,8 @@
       "descricao_raw": "",
       "categoria": "Cartão de Crédito / Fatura",
       "subcategoria": "Cartão PJ (Nubank)",
-      "valor": 1200.0
+      "valor": 1200.0,
+      "estornado": false
     },
     {
       "data": "10/09/2026",
@@ -1963,7 +1410,8 @@
       "descricao_raw": "FUNDACAO FACULDADE DE MEDICINA",
       "categoria": "Parcerias Acadêmicas & Certificação",
       "subcategoria": "Fundação Faculdade de Medicina",
-      "valor": 11775.32
+      "valor": 11775.32,
+      "estornado": false
     },
     {
       "data": "10/09/2026",
@@ -1972,7 +1420,8 @@
       "descricao_raw": "",
       "categoria": "Cartão de Crédito / Fatura",
       "subcategoria": "Cartão PJ (Nubank)",
-      "valor": 20000.0
+      "valor": 20000.0,
+      "estornado": false
     },
     {
       "data": "10/09/2026",
@@ -1981,7 +1430,8 @@
       "descricao_raw": "L S S SERVICOS MEDICOS - 37.914.953/0001-75 -",
       "categoria": "Corpo Docente & Especialistas",
       "subcategoria": "Serviços Médicos / Professores",
-      "valor": 1200.0
+      "valor": 1200.0,
+      "estornado": false
     },
     {
       "data": "10/09/2026",
@@ -1990,7 +1440,8 @@
       "descricao_raw": "RAW STUDIO LTDA - 64.916.813/0001-09 - NU",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 7500.0
+      "valor": 7500.0,
+      "estornado": false
     },
     {
       "data": "10/09/2026",
@@ -1999,7 +1450,8 @@
       "descricao_raw": "PREF MUN SAO PAULO-C",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 5.07
+      "valor": 5.07,
+      "estornado": false
     },
     {
       "data": "11/09/2026",
@@ -2008,7 +1460,8 @@
       "descricao_raw": "CELINE MOCARZEL MIRANDA - •••.102.798-•• -",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 3000.0
+      "valor": 3000.0,
+      "estornado": false
     },
     {
       "data": "14/09/2026",
@@ -2017,7 +1470,8 @@
       "descricao_raw": "Mateus de Andrade Porfirio - •••.932.529-•• -",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 4000.0
+      "valor": 4000.0,
+      "estornado": false
     },
     {
       "data": "15/09/2026",
@@ -2026,7 +1480,8 @@
       "descricao_raw": "Klinger Soares Faico Filho - •••.318.776-•• - NU",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 20000.0
+      "valor": 20000.0,
+      "estornado": false
     },
     {
       "data": "15/09/2026",
@@ -2035,7 +1490,8 @@
       "descricao_raw": "QUINTOANDAR - 16.788.643/0001-81 - ITAÚ",
       "categoria": "Aluguel & Infraestrutura",
       "subcategoria": "QuintoAndar (Aluguel/Sede)",
-      "valor": 5006.33
+      "valor": 5006.33,
+      "estornado": false
     },
     {
       "data": "15/09/2026",
@@ -2044,7 +1500,8 @@
       "descricao_raw": "50.630.530 MURILO GARCIA GOUVEA -",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 3500.0
+      "valor": 3500.0,
+      "estornado": false
     },
     {
       "data": "15/09/2026",
@@ -2053,7 +1510,8 @@
       "descricao_raw": "BAZAPREBI SERVICOS MEDICOS LTDA - 47.276.649",
       "categoria": "Corpo Docente & Especialistas",
       "subcategoria": "Serviços Médicos / Professores",
-      "valor": 12500.0
+      "valor": 12500.0,
+      "estornado": false
     },
     {
       "data": "15/09/2026",
@@ -2062,7 +1520,8 @@
       "descricao_raw": "61.275.347 DENILSON BATISTA DE CARVALHO",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 697.0
+      "valor": 697.0,
+      "estornado": false
     },
     {
       "data": "15/09/2026",
@@ -2071,7 +1530,8 @@
       "descricao_raw": "YELLOW DATA S I EM TI LTDA",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 449.0
+      "valor": 449.0,
+      "estornado": false
     },
     {
       "data": "15/09/2026",
@@ -2080,7 +1540,8 @@
       "descricao_raw": "VINDI PAGAMENTOS ONLINE - 14.338.304/0001-",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 240.9
+      "valor": 240.9,
+      "estornado": false
     },
     {
       "data": "16/09/2026",
@@ -2089,7 +1550,8 @@
       "descricao_raw": "AYRTON SANTOS SILVEIRA SERVICOS MEDICOS",
       "categoria": "Corpo Docente & Especialistas",
       "subcategoria": "Serviços Médicos / Professores",
-      "valor": 7500.0
+      "valor": 7500.0,
+      "estornado": false
     },
     {
       "data": "16/09/2026",
@@ -2098,7 +1560,8 @@
       "descricao_raw": "Giovanna Barattino Niccheri - •••.679.778-•• - NU",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 3360.0
+      "valor": 3360.0,
+      "estornado": false
     },
     {
       "data": "16/09/2026",
@@ -2107,7 +1570,8 @@
       "descricao_raw": "PEDRO RODRIGUES CORREA LTDA - 60.848.904",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 2200.0
+      "valor": 2200.0,
+      "estornado": false
     },
     {
       "data": "18/09/2026",
@@ -2116,7 +1580,8 @@
       "descricao_raw": "RECEITA FEDERAL - 00.394.460/0058-87 - ITAÚ",
       "categoria": "Impostos & Tributos",
       "subcategoria": "Receita Federal / Tributos",
-      "valor": 178.31
+      "valor": 178.31,
+      "estornado": false
     },
     {
       "data": "18/09/2026",
@@ -2125,7 +1590,8 @@
       "descricao_raw": "RECEITA FEDERAL - 00.394.460/0058-87 - ITAÚ",
       "categoria": "Impostos & Tributos",
       "subcategoria": "Receita Federal / Tributos",
-      "valor": 185.57
+      "valor": 185.57,
+      "estornado": false
     },
     {
       "data": "18/09/2026",
@@ -2134,7 +1600,8 @@
       "descricao_raw": "RECEITA FEDERAL - 00.394.460/0058-87 - BCO",
       "categoria": "Impostos & Tributos",
       "subcategoria": "Receita Federal / Tributos",
-      "valor": 56.06
+      "valor": 56.06,
+      "estornado": false
     },
     {
       "data": "21/09/2026",
@@ -2143,7 +1610,8 @@
       "descricao_raw": "",
       "categoria": "Cartão de Crédito / Fatura",
       "subcategoria": "Cartão PJ (Nubank)",
-      "valor": 30545.09
+      "valor": 30545.09,
+      "estornado": false
     },
     {
       "data": "21/09/2026",
@@ -2152,7 +1620,8 @@
       "descricao_raw": "ERIC GRIECCO MARCHIOTTO - •••.529.208-•• -",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 4500.0
+      "valor": 4500.0,
+      "estornado": false
     },
     {
       "data": "21/09/2026",
@@ -2161,7 +1630,8 @@
       "descricao_raw": "INFECTOPEDS - 57.318.961/0001-66 - ITAÚ",
       "categoria": "Corpo Docente & Especialistas",
       "subcategoria": "InfectoPeds Serviços Médicos",
-      "valor": 20114.99
+      "valor": 20114.99,
+      "estornado": false
     },
     {
       "data": "21/09/2026",
@@ -2170,7 +1640,8 @@
       "descricao_raw": "BRUNA GEHLEN LTDA - 65.858.372/0001-07 - BCO",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 566.67
+      "valor": 566.67,
+      "estornado": false
     },
     {
       "data": "21/09/2026",
@@ -2179,7 +1650,8 @@
       "descricao_raw": "FLAVIA JACQUELINE ALMEIDA - •••.997.478-•• -",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 1000.0
+      "valor": 1000.0,
+      "estornado": false
     },
     {
       "data": "21/09/2026",
@@ -2188,7 +1660,8 @@
       "descricao_raw": "ISADORA CRISTINA DE CARVALHO CAMPOS - •••.",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 956.67
+      "valor": 956.67,
+      "estornado": false
     },
     {
       "data": "21/09/2026",
@@ -2197,7 +1670,8 @@
       "descricao_raw": "INSTITUTO PARSANTE - 26.166.626/0001-66 - ITAÚ",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 583.33
+      "valor": 583.33,
+      "estornado": false
     },
     {
       "data": "21/09/2026",
@@ -2206,7 +1680,8 @@
       "descricao_raw": "Simone de Paula e Passos Frigo - •••.134.298-•• - NU",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 4363.33
+      "valor": 4363.33,
+      "estornado": false
     },
     {
       "data": "21/09/2026",
@@ -2215,7 +1690,8 @@
       "descricao_raw": "RECEITA FEDERAL - 00.394.460/0058-87 - BCO",
       "categoria": "Impostos & Tributos",
       "subcategoria": "Receita Federal / Tributos",
-      "valor": 12376.2
+      "valor": 12376.2,
+      "estornado": false
     },
     {
       "data": "21/09/2026",
@@ -2224,7 +1700,8 @@
       "descricao_raw": "FUNDACAO FACULDADE DE MEDICINA",
       "categoria": "Parcerias Acadêmicas & Certificação",
       "subcategoria": "Fundação Faculdade de Medicina",
-      "valor": 2080.0
+      "valor": 2080.0,
+      "estornado": false
     },
     {
       "data": "21/09/2026",
@@ -2233,7 +1710,8 @@
       "descricao_raw": "FOCACCIA AMARAL E LAMONICA SOCIEDADE DE",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 237.02
+      "valor": 237.02,
+      "estornado": false
     },
     {
       "data": "21/09/2026",
@@ -2242,16 +1720,8 @@
       "descricao_raw": "PASCUOTTE SERVICOS MEDICOS LTDA. -",
       "categoria": "Corpo Docente & Especialistas",
       "subcategoria": "Serviços Médicos / Professores",
-      "valor": 2346.25
-    },
-    {
-      "data": "21/09/2026",
-      "dia": 21,
-      "tipo": "Transferência enviada pelo Pix",
-      "descricao_raw": "Unidade Oetopedica Integrada - 60.298.296/0001-",
-      "categoria": "Professores & Prestadores PF",
-      "subcategoria": "Honorários / Prestadores",
-      "valor": 1000.0
+      "valor": 2346.25,
+      "estornado": false
     },
     {
       "data": "21/09/2026",
@@ -2260,7 +1730,8 @@
       "descricao_raw": "SHPP BRASIL INSTITUICAO DE PAG - 38.372.267",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 291.73
+      "valor": 291.73,
+      "estornado": false
     },
     {
       "data": "23/09/2026",
@@ -2269,7 +1740,8 @@
       "descricao_raw": "EDUARDO ABDALLA SAAD - •••.075.988-•• - BCO",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 1000.0
+      "valor": 1000.0,
+      "estornado": false
     },
     {
       "data": "23/09/2026",
@@ -2278,7 +1750,8 @@
       "descricao_raw": "BARROS E SOARES SERVICOS MEDICOS LTDA -",
       "categoria": "Corpo Docente & Especialistas",
       "subcategoria": "Serviços Médicos / Professores",
-      "valor": 3125.0
+      "valor": 3125.0,
+      "estornado": false
     },
     {
       "data": "23/09/2026",
@@ -2287,7 +1760,8 @@
       "descricao_raw": "VINDI PAGAMENTOS ONLINE - 14.338.304/0001-",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 85.0
+      "valor": 85.0,
+      "estornado": false
     },
     {
       "data": "24/09/2026",
@@ -2296,7 +1770,8 @@
       "descricao_raw": "Claro",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 18.57
+      "valor": 18.57,
+      "estornado": false
     },
     {
       "data": "24/09/2026",
@@ -2305,7 +1780,8 @@
       "descricao_raw": "44 920 503 CLARA SEPULVEDA SOARES",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 4500.0
+      "valor": 4500.0,
+      "estornado": false
     },
     {
       "data": "25/09/2026",
@@ -2314,7 +1790,8 @@
       "descricao_raw": "ELAINE CRISTINA FERREIRA IANNI - •••.981.068-•• -",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 1000.0
+      "valor": 1000.0,
+      "estornado": false
     },
     {
       "data": "25/09/2026",
@@ -2323,7 +1800,8 @@
       "descricao_raw": "64.961.948 BIANCA DASSA BALACIANO -",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 6500.0
+      "valor": 6500.0,
+      "estornado": false
     },
     {
       "data": "25/09/2026",
@@ -2332,7 +1810,8 @@
       "descricao_raw": "Felipe dos Reis Lanzetti Silva - •••.833.618-•• - NU",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 4500.0
+      "valor": 4500.0,
+      "estornado": false
     },
     {
       "data": "25/09/2026",
@@ -2341,7 +1820,8 @@
       "descricao_raw": "EUSEBIO LINO DOS SANTOS JUNIOR - •••.736.555-",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 3859.33
+      "valor": 3859.33,
+      "estornado": false
     },
     {
       "data": "25/09/2026",
@@ -2350,7 +1830,8 @@
       "descricao_raw": "BEATRIZ NAYRA DIAS DE ANDRADE - •••.585.927-••",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 2403.34
+      "valor": 2403.34,
+      "estornado": false
     },
     {
       "data": "25/09/2026",
@@ -2359,7 +1840,8 @@
       "descricao_raw": "CAROLINA LAROCCA SANTOS - •••.691.179-•• - CC",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 6500.0
+      "valor": 6500.0,
+      "estornado": false
     },
     {
       "data": "25/09/2026",
@@ -2368,7 +1850,8 @@
       "descricao_raw": "ASSIR RICARDI JUNIOR INFORMATICA E SERVICOS",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 1400.0
+      "valor": 1400.0,
+      "estornado": false
     },
     {
       "data": "25/09/2026",
@@ -2377,7 +1860,8 @@
       "descricao_raw": "GDR SERVICOS MEDICOS S/S LTDA - 31.175.361",
       "categoria": "Corpo Docente & Especialistas",
       "subcategoria": "Serviços Médicos / Professores",
-      "valor": 2500.0
+      "valor": 2500.0,
+      "estornado": false
     },
     {
       "data": "25/09/2026",
@@ -2386,7 +1870,8 @@
       "descricao_raw": "BL2 SERVICOS MEDICOS SS - 27.229.732/0001-04",
       "categoria": "Corpo Docente & Especialistas",
       "subcategoria": "Serviços Médicos / Professores",
-      "valor": 2700.0
+      "valor": 2700.0,
+      "estornado": false
     },
     {
       "data": "25/09/2026",
@@ -2395,7 +1880,8 @@
       "descricao_raw": "BIANCA SESTREN - •••.051.121-•• - BCO SANTANDER",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 2200.0
+      "valor": 2200.0,
+      "estornado": false
     },
     {
       "data": "25/09/2026",
@@ -2404,7 +1890,8 @@
       "descricao_raw": "LOHANNA VALESKA DE SOUSA TAVARES - •••.",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 2000.0
+      "valor": 2000.0,
+      "estornado": false
     },
     {
       "data": "29/09/2026",
@@ -2413,7 +1900,8 @@
       "descricao_raw": "GABRIELA INGRID DA SILVA - •••.829.148-•• - ITAÚ",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 18000.0
+      "valor": 18000.0,
+      "estornado": false
     },
     {
       "data": "29/09/2026",
@@ -2422,7 +1910,8 @@
       "descricao_raw": "TOTAL PASS PARTICIPACOES LTDA",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 360.0
+      "valor": 360.0,
+      "estornado": false
     },
     {
       "data": "30/09/2026",
@@ -2431,18 +1920,56 @@
       "descricao_raw": "DIRETORIA GERAL DE FINANCAS - DGFIN -",
       "categoria": "Professores & Prestadores PF",
       "subcategoria": "Honorários / Prestadores",
-      "valor": 7.48
+      "valor": 7.48,
+      "estornado": false
     }
   ],
   "category_totals": {
     "Cartão de Crédito / Fatura": 73995.09,
-    "Sócios / Distribuição": 48005.7,
-    "Professores & Prestadores PF": 234241.12,
+    "Sócios / Distribuição": 25601.14,
+    "Professores & Prestadores PF": 203241.12,
     "Produção Audiovisual & Marketing": 22690.0,
     "Contabilidade & Jurídico": 495.0,
     "Corpo Docente & Especialistas": 59786.240000000005,
     "Parcerias Acadêmicas & Certificação": 13855.32,
     "Aluguel & Infraestrutura": 5006.33,
     "Impostos & Tributos": 12796.140000000001
-  }
+  },
+  "estornos_anulados": [
+    {
+      "data": "02/09/2026",
+      "descricao": "William Dunke de Lima - •••.500.739-•• - BCO DO",
+      "valor": 15000.0
+    },
+    {
+      "data": "02/09/2026",
+      "descricao": "William Dunke de Lima - •••.500.739-•• - BCO DO",
+      "valor": 15000.0
+    },
+    {
+      "data": "04/09/2026",
+      "descricao": "53.683.352 ESTER ARAUJO DA SILVA FORTUNATO",
+      "valor": 5601.14
+    },
+    {
+      "data": "04/09/2026",
+      "descricao": "53.683.352 ESTER ARAUJO DA SILVA FORTUNATO",
+      "valor": 5601.14
+    },
+    {
+      "data": "04/09/2026",
+      "descricao": "53.683.352 ESTER ARAUJO DA SILVA FORTUNATO",
+      "valor": 5601.14
+    },
+    {
+      "data": "04/09/2026",
+      "descricao": "53.683.352 Ester Araujo da Silva Fortunato -",
+      "valor": 5601.14
+    },
+    {
+      "data": "21/09/2026",
+      "descricao": "Unidade Oetopedica Integrada - 60.298.296/0001-",
+      "valor": 1000.0
+    }
+  ]
 }
