@@ -22546,5 +22546,23 @@
       "gateway-vindi",
       "vindi-pago"
     ]
+  },
+  "lcarol_dpn@hotmail.com|sos-antibiotico": {
+    "email": "lcarol_dpn@hotmail.com",
+    "nome": "Livia Carolina Dourado Pereira Nunes",
+    "curso": "S.O.S ANTIBIOTICO",
+    "origem": "Vindi",
+    "data_matricula": "02/10/2026",
+    "status": "success",
+    "data_tagueamento": "2026-10-02 20:50:56",
+    "tags_aplicadas": [
+      "aluno-ativo",
+      "aluno-matriculado",
+      "academy-pago",
+      "curso-livre",
+      "sos-antibiotico",
+      "gateway-vindi",
+      "vindi-pago"
+    ]
   }
 }
