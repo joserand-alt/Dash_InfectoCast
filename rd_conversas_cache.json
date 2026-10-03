@@ -16163,6 +16163,62 @@
       "customizable_field": [],
       "full_name": "Pedagógico InfectoCast",
       "id": "6ac15dedab8229666b9b3819"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6ac16af3ab8229666b9b4b7f",
+      "cel_phone": "553171323965",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Marcos",
+      "id": "6ac16af3ab8229666b9b4b7f"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6ac18a3fab8229666b9b6afc",
+      "cel_phone": "558594244070",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Rubén Franciscus",
+      "id": "6ac18a3fab8229666b9b6afc"
     }
   ],
   "employees": [
@@ -16187,5 +16243,5 @@
       "email": "klinger@infectocast.com.br"
     }
   ],
-  "cached_at": "2026-10-03 17:14:33"
+  "cached_at": "2026-10-03 20:10:03"
 }
