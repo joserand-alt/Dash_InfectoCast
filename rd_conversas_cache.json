@@ -1301,13 +1301,13 @@
         "email": "",
         "cnpj": ""
       },
-      "_id": "6aa2ef0e4337cad2add12a30",
-      "full_name": "Edson Spânghero Dalur",
-      "cel_phone": "5513981136953",
-      "email": "esdalur@gmail.com",
+      "_id": "6aa2ef0e4337cad2add12a2b",
+      "full_name": "Beatriz Pascuotte",
+      "cel_phone": "5519996348485",
+      "email": "beatrizpascuotte@gmail.com",
       "code": null,
       "customizable_field": [],
-      "id": "6aa2ef0e4337cad2add12a30"
+      "id": "6aa2ef0e4337cad2add12a2b"
     },
     {
       "address": {
@@ -16219,6 +16219,90 @@
       "customizable_field": [],
       "full_name": "Rubén Franciscus",
       "id": "6ac18a3fab8229666b9b6afc"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6ac18fbaab8229666b9b6ec0",
+      "cel_phone": "5519989852522",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "William Donizete Rodrigue",
+      "id": "6ac18fbaab8229666b9b6ec0"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6ac1a0cfab8229666b9b7e2e",
+      "cel_phone": "556182789997",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Vanda Batista",
+      "id": "6ac1a0cfab8229666b9b7e2e"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6ac1a1d0ab8229666b9b7f5f",
+      "cel_phone": "556296539309",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Flavia Do Carmo",
+      "id": "6ac1a1d0ab8229666b9b7f5f"
     }
   ],
   "employees": [
@@ -16243,5 +16327,5 @@
       "email": "klinger@infectocast.com.br"
     }
   ],
-  "cached_at": "2026-10-03 20:10:03"
+  "cached_at": "2026-10-03 23:45:15"
 }
