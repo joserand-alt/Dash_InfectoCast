@@ -17954,6 +17954,116 @@
       "customizable_field": [],
       "full_name": "Mateus Dallabrida",
       "id": "6ac5c103c6649f92299438aa"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6ac5f3c1c6649f9229944009",
+      "cel_phone": "555591814489",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Aline Borges",
+      "id": "6ac5f3c1c6649f9229944009"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "company": null,
+        "occupation_area": null,
+        "site": null,
+        "cnpj": null
+      },
+      "_id": "6ac60697c6649f9229944383",
+      "cel_phone": "62991635643",
+      "code": null,
+      "customizable_field": [],
+      "email": "renneilde.costa@gmail.com",
+      "full_name": "Renneilde dos Santos costa",
+      "id": "6ac60697c6649f9229944383"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6ac627eac6649f9229946a06",
+      "cel_phone": "556291375340",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Leonardo Machado ⚓✨",
+      "id": "6ac627eac6649f9229946a06"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6ac62ef1c6649f9229948eb1",
+      "cel_phone": "557582061467",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Bia Lisboa",
+      "id": "6ac62ef1c6649f9229948eb1"
     }
   ],
   "employees": [
@@ -17978,5 +18088,5 @@
       "email": "klinger@infectocast.com.br"
     }
   ],
-  "cached_at": "2026-10-07 02:45:04"
+  "cached_at": "2026-10-07 09:06:19"
 }
