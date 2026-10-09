@@ -18762,6 +18762,146 @@
       "email": "elder.ttmed@gmail.com",
       "full_name": "Elder Teles Teixeira",
       "id": "6ac817e1c6649f92299ccd9f"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6ac8b2c6c6649f92299d2f10",
+      "cel_phone": "554497017627",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Gabrielly Furlan",
+      "id": "6ac8b2c6c6649f92299d2f10"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6ac8b484c6649f92299d2ff5",
+      "cel_phone": "553175795158",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Gabriela Corrêa Nalon",
+      "id": "6ac8b484c6649f92299d2ff5"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6ac8f233c6649f92299e63ea",
+      "cel_phone": "558499200022",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "RENATO",
+      "id": "6ac8f233c6649f92299e63ea"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6ac8f99fc6649f92299e97d6",
+      "cel_phone": "559892324744",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "🥰🥰",
+      "id": "6ac8f99fc6649f92299e97d6"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6ac8fb1ec6649f92299ea0bc",
+      "cel_phone": "556381075675",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Ronaldo Dias",
+      "id": "6ac8fb1ec6649f92299ea0bc"
     }
   ],
   "employees": [
@@ -18786,5 +18926,5 @@
       "email": "klinger@infectocast.com.br"
     }
   ],
-  "cached_at": "2026-10-09 04:59:14"
+  "cached_at": "2026-10-09 12:14:58"
 }
