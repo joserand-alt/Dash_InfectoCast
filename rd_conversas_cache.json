@@ -1193,6 +1193,33 @@
         "email": "",
         "cnpj": ""
       },
+      "_id": "6aa2ef0ed5b16db7dcd83c5e",
+      "full_name": "Andréa Tosta",
+      "cel_phone": "5515981976817",
+      "email": "andreatosta@hotmail.com",
+      "code": null,
+      "customizable_field": [],
+      "id": "6aa2ef0ed5b16db7dcd83c5e"
+    },
+    {
+      "address": {
+        "country": "",
+        "state": "",
+        "city": "",
+        "district": "",
+        "street": "",
+        "number": "",
+        "zip_code": "",
+        "complement": ""
+      },
+      "job": {
+        "title": "",
+        "department": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "cnpj": ""
+      },
       "_id": "6aa2ef0e6133f3712aa02ad4",
       "full_name": "Mariana Tannús",
       "cel_phone": "5511995424606",
@@ -1220,13 +1247,13 @@
         "email": "",
         "cnpj": ""
       },
-      "_id": "6aa2ef0e6133f3712aa02ad8",
-      "full_name": "Daniele",
-      "cel_phone": "5511972228089",
-      "email": "danielesarto@yahoo.com.br",
+      "_id": "6aa2ef0e6133f3712aa02ad5",
+      "full_name": "Simone Lopes de Almeida Pifano",
+      "cel_phone": "553299977724",
+      "email": "simonelopesdealmeida@yahoo.com.br",
       "code": null,
       "customizable_field": [],
-      "id": "6aa2ef0e6133f3712aa02ad8"
+      "id": "6aa2ef0e6133f3712aa02ad5"
     },
     {
       "address": {
@@ -1247,13 +1274,13 @@
         "email": "",
         "cnpj": ""
       },
-      "_id": "6aa2ef0e4337cad2add12a2d",
-      "full_name": "Ricardo José Razera",
-      "cel_phone": "5534992100303",
-      "email": "razeraricardo@gmail.com",
+      "_id": "6aa2ef0e6133f3712aa02ad6",
+      "full_name": "Danielle Zaher Deseta",
+      "cel_phone": "5521999572794",
+      "email": "danizaher@yahoo.com.br",
       "code": null,
       "customizable_field": [],
-      "id": "6aa2ef0e4337cad2add12a2d"
+      "id": "6aa2ef0e6133f3712aa02ad6"
     },
     {
       "address": {
@@ -1274,40 +1301,13 @@
         "email": "",
         "cnpj": ""
       },
-      "_id": "6aa2ef0e4337cad2add12a2e",
-      "full_name": "Kelly Cristina Santos",
-      "cel_phone": "553491600092",
-      "email": "santosc-kelly@hotmail.com",
+      "_id": "6aa2ef0e6133f3712aa02ad7",
+      "full_name": "Juliana",
+      "cel_phone": "5511942702692",
+      "email": "social@infectocast.com.br",
       "code": null,
       "customizable_field": [],
-      "id": "6aa2ef0e4337cad2add12a2e"
-    },
-    {
-      "address": {
-        "country": "",
-        "state": "",
-        "city": "",
-        "district": "",
-        "street": "",
-        "number": "",
-        "zip_code": "",
-        "complement": ""
-      },
-      "job": {
-        "title": "",
-        "department": "",
-        "company": "",
-        "phone": "",
-        "email": "",
-        "cnpj": ""
-      },
-      "_id": "6aa2ef0e4337cad2add12a30",
-      "full_name": "Edson Spânghero Dalur",
-      "cel_phone": "5513981136953",
-      "email": "esdalur@gmail.com",
-      "code": null,
-      "customizable_field": [],
-      "id": "6aa2ef0e4337cad2add12a30"
+      "id": "6aa2ef0e6133f3712aa02ad7"
     },
     {
       "address": {
@@ -19236,5 +19236,5 @@
       "email": "klinger@infectocast.com.br"
     }
   ],
-  "cached_at": "2026-10-10 13:23:00"
+  "cached_at": "2026-10-10 17:12:19"
 }
