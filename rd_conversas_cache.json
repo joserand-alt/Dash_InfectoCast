@@ -19772,6 +19772,396 @@
       "customizable_field": [],
       "full_name": "🫶🏿🫣🫣🫣🫣",
       "id": "6acc432ff7af8953ab651bd3"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6accc12af7af8953ab654128",
+      "cel_phone": "554988943699",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Roberto Bayestorff",
+      "id": "6accc12af7af8953ab654128"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "company": null,
+        "occupation_area": null,
+        "site": null,
+        "cnpj": null
+      },
+      "_id": "6accc890f7af8953ab654c29",
+      "cel_phone": "41988300530",
+      "code": null,
+      "customizable_field": [],
+      "email": "juangr.rossi@hotmail.com",
+      "full_name": "Juan",
+      "id": "6accc890f7af8953ab654c29"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6accfac7f7af8953ab65a4a2",
+      "cel_phone": "559187259792",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Fabio Silva",
+      "id": "6accfac7f7af8953ab65a4a2"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6accfcf5f7af8953ab65a7ce",
+      "cel_phone": "5521980900381",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Josiel Ribeiro",
+      "id": "6accfcf5f7af8953ab65a7ce"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6accffd7f7af8953ab65ac6b",
+      "cel_phone": "557188253568",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Leila Campos",
+      "id": "6accffd7f7af8953ab65ac6b"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6acd0958f7af8953ab65bbc2",
+      "cel_phone": "559286018583",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Rosa",
+      "id": "6acd0958f7af8953ab65bbc2"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6acd0c93f7af8953ab65bfb7",
+      "cel_phone": "557192226183",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Ítala Herta",
+      "id": "6acd0c93f7af8953ab65bfb7"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6acd1212f7af8953ab65c861",
+      "cel_phone": "554197350755",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Giuliana Lugarini",
+      "id": "6acd1212f7af8953ab65c861"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6acd12b9f7af8953ab65cad2",
+      "cel_phone": "558291726270",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Ivoneide",
+      "id": "6acd12b9f7af8953ab65cad2"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6acd1328f7af8953ab65cc7f",
+      "cel_phone": "553298412705",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Carolina Torres",
+      "id": "6acd1328f7af8953ab65cc7f"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6acd28a1f7af8953ab65ed15",
+      "cel_phone": "558897113170",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Kátia Leite 💫",
+      "id": "6acd28a1f7af8953ab65ed15"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6acd28cef7af8953ab65ed4e",
+      "cel_phone": "558586515701",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Katia🧸👑",
+      "id": "6acd28cef7af8953ab65ed4e"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6acd2c41f7af8953ab65f260",
+      "cel_phone": "553191337350",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Camila",
+      "id": "6acd2c41f7af8953ab65f260"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6acd2c8df7af8953ab65f2bf",
+      "cel_phone": "558896173840",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Debora Duarte 🌷",
+      "id": "6acd2c8df7af8953ab65f2bf"
     }
   ],
   "employees": [
@@ -19796,5 +20186,5 @@
       "email": "klinger@infectocast.com.br"
     }
   ],
-  "cached_at": "2026-10-12 06:42:12"
+  "cached_at": "2026-10-12 16:24:47"
 }
