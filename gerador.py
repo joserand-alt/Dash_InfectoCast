@@ -345,12 +345,14 @@ def main():
             return normalize_curso('POS-GRADUACAO EM INFECTOLOGIA DO PACIENTE IMUNODEPRIMIDO')
         if any(k in t_norm for k in ['FUNGO', 'ANTIFUNGIC', 'CANDIDA', 'ASPERGILLUS', 'MUCOR', 'CRYPTOCOCCUS']):
             return normalize_curso('DO FUNGO AO ANTIFUNGICO')
-        if any(k in t_norm for k in ['MULTI-R', 'MULTIR', 'MULTI R']):
+        if any(k in t_norm for k in ['MULTI-R', 'MULTIR', 'MULTI R', '219,00', '219.00', 'R$219', '73,00', '43,80', '36,50']):
             return normalize_curso('JORNADA MULTI-R')
-        if any(k in t_norm for k in ['S.O.S ANTIBIOTICO', 'S.O.S. ANTIBIOTICO', 'SOS ANTIBIOTICO', 'SOS ANTIBIOTICOS', 'SOS ATB', 'S.O.S - ANTIBIOTICO', 'SOS - ANTIBIOTICO']):
-            return normalize_curso('S.O.S ANTIBIOTICO')
-        if any(k in t_norm for k in ['FERRAMENTAS', 'QUALIDADE', 'ISHIKAWA', 'PDCA', 'SIPOC']):
+        if any(k in t_norm for k in ['FERRAMENTAS', 'QUALIDADE', 'ISHIKAWA', 'PDCA', 'SIPOC', '1.197,00', '1197,00', '1197.00', '99,75']):
             return normalize_curso('FERRAMENTAS DE QUALIDADE')
+        if any(k in t_norm for k in ['S.O.S ANTIBIOTICO', 'S.O.S. ANTIBIOTICO', 'SOS ANTIBIOTICO', 'SOS ANTIBIOTICOS', 'SOS ATB', 'S.O.S - ANTIBIOTICO', 'SOS - ANTIBIOTICO', '2.187,00', '2187,00', '2187.00', '819,00', '819.00', '487,00', '487.00', '519,00', '540,00', '719,00', '1.749,60', '182,25', '218,70', '364,50', '204,75', '68,25', '136,50', '121,75', '40,58', '291,60', '224,50']):
+            return normalize_curso('S.O.S ANTIBIOTICO')
+        if any(k in t_norm for k in ['24.984', '18.000', '17.488', '17.460', '8.407', '9.342', '2082,00', '1388,00', '1000,00', '971,60', '970,00', '467,10', '778,50']):
+            return normalize_curso('POS-GRADUACAO INFECTOCAST')
         if any(k in t_norm for k in ['INFECTOXPERT', 'EXPERT']):
             return normalize_curso('INFECTOXPERT')
         if any(k in t_norm for k in ['NUTRIFY', 'MAG 5', 'ZINCO', 'OMEGA', 'VITAMINA']):
@@ -359,6 +361,10 @@ def main():
         if email and 'rd_course_hints' in locals() and email in rd_course_hints:
             return rd_course_hints[email]
             
+        # Evitar que descrições de pagamento/parcela virem nome de curso
+        if t_norm.startswith(('PARCELA', 'PAGAMENTO')):
+            return None
+
         clean_t = normalize_curso(turma)
         if clean_t and clean_t not in ['NONE', 'NAN', '', 'PLATAFORMA GERAL']:
             return clean_t
@@ -1933,6 +1939,67 @@ def main():
         if isinstance(asaas_res, dict):
             asaas_financeiro['data'] = asaas_res.get('data', {})
 
+        tagged_hist_file = os.path.join(BASE_DIR, 'rd_tagged_matriculas.json')
+        rd_tagged_courses = {}
+        if os.path.exists(tagged_hist_file):
+            try:
+                with open(tagged_hist_file, 'r', encoding='utf-8') as f_th:
+                    t_data = json.load(f_th)
+                    for k, v in t_data.items():
+                        if isinstance(v, dict) and v.get('email') and v.get('curso'):
+                            c_t = normalize_curso(v['curso'])
+                            if not c_t.startswith(('PARCELA', 'PAGAMENTO')):
+                                rd_tagged_courses[v['email'].lower().strip()] = c_t
+            except Exception:
+                pass
+
+        def _infer_curso_from_asaas(asaas_st, email):
+            """Tenta resolver o curso do aluno Asaas usando student_course_map, RD Station, preco ou descricao da fatura.
+            Retorna: (curso_nome, is_inferred, origem_str)"""
+            if not asaas_st or not isinstance(asaas_st, dict):
+                return normalize_curso('PLATAFORMA GERAL'), False, "Geral"
+
+            as_curso = asaas_st.get('curso')
+            if as_curso and as_curso not in ['PLATAFORMA GERAL', 'SEM CURSO', '', 'NONE'] and not str(as_curso).startswith(('PARCELA', 'PAGAMENTO')):
+                return as_curso, False, "Asaas API"
+
+            if email in student_course_map and student_course_map[email] != normalize_curso('PLATAFORMA GERAL') and not student_course_map[email].startswith(('PARCELA', 'PAGAMENTO')):
+                return student_course_map[email], False, "Oficial"
+            
+            if email in rd_tagged_courses and rd_tagged_courses[email] != normalize_curso('PLATAFORMA GERAL') and not rd_tagged_courses[email].startswith(('PARCELA', 'PAGAMENTO')):
+                return rd_tagged_courses[email], False, "RD Station (Matricula)"
+
+            if 'rd_course_hints' in locals() and email in rd_course_hints:
+                return rd_course_hints[email], True, "RD Station"
+            
+            faturas = asaas_st.get('faturas', [])
+            desc_text = ' '.join(str(ft.get('description', ft.get('descricao', ''))) for ft in faturas)
+            c_res = canonicalize_curso(desc_text, email)
+            if c_res and c_res != normalize_curso('PLATAFORMA GERAL') and not c_res.startswith(('PARCELA', 'PAGAMENTO')):
+                return c_res, True, "Fatura Asaas"
+
+            # Deteccao inteligente por preco / produto oficial do catalogo
+            tot_pago = float(asaas_st.get('total_pago') or 0)
+            f_vals = [float(ft.get('valor') or 0) for ft in faturas]
+            
+            multi_r_prices = [219.0, 73.0, 43.80, 36.50]
+            if 'MULTI-R' in desc_text.upper() or 'JORNADA' in desc_text.upper() or '219' in desc_text or any(any(abs(v - mp) < 0.1 for mp in multi_r_prices) for v in ([tot_pago] + f_vals)):
+                return normalize_curso('JORNADA MULTI-R'), True, "Preco Asaas (Jornada Multi-R)"
+
+            qualidade_prices = [1197.0, 99.75]
+            if 'QUALIDADE' in desc_text.upper() or '1.197' in desc_text or any(any(abs(v - qp) < 0.1 for qp in qualidade_prices) for v in ([tot_pago] + f_vals)):
+                return normalize_curso('FERRAMENTAS DE QUALIDADE'), True, "Preco Asaas (Ferramentas de Qualidade)"
+
+            sos_prices = [819.0, 487.0, 2187.0, 1968.30, 519.0, 540.0, 719.0, 1749.60, 204.75, 68.25, 182.25, 218.70, 437.40, 196.83, 136.50, 121.75, 40.58, 291.60, 224.50]
+            if any(any(abs(v - sp) < 2 for sp in sos_prices) for v in ([tot_pago] + f_vals)):
+                return normalize_curso('S.O.S ANTIBIOTICO'), True, "Preco Asaas (S.O.S Antibiotico)"
+
+            pos_prices = [24984.0, 18000.0, 17488.80, 17460.0, 8407.80, 9342.0, 2082.0, 1388.0, 1000.0, 971.60, 970.0, 467.10, 778.50]
+            if any(any(abs(v - pp) < 2 for pp in pos_prices) for v in ([tot_pago] + f_vals)) or tot_pago > 3000:
+                return normalize_curso('POS-GRADUACAO INFECTOCAST'), True, "Preco Asaas (Pos-Graduacao)"
+            
+            return normalize_curso('PLATAFORMA GERAL'), False, "Geral" 
+
         # 1. Vincular aos estudantes existentes por e-mail (resolvido 100% pela API) ou ID
         for s in students:
             em = str(s.get('email', '')).lower().strip()
@@ -1948,50 +2015,18 @@ def main():
                 matched = True
             if not matched:
                 s['asaas'] = None
+            else:
+                cur_c = str(s.get('curso', '')).strip()
+                if cur_c in ['PLATAFORMA GERAL', 'SEM CURSO', '', 'NAN', 'NONE'] or cur_c.startswith(('PARCELA', 'PAGAMENTO')):
+                    c_res, c_inf, c_orig = _infer_curso_from_asaas(s['asaas'], em)
+                    if c_res and c_res != normalize_curso('PLATAFORMA GERAL'):
+                        s['curso'] = c_res
+                        s['curso_inferido'] = c_inf
+                        s['curso_origem'] = c_orig
 
         # 2. Adicionar alunos do Asaas/Academy API que ainda não estavam na lista de estudantes
         existing_emails = set(str(s.get('email', '')).lower().strip() for s in students if s.get('email'))
-        added_from_api = 0
-        tagged_hist_file = os.path.join(BASE_DIR, 'rd_tagged_matriculas.json')
-        rd_tagged_courses = {}
-        if os.path.exists(tagged_hist_file):
-            try:
-                with open(tagged_hist_file, 'r', encoding='utf-8') as f_th:
-                    t_data = json.load(f_th)
-                    for k, v in t_data.items():
-                        if isinstance(v, dict) and v.get('email') and v.get('curso'):
-                            rd_tagged_courses[v['email'].lower().strip()] = normalize_curso(v['curso'])
-            except Exception:
-                pass
-
-        def _infer_curso_from_asaas(asaas_st, email):
-            """Tenta resolver o curso do aluno Asaas usando student_course_map, RD Station, preco ou descricao da fatura.
-            Retorna: (curso_nome, is_inferred, origem_str)"""
-            if email in student_course_map and student_course_map[email] != normalize_curso('PLATAFORMA GERAL'):
-                return student_course_map[email], False, "Oficial"
-            
-            if email in rd_tagged_courses:
-                return rd_tagged_courses[email], False, "RD Station (Matricula)"
-
-            if 'rd_course_hints' in locals() and email in rd_course_hints:
-                return rd_course_hints[email], True, "RD Station"
-            
-            faturas = asaas_st.get('faturas', [])
-            desc_text = ' '.join(str(ft.get('description', ft.get('descricao', ''))) for ft in faturas)
-            c_res = canonicalize_curso(desc_text, email)
-            if c_res and c_res != normalize_curso('PLATAFORMA GERAL'):
-                return c_res, True, "Fatura Asaas"
-
-            # Deteccao inteligente por preco / produto oficial do catalogo
-            tot_pago = float(asaas_st.get('total_pago') or 0)
-            f_vals = [float(ft.get('valor') or 0) for ft in faturas]
-            
-            # SOS Antibiotico precos conhecidos: R$ 819 (4x 204.75, 12x 68.25), R$ 487, R$ 2187, R$ 1968.30, R$ 519
-            sos_prices = [819.0, 487.0, 2187.0, 1968.30, 519.0, 204.75, 68.25, 182.25, 218.70, 437.40, 196.83]
-            if any(any(abs(v - sp) < 2 for sp in sos_prices) for v in ([tot_pago] + f_vals)):
-                return normalize_curso('S.O.S ANTIBIOTICO'), True, "Preco Asaas (S.O.S Antibiotico)"
-            
-            return normalize_curso('PLATAFORMA GERAL'), False, "Geral" 
+        added_from_api = 0 
 
         for key, asaas_st in asaas_map.items():
             if not isinstance(asaas_st, dict): continue

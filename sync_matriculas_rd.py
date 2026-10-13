@@ -60,18 +60,22 @@ def normalize_curso_name(cName):
         return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)'
     if 'TERAPIA INTENSIVA' in s or 'UTI' in s:
         return 'POS-GRADUACAO EM INFECTOLOGIA EM TERAPIA INTENSIVA'
-    if 'ANTIBIOTICO' in s or 'SOS' in s:
+    if 'MULTI-R' in s or 'MULTIR' in s or 'MULTI R' in s or 'JORNADA' in s or '219,00' in s or '219.00' in s or 'R$219' in s or '73,00' in s or '43,80' in s or '36,50' in s:
+        return 'JORNADA MULTI-R'
+    if 'QUALIDADE' in s or 'FERRAMENTAS' in s or '1.197' in s or '1197' in s or '99,75' in s:
+        return 'FERRAMENTAS DE QUALIDADE'
+    if 'ANTIBIOTICO' in s or 'SOS' in s or any(p in s for p in ['2.187', '2187', '819,00', '819.00', '487,00', '487.00', '519,00', '540,00', '719,00', '1.749']):
         return 'S.O.S ANTIBIOTICO'
     if 'FUNGO' in s or 'ANTIFUNGICO' in s:
         return 'DO FUNGO AO ANTIFUNGICO'
-    if 'MULTI-R' in s or 'JORNADA' in s:
-        return 'JORNADA MULTI-R'
     if 'GESTACAO' in s or 'GESTANTE' in s:
         return 'INFECCOES NA GESTACAO'
     if 'HIV' in s or 'HEPATITE' in s:
         return 'HIV E HEPATITES VIRAIS'
-    if 'INFECTOCAST' in s:
+    if any(k in s for k in ['24.984', '18.000', '17.488', '17.460', '8.407', '9.342']) or 'INFECTOCAST' in s:
         return 'POS-GRADUACAO INFECTOCAST'
+    if s.upper().startswith(('PARCELA', 'PAGAMENTO')):
+        return 'PLATAFORMA GERAL'
     return s
 
 def load_tagged_history():
@@ -196,11 +200,22 @@ def get_asaas_confirmed_enrollments():
             
             # Preços conhecidos do catálogo
             f_vals = [float(ft.get('valor') or 0) for ft in faturas]
-            sos_prices = [819.0, 487.0, 2187.0, 1968.30, 519.0, 204.75, 68.25, 182.25, 218.70, 437.40, 196.83]
+            multi_r_prices = [219.0, 73.0, 43.80, 36.50]
+            qualidade_prices = [1197.0, 99.75]
+            sos_prices = [819.0, 487.0, 2187.0, 1968.30, 519.0, 540.0, 719.0, 1749.60, 204.75, 68.25, 182.25, 218.70, 437.40, 196.83, 136.50, 121.75, 40.58, 291.60, 224.50]
+            pos_prices = [24984.0, 18000.0, 17488.80, 17460.0, 8407.80, 9342.0, 2082.0, 1388.0, 1000.0, 971.60, 970.0, 467.10, 778.50]
             
-            if 'ANTIBIOTICO' in desc_norm or 'SOS' in desc_norm or any(any(abs(v - sp) < 2 for sp in sos_prices) for v in ([tot_pago] + f_vals)):
+            if st.get('curso') and st.get('curso') != 'PLATAFORMA GERAL':
+                curso_resolved = st.get('curso')
+            elif 'MULTI-R' in desc_norm or 'JORNADA' in desc_norm or '219' in desc_text or any(any(abs(v - mp) < 0.1 for mp in multi_r_prices) for v in ([tot_pago] + f_vals)):
+                curso_resolved = 'JORNADA MULTI-R'
+            elif 'QUALIDADE' in desc_norm or 'FERRAMENTAS' in desc_norm or '1.197' in desc_text or any(any(abs(v - qp) < 0.1 for qp in qualidade_prices) for v in ([tot_pago] + f_vals)):
+                curso_resolved = 'FERRAMENTAS DE QUALIDADE'
+            elif 'ANTIBIOTICO' in desc_norm or 'SOS' in desc_norm or any(any(abs(v - sp) < 2 for sp in sos_prices) for v in ([tot_pago] + f_vals)):
                 curso_resolved = 'S.O.S ANTIBIOTICO'
-            elif desc_norm and desc_norm != 'PÓS-GRADUAÇÃO INFECTOCAST':
+            elif any(any(abs(v - pp) < 2 for pp in pos_prices) for v in ([tot_pago] + f_vals)) or tot_pago > 3000:
+                curso_resolved = 'POS-GRADUACAO INFECTOCAST'
+            elif desc_norm and desc_norm != 'PÓS-GRADUAÇÃO INFECTOCAST' and not desc_norm.startswith(('PARCELA', 'PAGAMENTO')):
                 curso_resolved = desc_norm
             else:
                 curso_resolved = 'S.O.S ANTIBIOTICO' if tot_pago < 3000 else 'POS-GRADUACAO INFECTOCAST'

@@ -18,3 +18,5 @@ scratch/
 asaas_config.json
 GUIA_APIS_*
 gerar_docs.py
+tokens.json
+env_config.json

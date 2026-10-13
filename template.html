@@ -5114,19 +5114,32 @@ function resolveCanonicalCourse(name) {
     if (n.includes('INFECTOPED') || n.includes('PEDIATR') || n.includes('PEDIÁTR') || n.includes('CRIANCA') || n.includes('NEONATAL')) {
         return 'POS-GRADUACAO EM INFECTOPEDIATRIA';
     }
-    if (n.includes('MULTI-R') || n.includes('MULTIR') || n.includes('JORNADA')) {
+    if (n.includes('MULTI-R') || n.includes('MULTIR') || n.includes('JORNADA') || n.includes('219,00') || n.includes('219.00') || n.includes('219') || n.includes('73,00') || n.includes('43,80') || n.includes('36,50')) {
         return 'JORNADA MULTI-R';
+    }
+    if (n.includes('QUALIDADE') || n.includes('FERRAMENTAS') || n.includes('1.197') || n.includes('1197') || n.includes('99,75')) {
+        return 'FERRAMENTAS DE QUALIDADE';
     }
     if (n.includes('FUNGO') || n.includes('ANTIFUNGICO') || n.includes('ANTIFÚNGICO')) {
         return 'DO FUNGO AO ANTIFUNGICO';
     }
-    if (n.includes('SOS') || n.includes('ANTIBIOTICO') || n.includes('ANTIBIÓTICO') || n.includes('S.O.S')) {
+    if (n.includes('SOS') || n.includes('ANTIBIOTICO') || n.includes('ANTIBIÓTICO') || n.includes('S.O.S') || n.includes('2.187') || n.includes('819') || n.includes('487') || n.includes('519') || n.includes('540') || n.includes('719') || n.includes('1.749')) {
         return 'S.O.S ANTIBIOTICO';
+    }
+    if (n.includes('GESTACAO') || n.includes('GESTANTE')) {
+        return 'INFECCOES NA GESTACAO';
+    }
+    if (n.includes('HIV') || n.includes('HEPATITE')) {
+        return 'HIV E HEPATITES VIRAIS';
+    }
+    if (n.includes('24.984') || n.includes('18.000') || n.includes('17.488') || n.includes('17.460') || n.includes('8.407') || n.includes('9.342') || n.includes('INFECTOCAST')) {
+        return 'POS-GRADUACAO INFECTOCAST';
     }
     if (n.includes('INFECTOXPERT') || n.includes('EXPERT')) {
         return 'INFECTOXPERT';
     }
-    return 'PLATAFORMA GERAL';
+    if (n.startsWith('PARCELA') || n.startsWith('PAGAMENTO')) return 'PLATAFORMA GERAL';
+    return n;
 }
 
 // Helper global e robusto para duracao contratual (ciclos de parcelas)
@@ -5651,12 +5664,14 @@ function getMatriculasAuditoriaData() {
         if (s.includes('ORTOPEDIC') || s.includes('PARTES MOLES')) return 'POS-GRADUACAO EM INFECCOES ORTOPEDICAS E DE PARTES MOLES';
         if (s.includes('CCIH') || s.includes('HOSPITALAR')) return 'POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)';
         if (s.includes('TERAPIA INTENSIVA') || s.includes('UTI')) return 'POS-GRADUACAO EM INFECTOLOGIA EM TERAPIA INTENSIVA';
-        if (s.includes('ANTIBIOTICO') || s.includes('SOS')) return 'S.O.S ANTIBIOTICO';
+        if (s.includes('MULTI-R') || s.includes('MULTIR') || s.includes('JORNADA') || s.includes('219,00') || s.includes('219.00') || s.includes('219') || s.includes('73,00') || s.includes('43,80') || s.includes('36,50')) return 'JORNADA MULTI-R';
+        if (s.includes('QUALIDADE') || s.includes('FERRAMENTAS') || s.includes('1.197') || s.includes('1197') || s.includes('99,75')) return 'FERRAMENTAS DE QUALIDADE';
+        if (s.includes('ANTIBIOTICO') || s.includes('SOS') || s.includes('2.187') || s.includes('819') || s.includes('487') || s.includes('519') || s.includes('540') || s.includes('719') || s.includes('1.749')) return 'S.O.S ANTIBIOTICO';
         if (s.includes('FUNGO') || s.includes('ANTIFUNGICO')) return 'DO FUNGO AO ANTIFUNGICO';
-        if (s.includes('MULTI-R') || s.includes('JORNADA')) return 'JORNADA MULTI-R';
         if (s.includes('GESTACAO') || s.includes('GESTANTE')) return 'INFECCOES NA GESTACAO';
         if (s.includes('HIV') || s.includes('HEPATITE')) return 'HIV E HEPATITES VIRAIS';
-        if (s.includes('INFECTOCAST')) return 'POS-GRADUACAO INFECTOCAST';
+        if (s.includes('24.984') || s.includes('18.000') || s.includes('17.488') || s.includes('17.460') || s.includes('8.407') || s.includes('9.342') || s.includes('INFECTOCAST')) return 'POS-GRADUACAO INFECTOCAST';
+        if (s.startsWith('PARCELA') || s.startsWith('PAGAMENTO')) return 'PLATAFORMA GERAL';
         return s;
     }
 
@@ -5981,19 +5996,32 @@ function drawExecView(force) {
         if (n.includes('INFECTOPED') || n.includes('PEDIATR') || n.includes('PEDIÁTR') || n.includes('CRIANCA') || n.includes('CRIANÇA')) {
             return 'POS-GRADUACAO EM INFECTOPEDIATRIA';
         }
-        if (n.includes('MULTI-R') || n.includes('MULTIR') || n.includes('JORNADA')) {
+        if (n.includes('MULTI-R') || n.includes('MULTIR') || n.includes('JORNADA') || n.includes('219,00') || n.includes('219.00') || n.includes('219') || n.includes('73,00') || n.includes('43,80') || n.includes('36,50')) {
             return 'JORNADA MULTI-R';
+        }
+        if (n.includes('QUALIDADE') || n.includes('FERRAMENTAS') || n.includes('1.197') || n.includes('1197') || n.includes('99,75')) {
+            return 'FERRAMENTAS DE QUALIDADE';
         }
         if (n.includes('FUNGO') || n.includes('ANTIFUNGICO') || n.includes('ANTIFÚNGICO')) {
             return 'DO FUNGO AO ANTIFUNGICO';
         }
-        if (n.includes('SOS') || n.includes('ANTIBIOTICO') || n.includes('ANTIBIÓTICO') || n.includes('S.O.S')) {
+        if (n.includes('SOS') || n.includes('ANTIBIOTICO') || n.includes('ANTIBIÓTICO') || n.includes('S.O.S') || n.includes('2.187') || n.includes('819') || n.includes('487') || n.includes('519') || n.includes('540') || n.includes('719') || n.includes('1.749')) {
             return 'S.O.S ANTIBIOTICO';
+        }
+        if (n.includes('GESTACAO') || n.includes('GESTANTE')) {
+            return 'INFECCOES NA GESTACAO';
+        }
+        if (n.includes('HIV') || n.includes('HEPATITE')) {
+            return 'HIV E HEPATITES VIRAIS';
+        }
+        if (n.includes('24.984') || n.includes('18.000') || n.includes('17.488') || n.includes('17.460') || n.includes('8.407') || n.includes('9.342') || n.includes('INFECTOCAST')) {
+            return 'POS-GRADUACAO INFECTOCAST';
         }
         if (n.includes('INFECTOXPERT') || n.includes('EXPERT')) {
             return 'INFECTOXPERT';
         }
-        return 'PLATAFORMA GERAL';
+        if (n.startsWith('PARCELA') || n.startsWith('PAGAMENTO')) return 'PLATAFORMA GERAL';
+        return n;
     };
 
     // Usar CURRENT_DATA.students ou rawStudents enriquecido (sempre excluindo testes e contas internas)
@@ -9367,19 +9395,32 @@ function drawCursoView(courseName, force) {
     if (n.includes('INFECTOPED') || n.includes('PEDIATR') || n.includes('PEDIÁTR') || n.includes('CRIANCA') || n.includes('NEONATAL')) {
         return 'POS-GRADUACAO EM INFECTOPEDIATRIA';
     }
-    if (n.includes('MULTI-R') || n.includes('MULTIR') || n.includes('JORNADA')) {
+    if (n.includes('MULTI-R') || n.includes('MULTIR') || n.includes('JORNADA') || n.includes('219,00') || n.includes('219.00') || n.includes('219') || n.includes('73,00') || n.includes('43,80') || n.includes('36,50')) {
         return 'JORNADA MULTI-R';
+    }
+    if (n.includes('QUALIDADE') || n.includes('FERRAMENTAS') || n.includes('1.197') || n.includes('1197') || n.includes('99,75')) {
+        return 'FERRAMENTAS DE QUALIDADE';
     }
     if (n.includes('FUNGO') || n.includes('ANTIFUNGICO') || n.includes('ANTIFÚNGICO')) {
         return 'DO FUNGO AO ANTIFUNGICO';
     }
-    if (n.includes('SOS') || n.includes('ANTIBIOTICO') || n.includes('ANTIBIÓTICO') || n.includes('S.O.S')) {
+    if (n.includes('SOS') || n.includes('ANTIBIOTICO') || n.includes('ANTIBIÓTICO') || n.includes('S.O.S') || n.includes('2.187') || n.includes('819') || n.includes('487') || n.includes('519') || n.includes('540') || n.includes('719') || n.includes('1.749')) {
         return 'S.O.S ANTIBIOTICO';
+    }
+    if (n.includes('GESTACAO') || n.includes('GESTANTE')) {
+        return 'INFECCOES NA GESTACAO';
+    }
+    if (n.includes('HIV') || n.includes('HEPATITE')) {
+        return 'HIV E HEPATITES VIRAIS';
+    }
+    if (n.includes('24.984') || n.includes('18.000') || n.includes('17.488') || n.includes('17.460') || n.includes('8.407') || n.includes('9.342') || n.includes('INFECTOCAST')) {
+        return 'POS-GRADUACAO INFECTOCAST';
     }
     if (n.includes('INFECTOXPERT') || n.includes('EXPERT')) {
         return 'INFECTOXPERT';
     }
-    return 'PLATAFORMA GERAL';
+    if (n.startsWith('PARCELA') || n.startsWith('PAGAMENTO')) return 'PLATAFORMA GERAL';
+    return n;
 };
 
     // 1. Obter auditoria unificada de matrículas (G0)

@@ -208,6 +208,23 @@ def _enrich_customers_with_academy_api(customers):
 
 
 
+def _infer_course_from_desc_or_val(desc, val=0.0):
+    d = str(desc or "").upper()
+    v = float(val or 0.0)
+    if "MULTI-R" in d or "MULTIR" in d or "MULTI R" in d or "219,00" in d or "219.00" in d or any(abs(v - p) < 0.05 for p in [219.0, 73.0, 43.80, 36.50]):
+        return "JORNADA MULTI-R"
+    if "QUALIDADE" in d or "FERRAMENTAS" in d or "1.197" in d or "1197" in d or any(abs(v - p) < 0.05 for p in [1197.0, 99.75]):
+        return "FERRAMENTAS DE QUALIDADE"
+    if any(k in d for k in ["24.984", "18.000", "17.488", "17.460", "8.407", "9.342"]) or v > 3000 or any(abs(v - p) < 0.05 for p in [24984.0, 18000.0, 17488.80, 17460.0, 8407.80, 9342.0, 2082.0, 1388.0, 1000.0, 971.60, 970.0, 467.10, 778.50]):
+        return "POS-GRADUACAO INFECTOCAST"
+    if any(k in d for k in ["2.187", "2187", "819,00", "819.00", "487,00", "487.00", "519,00", "540,00", "719,00", "1.749", "ANTIBIOTICO", "SOS"]) or any(abs(v - p) < 0.05 for p in [2187.0, 1968.30, 819.0, 540.0, 519.0, 487.0, 449.0, 437.40, 364.50, 218.70, 204.75, 196.83, 182.25, 136.50, 121.75, 81.17, 68.25, 45.0, 40.58, 59.91, 59.99, 291.60, 224.50]):
+        return "S.O.S ANTIBIOTICO"
+    clean_desc = (desc or "").split(" - ")[0].strip()
+    if clean_desc and not clean_desc.upper().startswith(("PARCELA", "PAGAMENTO #")):
+        return clean_desc
+    return "PLATAFORMA GERAL"
+
+
 def _process(customers, payments):
 
     now = datetime.now(); current_ym = now.strftime("%Y-%m")
@@ -367,6 +384,8 @@ def _process(customers, payments):
 
 
 
+        curso_fatura = _infer_course_from_desc_or_val(p.get("description", ""), valor)
+
         fatura = {
 
             "id": p.get("id"), "status": st_fin, "status_raw": status_raw,
@@ -389,7 +408,9 @@ def _process(customers, payments):
 
             "description": p.get("description", ""),
 
-            "plano": (p.get("description") or "").split(" - ")[0],
+            "curso": curso_fatura,
+
+            "plano": curso_fatura if curso_fatura != "PLATAFORMA GERAL" else (p.get("description") or "").split(" - ")[0],
 
         }
 
@@ -433,6 +454,13 @@ def _process(customers, payments):
 
             st_fin="adimplente"; st_lbl="Em Dia"; st_clr="#059669"; st_bg="rgba(5,150,105,0.1)"
 
+        best_curso = "PLATAFORMA GERAL"
+        for ft in faturas:
+            c_f = ft.get("curso")
+            if c_f and c_f != "PLATAFORMA GERAL":
+                best_curso = c_f
+                break
+
         st_obj = {
 
             "has_asaas": True, "customer_id": cid, "customer_name": cust.get("name",""),
@@ -446,6 +474,10 @@ def _process(customers, payments):
             "dias_atraso": dias_at, "valor_atraso": val_at,
 
             "total_pago": round(sum(f["valor"] for f in faturas if f["status"]=="pago"),2),
+
+            "curso": best_curso,
+
+            "plano": best_curso,
 
             "faturas": sorted(faturas, key=lambda x: x.get("vencimento_iso") or "", reverse=True),
 
@@ -479,6 +511,7 @@ def _process(customers, payments):
             status_raw = p.get("status", "PENDING")
             due_iso = p.get("dueDate") or ""
             created_iso = p.get("dateCreated") or due_iso
+            curso_unp = _infer_course_from_desc_or_val(p.get("description", ""), valor)
             unpaid_faturas.append({
                 "id": p.get("id"),
                 "status": "a_vencer" if status_raw == "PENDING" else "em_atraso",
@@ -502,8 +535,16 @@ def _process(customers, payments):
                 "cpfcnpj": cust.get("cpfCnpj", ""),
                 "customer_ext_ref": ext,
                 "description": p.get("description", ""),
-                "plano": (p.get("description") or "").split(" - ")[0],
+                "curso": curso_unp,
+                "plano": curso_unp if curso_unp != "PLATAFORMA GERAL" else (p.get("description") or "").split(" - ")[0],
             })
+
+        best_unp_curso = "PLATAFORMA GERAL"
+        for ft in unpaid_faturas:
+            c_f = ft.get("curso")
+            if c_f and c_f != "PLATAFORMA GERAL":
+                best_unp_curso = c_f
+                break
 
         st_obj = {
             "has_asaas": True,
@@ -520,6 +561,8 @@ def _process(customers, payments):
             "dias_atraso": 0,
             "valor_atraso": 0,
             "total_pago": 0.0,
+            "curso": best_unp_curso,
+            "plano": best_unp_curso,
             "faturas": sorted(unpaid_faturas, key=lambda x: x.get("dateCreated") or x.get("vencimento_iso") or "", reverse=True),
         }
         if ext:
