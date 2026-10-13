@@ -23104,5 +23104,23 @@
       "gateway-asaas",
       "asaas-pago"
     ]
+  },
+  "luizafrigini@gmail.com|pos-graduacao-em-prevencao-e-controle-de-infeccao-hospitalar-ccih": {
+    "email": "luizafrigini@gmail.com",
+    "nome": "Luiza Zamperlini",
+    "curso": "POS-GRADUACAO EM PREVENCAO E CONTROLE DE INFECCAO HOSPITALAR (CCIH)",
+    "origem": "Vindi",
+    "data_matricula": "01/10/2026",
+    "status": "success",
+    "data_tagueamento": "2026-10-13 11:37:20",
+    "tags_aplicadas": [
+      "aluno-ativo",
+      "aluno-matriculado",
+      "academy-pago",
+      "pos-graduacao",
+      "pos-ccih",
+      "gateway-vindi",
+      "vindi-pago"
+    ]
   }
 }

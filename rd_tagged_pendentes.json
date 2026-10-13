@@ -298,5 +298,95 @@
       "sos-antibiotico",
       "origem-academy"
     ]
+  },
+  "anaelisa.g@hotmail.com|parcela-4-de-4-pagamento-100116-r81900-4x": {
+    "email": "anaelisa.g@hotmail.com",
+    "nome": "Ana Elisa",
+    "curso": "PARCELA 4 DE 4. PAGAMENTO #100116 - R$819,00 (4X)",
+    "plataforma": "Academy",
+    "data_inscricao": "2026-09-22 00:00:00",
+    "status": "success",
+    "data_tagueamento": "2026-10-13 11:37:21",
+    "tags_aplicadas": [
+      "matricula-pendente",
+      "curso-livre",
+      "curso-parcela-4-de-4-pagamento-100116-r81900-4x",
+      "origem-academy"
+    ]
+  },
+  "annekarollynealvaressantos@gmail.com|pos-graduacao-infectocast": {
+    "email": "annekarollynealvaressantos@gmail.com",
+    "nome": "Anne Karollyne",
+    "curso": "POS-GRADUACAO INFECTOCAST",
+    "plataforma": "Academy",
+    "data_inscricao": "2026-10-13 00:00:00",
+    "status": "success",
+    "data_tagueamento": "2026-10-13 11:37:22",
+    "tags_aplicadas": [
+      "matricula-pendente",
+      "pos-graduacao",
+      "curso-pos-graduacao-infectocast",
+      "origem-academy"
+    ]
+  },
+  "enfscih.especialista@gmail.com|pos-graduacao-infectocast": {
+    "email": "enfscih.especialista@gmail.com",
+    "nome": "Edilane",
+    "curso": "POS-GRADUACAO INFECTOCAST",
+    "plataforma": "Academy",
+    "data_inscricao": "2026-09-17 00:00:00",
+    "status": "success",
+    "data_tagueamento": "2026-10-13 11:37:24",
+    "tags_aplicadas": [
+      "matricula-pendente",
+      "pos-graduacao",
+      "curso-pos-graduacao-infectocast",
+      "origem-academy"
+    ]
+  },
+  "lauracrivellari@gmail.com|academy": {
+    "email": "lauracrivellari@gmail.com",
+    "nome": "Laura",
+    "curso": "ACADEMY",
+    "plataforma": "Academy",
+    "data_inscricao": "2026-10-13 00:00:00",
+    "status": "success",
+    "data_tagueamento": "2026-10-13 11:37:25",
+    "tags_aplicadas": [
+      "matricula-pendente",
+      "curso-livre",
+      "curso-academy",
+      "origem-academy"
+    ]
+  },
+  "maria.maia@hc.fm.usp.br|academy": {
+    "email": "maria.maia@hc.fm.usp.br",
+    "nome": "MARIA",
+    "curso": "ACADEMY",
+    "plataforma": "Academy",
+    "data_inscricao": "2026-10-13 00:00:00",
+    "status": "success",
+    "data_tagueamento": "2026-10-13 11:37:26",
+    "tags_aplicadas": [
+      "matricula-pendente",
+      "curso-livre",
+      "curso-academy",
+      "origem-academy"
+    ]
+  },
+  "re_sakiyama@hotmail.com|pos-graduacao-infectocast": {
+    "email": "re_sakiyama@hotmail.com",
+    "nome": "Renata",
+    "curso": "POS-GRADUACAO INFECTOCAST",
+    "plataforma": "Academy",
+    "data_inscricao": "2026-10-13 00:00:00",
+    "status": "success",
+    "data_tagueamento": "2026-10-13 11:37:27",
+    "tags_aplicadas": [
+      "matricula-pendente",
+      "pos-graduacao",
+      "curso-pos-graduacao-infectocast",
+      "origem-academy"
+    ]
   }
 }
