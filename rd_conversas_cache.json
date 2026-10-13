@@ -4030,6 +4030,33 @@
         "email": "",
         "cnpj": ""
       },
+      "_id": "6aa2ef0e9c09a0481b812d86",
+      "full_name": "Duanny",
+      "cel_phone": "5562984425308",
+      "email": "duannylorena@hotmail.com",
+      "code": null,
+      "customizable_field": [],
+      "id": "6aa2ef0e9c09a0481b812d86"
+    },
+    {
+      "address": {
+        "country": "",
+        "state": "",
+        "city": "",
+        "district": "",
+        "street": "",
+        "number": "",
+        "zip_code": "",
+        "complement": ""
+      },
+      "job": {
+        "title": "",
+        "department": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "cnpj": ""
+      },
       "_id": "6aa2ef0ed5b16db7dcd83d05",
       "full_name": "Gabriel Andrade",
       "cel_phone": "5562999082470",
@@ -20244,86 +20271,6 @@
       "email": "mihnegri@hotmail.com",
       "full_name": "Mikaelly",
       "id": "6acd8b87f7af8953ab666e33"
-    },
-    {
-      "address": {
-        "country": null,
-        "state": null,
-        "city": null,
-        "district": null,
-        "street": null,
-        "number": null,
-        "zip_code": null,
-        "complement": null
-      },
-      "job": {
-        "title": null,
-        "company": null,
-        "occupation_area": null,
-        "site": null,
-        "cnpj": null
-      },
-      "_id": "6acdfa9ef7af8953ab668d6d",
-      "cel_phone": "558599707384",
-      "code": null,
-      "customizable_field": [],
-      "email": "pabloeliack@gmail.com",
-      "full_name": "Pablo Eliack Linhares de Holanda",
-      "id": "6acdfa9ef7af8953ab668d6d"
-    },
-    {
-      "address": {
-        "country": null,
-        "state": null,
-        "city": null,
-        "district": null,
-        "street": null,
-        "number": null,
-        "zip_code": null,
-        "complement": null
-      },
-      "job": {
-        "title": null,
-        "department": null,
-        "company": null,
-        "phone": null,
-        "email": null,
-        "cnpj": null,
-        "site": null,
-        "occupation_area": null
-      },
-      "_id": "6ace2474f7af8953ab674902",
-      "cel_phone": "5522998825472",
-      "code": null,
-      "customizable_field": [],
-      "full_name": "Denilze",
-      "id": "6ace2474f7af8953ab674902"
-    },
-    {
-      "address": {
-        "country": null,
-        "state": null,
-        "city": null,
-        "district": null,
-        "street": null,
-        "number": null,
-        "zip_code": null,
-        "complement": null
-      },
-      "job": {
-        "title": null,
-        "company": null,
-        "occupation_area": null,
-        "site": null,
-        "cnpj": null
-      },
-      "_id": "6ace2bc6f7af8953ab6784bb",
-      "cel_phone": "5532988550335",
-      "code": null,
-      "customizable_field": [],
-      "email": "licy.daniel@gmail.com",
-      "full_name": "DANIEL LICY GOMES DE MELLO",
-      "id": "6ace2bc6f7af8953ab6784bb"
     }
   ],
   "employees": [
@@ -20348,5 +20295,5 @@
       "email": "klinger@infectocast.com.br"
     }
   ],
-  "cached_at": "2026-10-13 11:03:07"
+  "cached_at": "2026-10-13 05:24:38"
 }
