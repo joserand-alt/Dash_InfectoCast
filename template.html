@@ -1623,9 +1623,14 @@ option {
         <span style="color:#10b981; font-weight:800;" id="api-cnt-sync24h">LIVE ↗</span>
       </div>
 
-      <div class="hud-status-badge" style="padding:4px 8px; font-size:9.5px;" title="Atualização automática programada a cada hora cheia (:00)">
-        <span class="hud-live-dot" style="background:#10b981;"></span>
-        <span id="hud-hourly-sync-label">SYNC: A CADA 15 MIN</span>
+      <button id="btn-atualizar-apis-header" onclick="triggerManualApiSync()" title="Atualizar dados de todas as APIs (Cativa, Vindi, Asaas, RD Station, Academy) e salvar" style="display:flex; align-items:center; gap:6px; background:linear-gradient(135deg, rgba(0, 240, 255, 0.25) 0%, rgba(2, 132, 199, 0.35) 100%); border:1px solid #00f0ff; color:#00f0ff; padding:4px 12px; border-radius:6px; font-size:10.5px; font-family:var(--font-mono); font-weight:800; cursor:pointer; box-shadow:0 0 12px rgba(0,240,255,0.3); transition:all 0.2s;" onmouseover="this.style.background='linear-gradient(135deg, #00f0ff 0%, #0284c7 100%)'; this.style.color='#000'; this.style.boxShadow='0 0 16px rgba(0,240,255,0.6)';" onmouseout="this.style.background='linear-gradient(135deg, rgba(0, 240, 255, 0.25) 0%, rgba(2, 132, 199, 0.35) 100%)'; this.style.color='#00f0ff'; this.style.boxShadow='0 0 12px rgba(0,240,255,0.3)';">
+        <span id="btn-sync-header-icon" style="display:inline-block; font-size:11px;">⚡</span>
+        <span id="btn-sync-header-label">ATUALIZAR APIS</span>
+      </button>
+
+      <div class="hud-status-badge" style="padding:4px 8px; font-size:9.5px;" title="Modo manual: atualiza sob demanda ao clicar no botão">
+        <span class="hud-live-dot" style="background:#00f0ff;"></span>
+        <span id="hud-hourly-sync-label">MODO: MANUAL</span>
       </div>
       
       <div class="hud-clock-box" style="padding:4px 8px; font-size:10px;" title="Última sincronização completa das APIs">
@@ -1777,7 +1782,7 @@ option {
               <span id="live-base-tag" style="font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:12px; background:var(--sky-w); color:var(--sky-d); border:1px solid rgba(2,132,199,0.2)">Base Sincronizada</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px; margin-top:3px; font-size:11.5px; color:var(--muted)">
-              <span id="live-tick-status"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--emerald); margin-right:4px"></span>Auto-refresh a cada hora cheia</span>
+              <span id="live-tick-status"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--sky); margin-right:4px"></span>Atualização sob demanda via botão</span>
               <span>·</span>
               <span id="live-ref-time">Último evento registrado na base: --:--</span>
             </div>
@@ -1785,8 +1790,8 @@ option {
         </div>
         
         <div style="display:flex; align-items:center; gap:10px">
-          <button id="btn-sync-live" onclick="triggerLiveSync()" style="display:flex; align-items:center; gap:6px; background:var(--card); border:1px solid var(--line2); color:var(--ink); padding:6px 12px; border-radius:8px; font-size:11.5px; font-weight:700; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.04); transition:all 0.15s" onmouseover="this.style.background='var(--paper)'" onmouseout="this.style.background='var(--card)'">
-            <span>🔄</span> <span>Sincronizar Logs</span>
+          <button id="btn-sync-live" onclick="triggerManualApiSync()" style="display:flex; align-items:center; gap:6px; background:linear-gradient(135deg, rgba(0, 240, 255, 0.15) 0%, rgba(2, 132, 199, 0.25) 100%); border:1px solid #00f0ff; color:var(--ink); padding:6px 14px; border-radius:8px; font-size:11.5px; font-weight:800; cursor:pointer; box-shadow:0 2px 6px rgba(0,240,255,0.15); transition:all 0.15s" onmouseover="this.style.background='linear-gradient(135deg, #00f0ff 0%, #0284c7 100%)'; this.style.color='#000';" onmouseout="this.style.background='linear-gradient(135deg, rgba(0, 240, 255, 0.15) 0%, rgba(2, 132, 199, 0.25) 100%)'; this.style.color='var(--ink)';">
+            <span>⚡</span> <span>Atualizar Todas as APIs</span>
           </button>
           <div style="display:flex; align-items:center; gap:8px" id="home-live-mini-kpis"></div>
         </div>
@@ -4685,87 +4690,29 @@ function parseEventDate(dStr) {
 
 let liveTimerInterval = null;
 
-window.triggerLiveSync = async function() {
-    const btn = document.getElementById('btn-sync-live');
-    if (btn) {
-        btn.innerHTML = '<span>⏳</span> <span>Sincronizando APIs...</span>';
-        btn.disabled = true;
-    }
+function initHudSyncInfo() {
     try {
-        const res = await fetch('/api/atualizar', { method: 'POST' });
-        if (res.ok) {
-            if (btn) btn.innerHTML = '<span>✅</span> <span>Atualizado!</span>';
-            setTimeout(() => { window.location.reload(); }, 800);
-            return;
-        }
-    } catch(e) {
-        console.log('Sem servidor local ativo para auto-gerar, recarregando...');
-    }
-    if (btn) btn.innerHTML = '<span>🔄</span> <span>Recarregando...</span>';
-    setTimeout(() => { window.location.reload(); }, 600);
-};
-
-function startHourlyAutoRefresh() {
-    if (window._hourlyTimer) clearTimeout(window._hourlyTimer);
-    if (window._minuteTickInterval) clearInterval(window._minuteTickInterval);
-    
-    function updateClockAndSchedule() {
-        // Atualizar timestamp da ultima sincronizacao no topo do HUD
-        try {
-            const elSyncTime = document.getElementById('hud-last-sync-time');
-            if (elSyncTime && typeof DATA !== 'undefined' && DATA && DATA.meta && DATA.meta.updated_at) {
-                const parts = DATA.meta.updated_at.split(' ');
-                if (parts.length >= 2) {
-                    const dateParts = parts[0].split('/');
-                    const timeParts = parts[1].substring(0, 5);
-                    elSyncTime.textContent = `${dateParts[0]}/${dateParts[1]} ${timeParts}`;
-                } else {
-                    elSyncTime.textContent = DATA.meta.updated_at;
-                }
+        const elSyncTime = document.getElementById('hud-last-sync-time');
+        if (elSyncTime && typeof DATA !== 'undefined' && DATA && DATA.meta && DATA.meta.updated_at) {
+            const parts = DATA.meta.updated_at.split(' ');
+            if (parts.length >= 2) {
+                const dateParts = parts[0].split('/');
+                const timeParts = parts[1].substring(0, 5);
+                elSyncTime.textContent = `${dateParts[0]}/${dateParts[1]} ${timeParts}`;
+            } else {
+                elSyncTime.textContent = DATA.meta.updated_at;
             }
-        } catch(e) {}
-        
-        const now = new Date();
-        const currentMins = now.getMinutes();
-        const currentSecs = now.getSeconds();
-        const currentMs = now.getMilliseconds();
-        
-        // Proximo ciclo de 15 minutos (00, 15, 30, 45)
-        const minsMod15 = currentMins % 15;
-        const msInto15 = (minsMod15 * 60 + currentSecs) * 1000 + currentMs;
-        const msUntilNext15 = Math.max(1000, (15 * 60 * 1000) - msInto15);
-        
-        const next15Date = new Date(now.getTime() + msUntilNext15);
-        const pad = n => n < 10 ? '0' + n : n;
-        const next15Fmt = `${pad(next15Date.getHours())}:${pad(next15Date.getMinutes())}`;
-        const minsRemaining = Math.max(1, Math.round(msUntilNext15 / 60000));
-        
+        }
         const tickEl = document.getElementById('live-tick-status');
         if (tickEl) {
-            tickEl.innerHTML = `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--emerald); margin-right:4px"></span>Auto-refresh a cada 15 min (${next15Fmt} · em ${minsRemaining} min)`;
+            tickEl.innerHTML = `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--sky); margin-right:4px"></span>Atualização sob demanda via botão`;
         }
+    } catch(e) {}
+}
 
-        window._hourlyTimer = setTimeout(async () => {
-            console.log("[AO VIVO] Ciclo de 15 min atingido. Sincronizando dados...");
-            try {
-                const res = await fetch('/api/atualizar', { method: 'POST' });
-                if (res.ok) {
-                    window.location.reload();
-                    return;
-                }
-            } catch(e) {}
-            window.location.reload();
-        }, msUntilNext15 + 1000);
-    }
-
-    updateClockAndSchedule();
-    
-    window._minuteTickInterval = setInterval(() => {
-        updateClockAndSchedule();
-        if (window._lastLiveBaseStudents) {
-            drawLiveMonitor(window._lastLiveBaseStudents, true);
-        }
-    }, 30000);
+function startHourlyAutoRefresh() {
+    // Modo manual ativo: sem intervalos de refresh automático
+    initHudSyncInfo();
 }
 
 function getDashboardUpdateTime(allEvts) {
@@ -8176,97 +8123,210 @@ function openAllocModal(curso, aulaNome) {
 }
 
 
-function showSyncOnlineModal() {
-    let modal = document.getElementById('modal-sync-online');
+let _isSyncingApis = false;
+
+function showSyncProgressModal() {
+    let modal = document.getElementById('modal-sync-progress');
     if (!modal) {
         modal = document.createElement('div');
-        modal.id = 'modal-sync-online';
-        modal.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(6,9,14,0.75); backdrop-filter:blur(6px); z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px;';
-        modal.innerHTML = `
-        <div style="background:#0e131b; border:1px solid #1e293b; border-radius:12px; width:100%; max-width:480px; box-shadow:0 12px 40px rgba(0,0,0,0.6); font-family:var(--font-hud, system-ui); color:#f8fafc; overflow:hidden;">
-            <div style="padding:16px 20px; background:#141b27; border-bottom:1px solid #1e293b; display:flex; justify-content:space-between; align-items:center;">
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#10b981; box-shadow:0 0 10px #10b981;"></span>
-                    <span style="font-weight:700; font-size:13.5px; letter-spacing:0.04em; text-transform:uppercase; color:#38bdf8;">Sincronização 100% Online</span>
-                </div>
-                <button onclick="document.getElementById('modal-sync-online').style.display='none'" style="background:transparent; border:none; color:#94a3b8; font-size:18px; cursor:pointer; padding:4px 8px;">✕</button>
-            </div>
-            <div style="padding:20px; font-size:13px; line-height:1.6; color:#cbd5e1;">
-                <p style="margin-top:0; margin-bottom:14px;">
-                    O painel está configurado com <strong>automação nativa na nuvem (GitHub Actions)</strong>. Todas as informações são consumidas diretamente das APIs (InfectoCast Academy, Cativa Digital, Vindi, Asaas e RD Station).
-                </p>
-                <div style="background:#141b27; border-radius:8px; padding:12px 14px; margin-bottom:16px; border:1px solid #1e293b;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                        <span style="color:#94a3b8; font-size:12px;">⏰ Frequência de Atualização:</span>
-                        <strong style="color:#f1f5f9;">A cada 15 minutos (:00, :15, :30, :45)</strong>
-                    </div>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span style="color:#94a3b8; font-size:12px;">📅 Última sincronização:</span>
-                        <strong style="color:#10b981;" id="sync-modal-updated-time">Carregando...</strong>
-                    </div>
-                </div>
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                    <button onclick="window.location.reload(true)" style="width:100%; background:linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color:#fff; border:none; padding:10px; border-radius:8px; font-weight:700; font-size:12.5px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 12px rgba(2,132,199,0.35);">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
-                        Recarregar e Verificar Nova Versão
-                    </button>
-                    <a href="https://github.com/joserand-alt/Dash_InfectoCast/actions/workflows/deploy.yml" target="_blank" style="text-decoration:none; text-align:center; width:100%; box-sizing:border-box; background:#1e293b; color:#38bdf8; border:1px solid #334155; padding:10px; border-radius:8px; font-weight:600; font-size:12px; display:flex; align-items:center; justify-content:center; gap:8px;">
-                        🚀 Abrir GitHub Actions para Disparo Manual Imediato
-                    </a>
-                </div>
-            </div>
-        </div>
-        `;
+        modal.id = 'modal-sync-progress';
+        modal.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(6,9,14,0.85); backdrop-filter:blur(8px); z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px;';
         document.body.appendChild(modal);
     }
-    
-    const timeEl = document.getElementById('sync-modal-updated-time');
-    if (timeEl) {
-        timeEl.textContent = (typeof DATA !== 'undefined' && DATA.meta && DATA.meta.updated_at) ? DATA.meta.updated_at : 'Recente';
-    }
+    modal.innerHTML = `
+    <div style="background:#0b111a; border:1px solid #00f0ff; border-radius:14px; width:100%; max-width:520px; box-shadow:0 12px 50px rgba(0,240,255,0.25); font-family:var(--font-hud, system-ui); color:#f8fafc; overflow:hidden;">
+        <div style="padding:18px 24px; background:rgba(0,240,255,0.08); border-bottom:1px solid rgba(0,240,255,0.25); display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#00f0ff; box-shadow:0 0 10px #00f0ff; animation:pulse 1s infinite;"></span>
+                <span style="font-weight:800; font-size:14px; letter-spacing:0.06em; text-transform:uppercase; color:#00f0ff;">Atualizando Todas as APIs</span>
+            </div>
+            <span style="font-size:11px; font-family:var(--font-mono); color:#94a3b8;">Dash InfectoCast</span>
+        </div>
+        <div style="padding:24px; font-size:13px; line-height:1.6; color:#cbd5e1;">
+            <p style="margin-top:0; margin-bottom:14px; color:#e2e8f0; font-weight:600;">
+                Consultando dados ao vivo das plataformas e salvando nova versão...
+            </p>
+            <div style="background:#101722; border-radius:10px; padding:14px 16px; margin-bottom:18px; border:1px solid #1e293b; display:flex; flex-direction:column; gap:9px; font-family:var(--font-mono); font-size:11.5px;">
+                <div style="display:flex; align-items:center; gap:8px; color:#38bdf8;">
+                    <span style="animation:spin 1s linear infinite; display:inline-block;">🔄</span>
+                    <span>1. Cativa Digital (Aulas, telemetria & turmas pós)</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; color:#38bdf8;">
+                    <span style="animation:spin 1s linear infinite; display:inline-block;">🔄</span>
+                    <span>2. Vindi (Assinaturas, faturas ativas & financeiro)</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; color:#38bdf8;">
+                    <span style="animation:spin 1s linear infinite; display:inline-block;">🔄</span>
+                    <span>3. Asaas (Cobranças avulsas & clientes)</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; color:#38bdf8;">
+                    <span style="animation:spin 1s linear infinite; display:inline-block;">🔄</span>
+                    <span>4. RD Station Conversas & CRM (WhatsApp & matrículas)</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; color:#38bdf8;">
+                    <span style="animation:spin 1s linear infinite; display:inline-block;">🔄</span>
+                    <span>5. Salvando base consolidada e gerando dashboard...</span>
+                </div>
+            </div>
+            <div style="width:100%; height:6px; background:#1e293b; border-radius:3px; overflow:hidden; margin-bottom:12px;">
+                <div id="sync-progress-bar" style="width:75%; height:100%; background:linear-gradient(90deg, #00f0ff, #0284c7); border-radius:3px; animation:pulse 1.2s infinite;"></div>
+            </div>
+            <p style="margin:0; font-size:11.5px; color:#94a3b8; text-align:center;">
+                Por favor, aguarde alguns instantes enquanto os dados são processados.
+            </p>
+        </div>
+    </div>
+    `;
     modal.style.display = 'flex';
 }
 
-function triggerUpdate() {
-    showSyncOnlineModal();
+function updateSyncProgressModalSuccess() {
+    const modal = document.getElementById('modal-sync-progress');
+    if (!modal) return;
+    modal.innerHTML = `
+    <div style="background:#0b111a; border:1px solid #10b981; border-radius:14px; width:100%; max-width:500px; box-shadow:0 12px 50px rgba(16,185,129,0.3); font-family:var(--font-hud, system-ui); color:#f8fafc; overflow:hidden;">
+        <div style="padding:18px 24px; background:rgba(16,185,129,0.1); border-bottom:1px solid rgba(16,185,129,0.25); display:flex; align-items:center; gap:10px;">
+            <span style="font-size:20px;">✅</span>
+            <span style="font-weight:800; font-size:14px; letter-spacing:0.06em; text-transform:uppercase; color:#10b981;">Atualização Concluída!</span>
+        </div>
+        <div style="padding:24px; font-size:13px; line-height:1.6; color:#cbd5e1; text-align:center;">
+            <p style="margin-top:0; margin-bottom:12px; font-size:14px; font-weight:700; color:#f8fafc;">
+                Todas as APIs foram consultadas e os dados foram salvos!
+            </p>
+            <p style="margin-bottom:0; font-size:12px; color:#94a3b8;">
+                Recarregando o painel para exibir os dados mais recentes...
+            </p>
+        </div>
+    </div>
+    `;
 }
 
-function syncLiveApiManual() {
-    showSyncOnlineModal();
-}
+function showSyncOfflineFallbackModal() {
+    const progressModal = document.getElementById('modal-sync-progress');
+    if (progressModal) progressModal.style.display = 'none';
 
-async function triggerLiveSync() {
-    const btn = document.getElementById('btn-sync-live');
-    const originalHtml = btn ? btn.innerHTML : '';
-    if (btn) {
-        btn.innerHTML = `<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#00f0ff; animation:pulse 1s infinite;"></span> <span>Consultando APIs...</span>`;
-        btn.style.opacity = '0.7';
+    let modal = document.getElementById('modal-sync-offline');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'modal-sync-offline';
+        modal.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(6,9,14,0.85); backdrop-filter:blur(8px); z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px;';
+        document.body.appendChild(modal);
     }
+    modal.innerHTML = `
+    <div style="background:#0b111a; border:1px solid #f59e0b; border-radius:14px; width:100%; max-width:520px; box-shadow:0 12px 50px rgba(245,158,11,0.25); font-family:var(--font-hud, system-ui); color:#f8fafc; overflow:hidden;">
+        <div style="padding:16px 20px; background:rgba(245,158,11,0.1); border-bottom:1px solid rgba(245,158,11,0.25); display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:18px;">⚡</span>
+                <span style="font-weight:800; font-size:13.5px; letter-spacing:0.04em; text-transform:uppercase; color:#fbbf24;">Como Atualizar os Dados</span>
+            </div>
+            <button onclick="document.getElementById('modal-sync-offline').style.display='none'" style="background:transparent; border:none; color:#94a3b8; font-size:18px; cursor:pointer; padding:4px 8px;">✕</button>
+        </div>
+        <div style="padding:22px; font-size:13px; line-height:1.6; color:#cbd5e1;">
+            <p style="margin-top:0; margin-bottom:14px;">
+                O servidor local não respondeu na porta 8085. Você pode atualizar os dados de duas formas simples:
+            </p>
+            <div style="background:#101722; border-radius:8px; padding:14px; margin-bottom:16px; border:1px solid #1e293b;">
+                <strong style="color:#38bdf8; display:block; margin-bottom:4px;">Opção 1 — No Computador (Local):</strong>
+                <span style="font-size:12px; color:#94a3b8;">
+                    Dê um duplo clique no arquivo <b>ATUALIZAR_DADOS.bat</b> (ou <b>iniciar_servidor.bat</b>) na pasta do projeto. Ele consulta todas as APIs, salva o <b>index.html</b> e publica automaticamente no GitHub Pages.
+                </span>
+            </div>
+            <div style="background:#101722; border-radius:8px; padding:14px; margin-bottom:18px; border:1px solid #1e293b;">
+                <strong style="color:#10b981; display:block; margin-bottom:4px;">Opção 2 — Na Nuvem (GitHub Actions):</strong>
+                <span style="font-size:12px; color:#94a3b8;">
+                    Você pode disparar a sincronização na nuvem com 1 clique no GitHub Actions. Ele executa em background e atualiza o painel online.
+                </span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <a href="https://github.com/joserand-alt/Dash_InfectoCast/actions/workflows/deploy.yml" target="_blank" style="text-decoration:none; text-align:center; width:100%; box-sizing:border-box; background:linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color:#fff; padding:11px; border-radius:8px; font-weight:700; font-size:12.5px; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 12px rgba(2,132,199,0.35);">
+                    🚀 Abrir GitHub Actions para Disparo Manual na Nuvem
+                </a>
+                <button onclick="document.getElementById('modal-sync-offline').style.display='none'; triggerManualApiSync();" style="width:100%; background:#1e293b; color:#38bdf8; border:1px solid #334155; padding:10px; border-radius:8px; font-weight:600; font-size:12px; cursor:pointer;">
+                    🔄 Tentar Novamente
+                </button>
+            </div>
+        </div>
+    </div>
+    `;
+    modal.style.display = 'flex';
+}
+
+function showSyncOnlineModal() {
+    showSyncOfflineFallbackModal();
+}
+
+async function triggerManualApiSync() {
+    if (_isSyncingApis) return;
+    _isSyncingApis = true;
+
+    const btnHeader = document.getElementById('btn-atualizar-apis-header');
+    const btnLive = document.getElementById('btn-sync-live');
+    const headerLabel = document.getElementById('btn-sync-header-label');
+    const headerIcon = document.getElementById('btn-sync-header-icon');
+
+    if (btnHeader) {
+        btnHeader.disabled = true;
+        btnHeader.style.opacity = '0.75';
+        if (headerIcon) {
+            headerIcon.innerHTML = '⏳';
+            headerIcon.style.animation = 'spin 1s linear infinite';
+        }
+        if (headerLabel) headerLabel.textContent = 'ATUALIZANDO...';
+    }
+    if (btnLive) {
+        btnLive.disabled = true;
+        btnLive.style.opacity = '0.75';
+        btnLive.innerHTML = '<span style="display:inline-block; animation:spin 1s linear infinite">⏳</span> <span>Atualizando todas as APIs...</span>';
+    }
+
+    showSyncProgressModal();
 
     try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2500);
-        const resp = await fetch('http://localhost:8085/api/atualizar', {
-            method: 'POST',
-            signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-        if (resp.ok) {
-            if (btn) btn.innerHTML = `<span>🟢</span> <span>Atualizado! Recarregando...</span>`;
-            setTimeout(() => window.location.reload(true), 800);
-            return;
+        let response = null;
+        try {
+            response = await fetch('/api/atualizar', { method: 'POST', cache: 'no-store' });
+        } catch(e1) {
+            try {
+                response = await fetch('http://localhost:8085/api/atualizar', { method: 'POST', cache: 'no-store' });
+            } catch(e2) {
+                response = null;
+            }
         }
-    } catch (e) {
-        // Sem backend local ou remoto -> abre o modal informativo com trigger do GitHub
+
+        if (response && response.ok) {
+            updateSyncProgressModalSuccess();
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 1800);
+            return;
+        } else {
+            showSyncOfflineFallbackModal();
+        }
+    } catch(err) {
+        console.error("Erro na sincronização manual:", err);
+        showSyncOfflineFallbackModal();
     } finally {
-        if (btn) {
-            btn.innerHTML = originalHtml;
-            btn.style.opacity = '1';
+        _isSyncingApis = false;
+        if (btnHeader) {
+            btnHeader.disabled = false;
+            btnHeader.style.opacity = '1';
+            if (headerIcon) {
+                headerIcon.innerHTML = '⚡';
+                headerIcon.style.animation = 'none';
+            }
+            if (headerLabel) headerLabel.textContent = 'ATUALIZAR APIS';
+        }
+        if (btnLive) {
+            btnLive.disabled = false;
+            btnLive.style.opacity = '1';
+            btnLive.innerHTML = '<span>⚡</span> <span>Atualizar Todas as APIs</span>';
         }
     }
-
-    showSyncOnlineModal();
 }
+
+window.triggerLiveSync = triggerManualApiSync;
+window.triggerUpdate = triggerManualApiSync;
+window.syncLiveApiManual = triggerManualApiSync;
 
 
 
@@ -11832,48 +11892,15 @@ document.addEventListener('click', function(e) {
         lastKnownPendingKeys = currentPendKeys;
     };
 
-    // Auto-polling em background a cada 60s
-    function pollLiveDashboardUpdates() {
-        fetch('dashboard_gerado.html?_nocache=' + Date.now(), { cache: 'no-store' })
-            .then(res => {
-                if (!res.ok) throw new Error('Status ' + res.status);
-                return res.text();
-            })
-            .then(html => {
-                const pos = html.indexOf('const DATA = {');
-                if (pos !== -1) {
-                    const endPos = html.indexOf('let CURRENT_DATA', pos);
-                    const semicolonPos = html.rfind ? html.rfind(';', pos, endPos + 10) : html.lastIndexOf(';', endPos);
-                    const dataStr = html.substring(pos + 'const DATA = '.length, semicolonPos);
-                    const newData = JSON.parse(dataStr);
-                    
-                    if (newData && newData.meta && window.DATA && window.DATA.meta) {
-                        if (newData.meta.updated_iso !== window.DATA.meta.updated_iso || newData.meta.updated_at !== window.DATA.meta.updated_at) {
-                            console.log('Novos dados detectados automaticamente! Atualizando dashboard...');
-                            window.DATA = newData;
-                            if (typeof window.applyFilters === 'function') {
-                                window.applyFilters();
-                            }
-                            if (typeof window.getMatriculasAuditoriaData === 'function') {
-                                const aud = window.getMatriculasAuditoriaData();
-                                window.checkForNewEnrollmentEvents(aud.allRecords, aud.allPendentes);
-                            }
-                        }
-                    }
-                }
-            })
-            .catch(() => {});
-    }
-
     document.addEventListener('DOMContentLoaded', () => {
         updateSoundButtonUI();
+        initHudSyncInfo();
         setTimeout(() => {
             if (typeof window.getMatriculasAuditoriaData === 'function') {
                 const aud = window.getMatriculasAuditoriaData();
                 window.checkForNewEnrollmentEvents(aud.allRecords, aud.allPendentes);
             }
         }, 1000);
-        setInterval(pollLiveDashboardUpdates, 60000);
     });
 })();
 

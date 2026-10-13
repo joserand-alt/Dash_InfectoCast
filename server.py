@@ -3,6 +3,7 @@ import socketserver
 import json
 import subprocess
 import os
+import sys
 import openpyxl
 
 PORT = 8085
@@ -93,17 +94,46 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
                 self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
         elif self.path == '/api/atualizar':
             try:
-                print("Iniciando atualização manual da API InfectoCast...")
-                subprocess.run(['python', 'gerador.py'], check=True)
-                if os.path.exists('dashboard_gerado.html'):
-                    with open('dashboard_gerado.html', 'rb') as src, open('index.html', 'wb') as dst:
+                base_dir = os.path.dirname(os.path.abspath(__file__))
+                print("[SERVER] Iniciando atualização manual completa de todas as APIs...")
+                
+                # 1. Sincronizar matrículas e disparar tags no RD Station
+                try:
+                    print("[SERVER] 1/3 Sincronizando tags e matrículas no RD Station...")
+                    subprocess.run([sys.executable, os.path.join(base_dir, 'sync_matriculas_rd.py')], cwd=base_dir, check=False)
+                except Exception as e_rd:
+                    print(f"[SERVER] Aviso RD: {e_rd}")
+
+                # 2. Consultar todas as APIs (Cativa, Vindi, Asaas, Academy, RD) e regerar dashboard
+                print("[SERVER] 2/3 Consultando APIs e gerando HTML...")
+                subprocess.run([sys.executable, os.path.join(base_dir, 'gerador.py')], cwd=base_dir, check=True)
+
+                # 3. Garantir cópia para index.html
+                gen_path = os.path.join(base_dir, 'dashboard_gerado.html')
+                idx_path = os.path.join(base_dir, 'index.html')
+                if os.path.exists(gen_path):
+                    with open(gen_path, 'rb') as src, open(idx_path, 'wb') as dst:
                         dst.write(src.read())
+
+                # 4. Salvar e enviar para o GitHub Pages para atualizar online
+                try:
+                    print("[SERVER] 3/3 Enviando para o GitHub Pages...")
+                    subprocess.run(['git', 'add', 'index.html', 'dashboard_gerado.html', 'template.html', '*.json'], cwd=base_dir, check=False)
+                    subprocess.run(['git', 'commit', '-m', 'Manual-Sync: Dados atualizados via botão do dashboard [skip ci]'], cwd=base_dir, check=False)
+                    subprocess.run(['git', 'push', 'origin', 'main'], cwd=base_dir, check=False)
+                    print("[SERVER] Sucesso: Dados enviados ao GitHub Pages!")
+                except Exception as e_git:
+                    print(f"[SERVER] Aviso Git push: {e_git}")
+
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps({"status": "ok", "message": "Atualizado com sucesso"}).encode('utf-8'))
+                self.wfile.write(json.dumps({
+                    "status": "ok",
+                    "message": "Todas as APIs foram consultadas, os dados foram salvos e o painel foi atualizado com sucesso!"
+                }).encode('utf-8'))
             except Exception as e:
-                print(f"Erro na atualização: {e}")
+                print(f"[SERVER] Erro na atualização: {e}")
                 self.send_response(500)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()

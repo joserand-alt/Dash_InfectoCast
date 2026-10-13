@@ -283,5 +283,20 @@
       "pos-infectopediatria",
       "origem-academy"
     ]
+  },
+  "anaelisa.g@hotmail.com|sos-antibiotico": {
+    "email": "anaelisa.g@hotmail.com",
+    "nome": "Ana Elisa",
+    "curso": "S.O.S ANTIBIOTICO",
+    "plataforma": "Academy",
+    "data_inscricao": "2026-09-22 00:00:00",
+    "status": "success",
+    "data_tagueamento": "2026-10-13 11:00:42",
+    "tags_aplicadas": [
+      "matricula-pendente",
+      "curso-livre",
+      "sos-antibiotico",
+      "origem-academy"
+    ]
   }
 }

@@ -1788,7 +1788,7 @@ def main():
     financeiro_data = {}
     try:
         from vindi_service import get_vindi_data
-        vindi_res = get_vindi_data(force_reload=False)
+        vindi_res = get_vindi_data(force_reload=True)
         if not vindi_res or len(vindi_res.get('financeiro', {}).get('faturas_tabela', [])) < 1000:
             if os.path.exists('vindi_cache.json'):
                 try:

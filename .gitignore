@@ -8,6 +8,9 @@ BD/
 Nova pasta/
 dashboard_gerado_copy.html
 *.bat
+!iniciar_servidor.bat
+!PUBLICAR_NO_GITHUB.bat
+!ATUALIZAR_DADOS.bat
 gerador_backup*.py
 temp_*.js
 test_exec.js
