@@ -388,5 +388,65 @@
       "curso-pos-graduacao-infectocast",
       "origem-academy"
     ]
+  },
+  "annekarollynealvaressantos@gmail.com|jornada-multi-r": {
+    "email": "annekarollynealvaressantos@gmail.com",
+    "nome": "Anne Karollyne",
+    "curso": "JORNADA MULTI-R",
+    "plataforma": "Academy",
+    "data_inscricao": "2026-10-13 00:00:00",
+    "status": "success",
+    "data_tagueamento": "2026-10-13 15:25:49",
+    "tags_aplicadas": [
+      "matricula-pendente",
+      "curso-livre",
+      "jornada-multi-r",
+      "origem-academy"
+    ]
+  },
+  "enfscih.especialista@gmail.com|jornada-multi-r": {
+    "email": "enfscih.especialista@gmail.com",
+    "nome": "Edilane",
+    "curso": "JORNADA MULTI-R",
+    "plataforma": "Academy",
+    "data_inscricao": "2026-09-17 00:00:00",
+    "status": "success",
+    "data_tagueamento": "2026-10-13 15:25:50",
+    "tags_aplicadas": [
+      "matricula-pendente",
+      "curso-livre",
+      "jornada-multi-r",
+      "origem-academy"
+    ]
+  },
+  "heleniceabrantes@hotmail.com|jornada-multi-r": {
+    "email": "heleniceabrantes@hotmail.com",
+    "nome": "Helenice Maria",
+    "curso": "JORNADA MULTI-R",
+    "plataforma": "Academy",
+    "data_inscricao": "2026-09-19 00:00:00",
+    "status": "success",
+    "data_tagueamento": "2026-10-13 15:25:51",
+    "tags_aplicadas": [
+      "matricula-pendente",
+      "curso-livre",
+      "jornada-multi-r",
+      "origem-academy"
+    ]
+  },
+  "re_sakiyama@hotmail.com|jornada-multi-r": {
+    "email": "re_sakiyama@hotmail.com",
+    "nome": "Renata",
+    "curso": "JORNADA MULTI-R",
+    "plataforma": "Academy",
+    "data_inscricao": "2026-10-13 00:00:00",
+    "status": "success",
+    "data_tagueamento": "2026-10-13 15:25:53",
+    "tags_aplicadas": [
+      "matricula-pendente",
+      "curso-livre",
+      "jornada-multi-r",
+      "origem-academy"
+    ]
   }
 }
