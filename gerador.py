@@ -359,6 +359,10 @@ def main():
         if email and 'rd_course_hints' in locals() and email in rd_course_hints:
             return rd_course_hints[email]
             
+        clean_t = normalize_curso(turma)
+        if clean_t and clean_t not in ['NONE', 'NAN', '', 'PLATAFORMA GERAL']:
+            return clean_t
+            
         return None
 
     def get_core_subject(name):
@@ -829,9 +833,21 @@ def main():
             pass
 
     all_academy_emails = set(df_acad['E-mail'].dropna().str.lower().str.strip().unique())
-    for aid_k, st_info in academy_registered_map.items():
-        if isinstance(st_info, dict) and st_info.get('email'):
-            all_academy_emails.add(st_info['email'].lower().strip())
+    acad_email_to_name = {}
+    if isinstance(academy_registered_map, list):
+        for st_info in academy_registered_map:
+            if isinstance(st_info, dict) and st_info.get('email'):
+                em = str(st_info['email']).lower().strip()
+                all_academy_emails.add(em)
+                if st_info.get('nome'):
+                    acad_email_to_name[em] = str(st_info['nome']).strip()
+    elif isinstance(academy_registered_map, dict):
+        for aid_k, st_info in academy_registered_map.items():
+            if isinstance(st_info, dict) and st_info.get('email'):
+                em = str(st_info['email']).lower().strip()
+                all_academy_emails.add(em)
+                if st_info.get('nome'):
+                    acad_email_to_name[em] = str(st_info['nome']).strip()
 
     for email_str in sorted(all_academy_emails):
         if not email_str or email_str == 'nan' or 'teste' in email_str or '@infectocast' in email_str or '@vectorcomunica' in email_str or 'rand' in email_str:
@@ -841,11 +857,7 @@ def main():
         acessou = len(logs) > 0
         
         # Obter nome do cadastro ou dos logs
-        nome_aluno = email_str
-        for aid_k, st_info in academy_registered_map.items():
-            if isinstance(st_info, dict) and st_info.get('email', '').lower().strip() == email_str and st_info.get('nome'):
-                nome_aluno = st_info['nome'].strip()
-                break
+        nome_aluno = acad_email_to_name.get(email_str, email_str)
         if nome_aluno == email_str and not logs.empty and not logs['Nome aluno'].dropna().empty:
             nome_aluno = str(logs['Nome aluno'].dropna().iloc[0]).strip()
 
@@ -1833,7 +1845,7 @@ def main():
             if v_sub_st in ['canceled', 'inactive'] and v_fin_st == 'cancelado' and not has_paid:
                 continue
             
-            c_inferido = v_obj.get('curso') or "PLATAFORMA GERAL"
+            c_inferido = v_obj.get('curso') or v_obj.get('plano') or "PLATAFORMA GERAL"
             c_orig = "Plano Vindi"
             if c_inferido == "PLATAFORMA GERAL" and 'rd_course_hints' in locals() and em_clean in rd_course_hints:
                 c_inferido = rd_course_hints[em_clean]
