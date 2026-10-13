@@ -20,6 +20,15 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
 
+    def do_GET(self):
+        if self.path == '/api/status':
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "running", "port": PORT}).encode('utf-8'))
+            return
+        super().do_GET()
+
     def do_POST(self):
         if self.path == '/api/alocar-aula':
             content_length = int(self.headers['Content-Length'])
@@ -120,6 +129,7 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
                     print("[SERVER] 3/3 Enviando para o GitHub Pages...")
                     subprocess.run(['git', 'add', 'index.html', 'dashboard_gerado.html', 'template.html', '*.json'], cwd=base_dir, check=False)
                     subprocess.run(['git', 'commit', '-m', 'Manual-Sync: Dados atualizados via botão do dashboard [skip ci]'], cwd=base_dir, check=False)
+                    subprocess.run(['git', 'pull', '--rebase', 'origin', 'main'], cwd=base_dir, check=False)
                     subprocess.run(['git', 'push', 'origin', 'main'], cwd=base_dir, check=False)
                     print("[SERVER] Sucesso: Dados enviados ao GitHub Pages!")
                 except Exception as e_git:

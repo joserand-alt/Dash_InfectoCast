@@ -16,3 +16,5 @@ temp_*.js
 test_exec.js
 scratch/
 asaas_config.json
+GUIA_APIS_*
+gerar_docs.py
