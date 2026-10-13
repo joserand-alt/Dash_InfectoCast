@@ -127,10 +127,21 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
                 # 4. Salvar e enviar para o GitHub Pages para atualizar online
                 try:
                     print("[SERVER] 3/3 Enviando para o GitHub Pages...")
+                    desktop_dir = r'C:\Users\DELL\Desktop\Dash_InfectoCast'
+                    if os.path.exists(desktop_dir) and os.path.abspath(base_dir).lower() != os.path.abspath(desktop_dir).lower():
+                        import shutil
+                        for fname in ['index.html', 'dashboard_gerado.html', 'template.html', 'asaas_cache.json', 'vindi_cache.json', 'cativa_cache.json']:
+                            sf = os.path.join(base_dir, fname)
+                            df = os.path.join(desktop_dir, fname)
+                            if os.path.exists(sf):
+                                shutil.copy2(sf, df)
+
                     subprocess.run(['git', 'add', 'index.html', 'dashboard_gerado.html', 'template.html', '*.json'], cwd=base_dir, check=False)
                     subprocess.run(['git', 'commit', '-m', 'Manual-Sync: Dados atualizados via botão do dashboard [skip ci]'], cwd=base_dir, check=False)
-                    subprocess.run(['git', 'pull', '--rebase', 'origin', 'main'], cwd=base_dir, check=False)
-                    subprocess.run(['git', 'push', 'origin', 'main'], cwd=base_dir, check=False)
+                    push_res = subprocess.run(['git', 'push', 'origin', 'main'], cwd=base_dir, check=False)
+                    if push_res.returncode != 0:
+                        subprocess.run(['git', 'pull', '--no-rebase', '-X', 'theirs', 'origin', 'main'], cwd=base_dir, check=False)
+                        subprocess.run(['git', 'push', 'origin', 'main'], cwd=base_dir, check=False)
                     print("[SERVER] Sucesso: Dados enviados ao GitHub Pages!")
                 except Exception as e_git:
                     print(f"[SERVER] Aviso Git push: {e_git}")
