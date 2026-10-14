@@ -448,5 +448,20 @@
       "jornada-multi-r",
       "origem-academy"
     ]
+  },
+  "renatacmrios@gmail.com|pos-graduacao-infectocast": {
+    "email": "renatacmrios@gmail.com",
+    "nome": "Renata",
+    "curso": "POS-GRADUACAO INFECTOCAST",
+    "plataforma": "Academy",
+    "data_inscricao": "2026-10-14 00:00:00",
+    "status": "success",
+    "data_tagueamento": "2026-10-14 14:00:02",
+    "tags_aplicadas": [
+      "matricula-pendente",
+      "pos-graduacao",
+      "curso-pos-graduacao-infectocast",
+      "origem-academy"
+    ]
   }
 }
