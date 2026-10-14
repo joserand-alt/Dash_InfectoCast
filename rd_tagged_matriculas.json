@@ -23662,5 +23662,41 @@
       "gateway-asaas",
       "asaas-pago"
     ]
+  },
+  "lauracrivellari@gmail.com|jornada-multi-r": {
+    "email": "lauracrivellari@gmail.com",
+    "nome": "Laura",
+    "curso": "JORNADA MULTI-R",
+    "origem": "Asaas",
+    "data_matricula": "14/10/2026",
+    "status": "success",
+    "data_tagueamento": "2026-10-14 11:00:01",
+    "tags_aplicadas": [
+      "aluno-ativo",
+      "aluno-matriculado",
+      "academy-pago",
+      "curso-livre",
+      "jornada-multi-r",
+      "gateway-asaas",
+      "asaas-pago"
+    ]
+  },
+  "alexmicali@hotmail.com|jornada-multi-r": {
+    "email": "alexmicali@hotmail.com",
+    "nome": "Alexandre",
+    "curso": "JORNADA MULTI-R",
+    "origem": "Asaas",
+    "data_matricula": "13/10/2026",
+    "status": "success",
+    "data_tagueamento": "2026-10-14 11:00:01",
+    "tags_aplicadas": [
+      "aluno-ativo",
+      "aluno-matriculado",
+      "academy-pago",
+      "curso-livre",
+      "jornada-multi-r",
+      "gateway-asaas",
+      "asaas-pago"
+    ]
   }
 }
