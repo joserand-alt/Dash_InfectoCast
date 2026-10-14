@@ -1328,13 +1328,13 @@
         "email": "",
         "cnpj": ""
       },
-      "_id": "6aa2ef0e4337cad2add12a30",
-      "full_name": "Edson Spânghero Dalur",
-      "cel_phone": "5513981136953",
-      "email": "esdalur@gmail.com",
+      "_id": "6aa2ef0e4337cad2add12a2b",
+      "full_name": "Beatriz Pascuotte",
+      "cel_phone": "5519996348485",
+      "email": "beatrizpascuotte@gmail.com",
       "code": null,
       "customizable_field": [],
-      "id": "6aa2ef0e4337cad2add12a30"
+      "id": "6aa2ef0e4337cad2add12a2b"
     },
     {
       "address": {
@@ -1355,94 +1355,13 @@
         "email": "",
         "cnpj": ""
       },
-      "_id": "6aa2ef0e9c09a0481b812ce1",
-      "full_name": "Vanessa de Paula",
-      "cel_phone": "5584981730505",
-      "email": "vanessadepaula.infecto@gmail.com",
+      "_id": "6aa2ef0e6133f3712aa02ad6",
+      "full_name": "Danielle Zaher Deseta",
+      "cel_phone": "5521999572794",
+      "email": "danizaher@yahoo.com.br",
       "code": null,
       "customizable_field": [],
-      "id": "6aa2ef0e9c09a0481b812ce1"
-    },
-    {
-      "address": {
-        "country": "",
-        "state": "",
-        "city": "",
-        "district": "",
-        "street": "",
-        "number": "",
-        "zip_code": "",
-        "complement": ""
-      },
-      "job": {
-        "title": "",
-        "department": "",
-        "company": "",
-        "phone": "",
-        "email": "",
-        "cnpj": ""
-      },
-      "_id": "6aa2ef0e6133f3712aa02ada",
-      "full_name": "Arthur Cerqueira Lopes",
-      "cel_phone": "5511964990987",
-      "email": "arthurclopes@gmail.com",
-      "code": null,
-      "customizable_field": [],
-      "id": "6aa2ef0e6133f3712aa02ada"
-    },
-    {
-      "address": {
-        "country": "",
-        "state": "",
-        "city": "",
-        "district": "",
-        "street": "",
-        "number": "",
-        "zip_code": "",
-        "complement": ""
-      },
-      "job": {
-        "title": "",
-        "department": "",
-        "company": "",
-        "phone": "",
-        "email": "",
-        "cnpj": ""
-      },
-      "_id": "6aa2ef0e4337cad2add12a2c",
-      "full_name": "Renata",
-      "cel_phone": "5511975679840",
-      "email": "renataflud@hotmail.com",
-      "code": null,
-      "customizable_field": [],
-      "id": "6aa2ef0e4337cad2add12a2c"
-    },
-    {
-      "address": {
-        "country": "",
-        "state": "",
-        "city": "",
-        "district": "",
-        "street": "",
-        "number": "",
-        "zip_code": "",
-        "complement": ""
-      },
-      "job": {
-        "title": "",
-        "department": "",
-        "company": "",
-        "phone": "",
-        "email": "",
-        "cnpj": ""
-      },
-      "_id": "6aa2ef0e9c09a0481b812ce0",
-      "full_name": "Elidio Santos de Oliveira",
-      "cel_phone": "5511976995657",
-      "email": "elidiosantos@outlook.com",
-      "code": null,
-      "customizable_field": [],
-      "id": "6aa2ef0e9c09a0481b812ce0"
+      "id": "6aa2ef0e6133f3712aa02ad6"
     },
     {
       "address": {
@@ -1517,6 +1436,114 @@
         "email": "",
         "cnpj": ""
       },
+      "_id": "6aa2ef0e9c09a0481b812ce1",
+      "full_name": "Vanessa de Paula",
+      "cel_phone": "5584981730505",
+      "email": "vanessadepaula.infecto@gmail.com",
+      "code": null,
+      "customizable_field": [],
+      "id": "6aa2ef0e9c09a0481b812ce1"
+    },
+    {
+      "address": {
+        "country": "",
+        "state": "",
+        "city": "",
+        "district": "",
+        "street": "",
+        "number": "",
+        "zip_code": "",
+        "complement": ""
+      },
+      "job": {
+        "title": "",
+        "department": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "cnpj": ""
+      },
+      "_id": "6aa2ef0e6133f3712aa02ae5",
+      "full_name": "Bruna",
+      "cel_phone": "5511991398476",
+      "email": "bruna.almeida05@hotmail.com",
+      "code": null,
+      "customizable_field": [],
+      "id": "6aa2ef0e6133f3712aa02ae5"
+    },
+    {
+      "address": {
+        "country": "",
+        "state": "",
+        "city": "",
+        "district": "",
+        "street": "",
+        "number": "",
+        "zip_code": "",
+        "complement": ""
+      },
+      "job": {
+        "title": "",
+        "department": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "cnpj": ""
+      },
+      "_id": "6aa2ef0e9c09a0481b812ce0",
+      "full_name": "Elidio Santos de Oliveira",
+      "cel_phone": "5511976995657",
+      "email": "elidiosantos@outlook.com",
+      "code": null,
+      "customizable_field": [],
+      "id": "6aa2ef0e9c09a0481b812ce0"
+    },
+    {
+      "address": {
+        "country": "",
+        "state": "",
+        "city": "",
+        "district": "",
+        "street": "",
+        "number": "",
+        "zip_code": "",
+        "complement": ""
+      },
+      "job": {
+        "title": "",
+        "department": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "cnpj": ""
+      },
+      "_id": "6aa2ef0e6133f3712aa02ada",
+      "full_name": "Arthur Cerqueira Lopes",
+      "cel_phone": "5511964990987",
+      "email": "arthurclopes@gmail.com",
+      "code": null,
+      "customizable_field": [],
+      "id": "6aa2ef0e6133f3712aa02ada"
+    },
+    {
+      "address": {
+        "country": "",
+        "state": "",
+        "city": "",
+        "district": "",
+        "street": "",
+        "number": "",
+        "zip_code": "",
+        "complement": ""
+      },
+      "job": {
+        "title": "",
+        "department": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "cnpj": ""
+      },
       "_id": "6aa2ef0e9c09a0481b812ce4",
       "full_name": "Lafaiete",
       "cel_phone": "5541992119915",
@@ -1544,13 +1571,13 @@
         "email": "",
         "cnpj": ""
       },
-      "_id": "6aa2ef0e6133f3712aa02ad5",
-      "full_name": "Simone Lopes de Almeida Pifano",
-      "cel_phone": "553299977724",
-      "email": "simonelopesdealmeida@yahoo.com.br",
+      "_id": "6aa2ef0e6133f3712aa02adb",
+      "full_name": "Andréa Alves da Silva",
+      "cel_phone": "5511947987466",
+      "email": "andrea.alves.dasilva@hotmail.com",
       "code": null,
       "customizable_field": [],
-      "id": "6aa2ef0e6133f3712aa02ad5"
+      "id": "6aa2ef0e6133f3712aa02adb"
     },
     {
       "address": {
@@ -1571,13 +1598,13 @@
         "email": "",
         "cnpj": ""
       },
-      "_id": "6aa2ef0e6133f3712aa02adb",
-      "full_name": "Andréa Alves da Silva",
-      "cel_phone": "5511947987466",
-      "email": "andrea.alves.dasilva@hotmail.com",
+      "_id": "6aa2ef0e4337cad2add12a2c",
+      "full_name": "Renata",
+      "cel_phone": "5511975679840",
+      "email": "renataflud@hotmail.com",
       "code": null,
       "customizable_field": [],
-      "id": "6aa2ef0e6133f3712aa02adb"
+      "id": "6aa2ef0e4337cad2add12a2c"
     },
     {
       "address": {
@@ -1652,94 +1679,13 @@
         "email": "",
         "cnpj": ""
       },
-      "_id": "6aa2ef0e6133f3712aa02ad6",
-      "full_name": "Danielle Zaher Deseta",
-      "cel_phone": "5521999572794",
-      "email": "danizaher@yahoo.com.br",
+      "_id": "6aa2ef0e6133f3712aa02ad5",
+      "full_name": "Simone Lopes de Almeida Pifano",
+      "cel_phone": "553299977724",
+      "email": "simonelopesdealmeida@yahoo.com.br",
       "code": null,
       "customizable_field": [],
-      "id": "6aa2ef0e6133f3712aa02ad6"
-    },
-    {
-      "address": {
-        "country": "",
-        "state": "",
-        "city": "",
-        "district": "",
-        "street": "",
-        "number": "",
-        "zip_code": "",
-        "complement": ""
-      },
-      "job": {
-        "title": "",
-        "department": "",
-        "company": "",
-        "phone": "",
-        "email": "",
-        "cnpj": ""
-      },
-      "_id": "6aa2ef0e6133f3712aa02ae5",
-      "full_name": "Bruna",
-      "cel_phone": "5511991398476",
-      "email": "bruna.almeida05@hotmail.com",
-      "code": null,
-      "customizable_field": [],
-      "id": "6aa2ef0e6133f3712aa02ae5"
-    },
-    {
-      "address": {
-        "country": "",
-        "state": "",
-        "city": "",
-        "district": "",
-        "street": "",
-        "number": "",
-        "zip_code": "",
-        "complement": ""
-      },
-      "job": {
-        "title": "",
-        "department": "",
-        "company": "",
-        "phone": "",
-        "email": "",
-        "cnpj": ""
-      },
-      "_id": "6aa2ef0e2e1d2c6748b63777",
-      "full_name": "Erica",
-      "cel_phone": "553491935285",
-      "email": "ericafmagalhaes@hotmail.com",
-      "code": null,
-      "customizable_field": [],
-      "id": "6aa2ef0e2e1d2c6748b63777"
-    },
-    {
-      "address": {
-        "country": "",
-        "state": "",
-        "city": "",
-        "district": "",
-        "street": "",
-        "number": "",
-        "zip_code": "",
-        "complement": ""
-      },
-      "job": {
-        "title": "",
-        "department": "",
-        "company": "",
-        "phone": "",
-        "email": "",
-        "cnpj": ""
-      },
-      "_id": "6aa2ef0ed5b16db7dcd83c5e",
-      "full_name": "Andréa Tosta",
-      "cel_phone": "5515981976817",
-      "email": "andreatosta@hotmail.com",
-      "code": null,
-      "customizable_field": [],
-      "id": "6aa2ef0ed5b16db7dcd83c5e"
+      "id": "6aa2ef0e6133f3712aa02ad5"
     },
     {
       "address": {
@@ -1787,60 +1733,6 @@
         "email": "",
         "cnpj": ""
       },
-      "_id": "6aa2ef0e4337cad2add12a31",
-      "full_name": "Diana Rangel Rocha",
-      "cel_phone": "5512991933581",
-      "email": "dirangelrocha@gmail.com",
-      "code": null,
-      "customizable_field": [],
-      "id": "6aa2ef0e4337cad2add12a31"
-    },
-    {
-      "address": {
-        "country": "",
-        "state": "",
-        "city": "",
-        "district": "",
-        "street": "",
-        "number": "",
-        "zip_code": "",
-        "complement": ""
-      },
-      "job": {
-        "title": "",
-        "department": "",
-        "company": "",
-        "phone": "",
-        "email": "",
-        "cnpj": ""
-      },
-      "_id": "6aa2ef0e6133f3712aa02ae4",
-      "full_name": "Vivian",
-      "cel_phone": "5511985115047",
-      "email": "vivianvidal01@gmail.com",
-      "code": null,
-      "customizable_field": [],
-      "id": "6aa2ef0e6133f3712aa02ae4"
-    },
-    {
-      "address": {
-        "country": "",
-        "state": "",
-        "city": "",
-        "district": "",
-        "street": "",
-        "number": "",
-        "zip_code": "",
-        "complement": ""
-      },
-      "job": {
-        "title": "",
-        "department": "",
-        "company": "",
-        "phone": "",
-        "email": "",
-        "cnpj": ""
-      },
       "_id": "6aa2ef0e2e1d2c6748b63774",
       "full_name": "Jorge Andrés González Grijalva",
       "cel_phone": "5511998996623",
@@ -1848,6 +1740,33 @@
       "code": null,
       "customizable_field": [],
       "id": "6aa2ef0e2e1d2c6748b63774"
+    },
+    {
+      "address": {
+        "country": "",
+        "state": "",
+        "city": "",
+        "district": "",
+        "street": "",
+        "number": "",
+        "zip_code": "",
+        "complement": ""
+      },
+      "job": {
+        "title": "",
+        "department": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "cnpj": ""
+      },
+      "_id": "6aa2ef0e2e1d2c6748b63777",
+      "full_name": "Erica",
+      "cel_phone": "553491935285",
+      "email": "ericafmagalhaes@hotmail.com",
+      "code": null,
+      "customizable_field": [],
+      "id": "6aa2ef0e2e1d2c6748b63777"
     },
     {
       "address": {
@@ -1895,13 +1814,94 @@
         "email": "",
         "cnpj": ""
       },
-      "_id": "6aa2ef0ed5b16db7dcd83c6b",
-      "full_name": "Nayara Carvalho",
-      "cel_phone": "5511994056565",
-      "email": "dra.nayarainfectoped@gmail.com",
+      "_id": "6aa2ef0ed5b16db7dcd83c5e",
+      "full_name": "Andréa Tosta",
+      "cel_phone": "5515981976817",
+      "email": "andreatosta@hotmail.com",
       "code": null,
       "customizable_field": [],
-      "id": "6aa2ef0ed5b16db7dcd83c6b"
+      "id": "6aa2ef0ed5b16db7dcd83c5e"
+    },
+    {
+      "address": {
+        "country": "",
+        "state": "",
+        "city": "",
+        "district": "",
+        "street": "",
+        "number": "",
+        "zip_code": "",
+        "complement": ""
+      },
+      "job": {
+        "title": "",
+        "department": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "cnpj": ""
+      },
+      "_id": "6aa2ef0e6133f3712aa02ae4",
+      "full_name": "Vivian",
+      "cel_phone": "5511985115047",
+      "email": "vivianvidal01@gmail.com",
+      "code": null,
+      "customizable_field": [],
+      "id": "6aa2ef0e6133f3712aa02ae4"
+    },
+    {
+      "address": {
+        "country": "",
+        "state": "",
+        "city": "",
+        "district": "",
+        "street": "",
+        "number": "",
+        "zip_code": "",
+        "complement": ""
+      },
+      "job": {
+        "title": "",
+        "department": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "cnpj": ""
+      },
+      "_id": "6aa2ef0e4337cad2add12a31",
+      "full_name": "Diana Rangel Rocha",
+      "cel_phone": "5512991933581",
+      "email": "dirangelrocha@gmail.com",
+      "code": null,
+      "customizable_field": [],
+      "id": "6aa2ef0e4337cad2add12a31"
+    },
+    {
+      "address": {
+        "country": "",
+        "state": "",
+        "city": "",
+        "district": "",
+        "street": "",
+        "number": "",
+        "zip_code": "",
+        "complement": ""
+      },
+      "job": {
+        "title": "",
+        "department": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "cnpj": ""
+      },
+      "_id": "6aa2ef0e4337cad2add12a3b",
+      "full_name": "Andra",
+      "cel_phone": "5511997384393",
+      "email": "andra_b.f.g@hotmail.com",
+      "code": null,
+      "customizable_field": [],
+      "id": "6aa2ef0e4337cad2add12a3b"
     },
     {
       "address": {
@@ -1976,13 +1976,13 @@
         "email": "",
         "cnpj": ""
       },
-      "_id": "6aa2ef0e4337cad2add12a3b",
-      "full_name": "Andra",
-      "cel_phone": "5511997384393",
-      "email": "andra_b.f.g@hotmail.com",
+      "_id": "6aa2ef0ed5b16db7dcd83c6b",
+      "full_name": "Nayara Carvalho",
+      "cel_phone": "5511994056565",
+      "email": "dra.nayarainfectoped@gmail.com",
       "code": null,
       "customizable_field": [],
-      "id": "6aa2ef0e4337cad2add12a3b"
+      "id": "6aa2ef0ed5b16db7dcd83c6b"
     },
     {
       "address": {
@@ -2086,13 +2086,13 @@
         "email": "",
         "cnpj": ""
       },
-      "_id": "6aa2ef0e2e1d2c6748b6377f",
-      "full_name": "Suzana Barbosa /",
-      "cel_phone": "5515981355467",
-      "email": "farma.suzy@hotmail.com",
+      "_id": "6aa2ef0e2e1d2c6748b63775",
+      "full_name": "Guilherme",
+      "cel_phone": "5513981911210",
+      "email": "guih_antunes@hotmail.com",
       "code": null,
       "customizable_field": [],
-      "id": "6aa2ef0e2e1d2c6748b6377f"
+      "id": "6aa2ef0e2e1d2c6748b63775"
     },
     {
       "address": {
@@ -2113,13 +2113,13 @@
         "email": "",
         "cnpj": ""
       },
-      "_id": "6aa2ef0e2e1d2c6748b63775",
-      "full_name": "Guilherme",
-      "cel_phone": "5513981911210",
-      "email": "guih_antunes@hotmail.com",
+      "_id": "6aa2ef0e2e1d2c6748b6377f",
+      "full_name": "Suzana Barbosa /",
+      "cel_phone": "5515981355467",
+      "email": "farma.suzy@hotmail.com",
       "code": null,
       "customizable_field": [],
-      "id": "6aa2ef0e2e1d2c6748b63775"
+      "id": "6aa2ef0e2e1d2c6748b6377f"
     },
     {
       "address": {
@@ -2221,13 +2221,13 @@
         "email": "",
         "cnpj": ""
       },
-      "_id": "6aa2ef0ed5b16db7dcd83c79",
-      "full_name": "Daniela Costa",
-      "cel_phone": "5511996510016",
-      "email": "danicosta1973@hotmail.com",
+      "_id": "6aa2ef0e2e1d2c6748b6379a",
+      "full_name": "natalia",
+      "cel_phone": "5537998683447",
+      "email": "nataliavchavess@gmail.com",
       "code": null,
       "customizable_field": [],
-      "id": "6aa2ef0ed5b16db7dcd83c79"
+      "id": "6aa2ef0e2e1d2c6748b6379a"
     },
     {
       "address": {
@@ -2248,13 +2248,13 @@
         "email": "",
         "cnpj": ""
       },
-      "_id": "6aa2ef0e2e1d2c6748b6379a",
-      "full_name": "natalia",
-      "cel_phone": "5537998683447",
-      "email": "nataliavchavess@gmail.com",
+      "_id": "6aa2ef0ed5b16db7dcd83c79",
+      "full_name": "Daniela Costa",
+      "cel_phone": "5511996510016",
+      "email": "danicosta1973@hotmail.com",
       "code": null,
       "customizable_field": [],
-      "id": "6aa2ef0e2e1d2c6748b6379a"
+      "id": "6aa2ef0ed5b16db7dcd83c79"
     },
     {
       "address": {
@@ -2518,13 +2518,13 @@
         "email": "",
         "cnpj": ""
       },
-      "_id": "6aa2ef0e4337cad2add12a7a",
-      "full_name": "Stelios. Fikaris",
-      "cel_phone": "5518991229100",
-      "email": "sfikaris@hotmail.com",
+      "_id": "6aa2ef0e4337cad2add12a87",
+      "full_name": "Nathan Borges",
+      "cel_phone": "5522988179382",
+      "email": "nathanborges96@hotmail.com",
       "code": null,
       "customizable_field": [],
-      "id": "6aa2ef0e4337cad2add12a7a"
+      "id": "6aa2ef0e4337cad2add12a87"
     },
     {
       "address": {
@@ -2599,33 +2599,6 @@
         "email": "",
         "cnpj": ""
       },
-      "_id": "6aa2ef0e4337cad2add12a87",
-      "full_name": "Nathan Borges",
-      "cel_phone": "5522988179382",
-      "email": "nathanborges96@hotmail.com",
-      "code": null,
-      "customizable_field": [],
-      "id": "6aa2ef0e4337cad2add12a87"
-    },
-    {
-      "address": {
-        "country": "",
-        "state": "",
-        "city": "",
-        "district": "",
-        "street": "",
-        "number": "",
-        "zip_code": "",
-        "complement": ""
-      },
-      "job": {
-        "title": "",
-        "department": "",
-        "company": "",
-        "phone": "",
-        "email": "",
-        "cnpj": ""
-      },
       "_id": "6aa2ef0e4337cad2add12a88",
       "full_name": "Lucas",
       "cel_phone": "5521994195113",
@@ -2653,13 +2626,40 @@
         "email": "",
         "cnpj": ""
       },
-      "_id": "6aa2ef0e4337cad2add12a7d",
-      "full_name": "Silvia Moreira",
-      "cel_phone": "5521992367183",
-      "email": "silviamamoreira@yahoo.com.br",
+      "_id": "6aa2ef0e4337cad2add12a7a",
+      "full_name": "Stelios. Fikaris",
+      "cel_phone": "5518991229100",
+      "email": "sfikaris@hotmail.com",
       "code": null,
       "customizable_field": [],
-      "id": "6aa2ef0e4337cad2add12a7d"
+      "id": "6aa2ef0e4337cad2add12a7a"
+    },
+    {
+      "address": {
+        "country": "",
+        "state": "",
+        "city": "",
+        "district": "",
+        "street": "",
+        "number": "",
+        "zip_code": "",
+        "complement": ""
+      },
+      "job": {
+        "title": "",
+        "department": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "cnpj": ""
+      },
+      "_id": "6aa2ef0e6133f3712aa02b37",
+      "full_name": "Diana Galvão Ventura",
+      "cel_phone": "5521994629099",
+      "email": "dradianaventura@gmail.com",
+      "code": null,
+      "customizable_field": [],
+      "id": "6aa2ef0e6133f3712aa02b37"
     },
     {
       "address": {
@@ -17363,7 +17363,8 @@
       "cel_phone": "5521998629399",
       "code": null,
       "customizable_field": [],
-      "full_name": "5521998629399",
+      "full_name": "IVAN BENTO VIANNA JUNIOR",
+      "email": "ibvianna@gmail.com",
       "id": "6ac4aa9cc6649f92298f5781"
     },
     {
@@ -20493,6 +20494,231 @@
       "customizable_field": [],
       "full_name": "Jussara Albino",
       "id": "6ace9b4ef7af8953ab6aac99"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6aceb2d3f7af8953ab6af05c",
+      "cel_phone": "558888738384",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Maria Carla🦋",
+      "id": "6aceb2d3f7af8953ab6af05c"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6acec56cf7af8953ab6b1170",
+      "cel_phone": "557399296080",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Elisana",
+      "id": "6acec56cf7af8953ab6b1170"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6acedcfcf7af8953ab6b2fbd",
+      "cel_phone": "557199865427",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "🤍",
+      "id": "6acedcfcf7af8953ab6b2fbd"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6aceebd4f7af8953ab6b3b4c",
+      "cel_phone": "556993619539",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Fernando Chaves",
+      "id": "6aceebd4f7af8953ab6b3b4c"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": "",
+        "email": "",
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6acf4533c652474ed0b5d461",
+      "full_name": "Julia Caroline",
+      "cel_phone": "555381347272",
+      "email": "jucazita@yahoo.com.br",
+      "customizable_field": [],
+      "code": null,
+      "id": "6acf4533c652474ed0b5d461"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6acf4d5ef7af8953ab6b5143",
+      "cel_phone": "556799730658",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Kethelen Jacob",
+      "id": "6acf4d5ef7af8953ab6b5143"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6acf516af7af8953ab6b5423",
+      "cel_phone": "557193216422",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Natalie Dias",
+      "id": "6acf516af7af8953ab6b5423"
+    },
+    {
+      "address": {
+        "country": null,
+        "state": null,
+        "city": null,
+        "district": null,
+        "street": null,
+        "number": null,
+        "zip_code": null,
+        "complement": null
+      },
+      "job": {
+        "title": null,
+        "department": null,
+        "company": null,
+        "phone": null,
+        "email": null,
+        "cnpj": null,
+        "site": null,
+        "occupation_area": null
+      },
+      "_id": "6acf5762f7af8953ab6b5a6b",
+      "cel_phone": "559881162330",
+      "code": null,
+      "customizable_field": [],
+      "full_name": "Monique",
+      "id": "6acf5762f7af8953ab6b5a6b"
     }
   ],
   "employees": [
@@ -20517,5 +20743,5 @@
       "email": "klinger@infectocast.com.br"
     }
   ],
-  "cached_at": "2026-10-13 18:03:50"
+  "cached_at": "2026-10-14 10:42:21"
 }
